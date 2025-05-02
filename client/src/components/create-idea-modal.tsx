@@ -139,7 +139,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-h-[95vh] flex flex-col">
         <DialogHeader className="flex justify-between items-center p-4 border-b border-gray-200">
           <div>
             <DialogTitle className="text-xl font-medium text-secondary-dark font-roboto">Add to Ipê Mind Tree</DialogTitle>
@@ -242,6 +242,18 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
             >
               <Mic className="h-4 w-4" />
               <span>Click to speak your idea</span>
+            </Button>
+          </div>
+          
+          {/* Botão de envio grande dentro do formulário para garantir que ele apareça */}
+          <div className="mt-8 pt-4 border-t border-gray-200">
+            <Button 
+              type="submit"
+              className="w-full bg-primary hover:bg-primary-dark text-white py-3 px-6 rounded-lg flex items-center justify-center"
+              disabled={isSubmitting}
+            >
+              <MessageSquare className="h-5 w-5 mr-2" />
+              <span className="text-lg font-medium">{isSubmitting ? "Compartilhando..." : "Compartilhar Ideia"}</span>
             </Button>
           </div>
         </form>
