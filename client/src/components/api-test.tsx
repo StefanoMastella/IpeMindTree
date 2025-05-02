@@ -11,25 +11,20 @@ export default function ApiTest() {
     setError(null);
     
     try {
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+      const response = await fetch("/api/test-openai", {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
-          model: "gpt-3.5-turbo", // Using a cheaper model for testing
-          messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: "Say hello in Portuguese" }
-          ]
+          prompt: "Say hello in Portuguese and explain what the IMT (Ipê Mind Totem) is in 1-2 sentences."
         })
       });
 
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error?.message || 'Unknown error occurred');
+        throw new Error(data.error?.message || data.message || 'Unknown error occurred');
       }
       
       setResult(JSON.stringify(data, null, 2));

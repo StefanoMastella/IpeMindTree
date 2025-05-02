@@ -6,6 +6,42 @@ import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/llm";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // API Test Endpoint
+  app.post("/api/test-openai", async (req, res) => {
+    try {
+      const { prompt } = req.body;
+      
+      const response = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
+        },
+        body: JSON.stringify({
+          model: "gpt-3.5-turbo",
+          messages: [
+            { role: "system", content: "You are a helpful assistant." },
+            { role: "user", content: prompt || "Say hello in Portuguese" }
+          ]
+        })
+      });
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        return res.status(response.status).json(errorData);
+      }
+      
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error("OpenAI API test error:", error);
+      res.status(500).json({ 
+        message: "Failed to test OpenAI API", 
+        error: error instanceof Error ? error.message : String(error) 
+      });
+    }
+  });
+  
   // Ideas API
   
   // Get all ideas
@@ -51,25 +87,41 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Generate tags if not provided
       if (!ideaData.tags || ideaData.tags.length === 0) {
-        ideaData.tags = generateTags(ideaData.title, ideaData.description);
+        // Use simple fallback tags for now (API will be tested separately)
+        ideaData.tags = ["community", "idea", "innovation"].filter(tag => 
+          (ideaData.title + ideaData.description).toLowerCase().includes(tag)
+        );
+        
+        // In future versions, we'll use the async API call:
+        // ideaData.tags = await generateTags(ideaData.title, ideaData.description);
       }
       
       const idea = await storage.createIdea(ideaData);
       
-      // Generate connections to other ideas (async)
+      // Generate connections to other ideas
       const allIdeas = await storage.getAllIdeas();
-      const connectionIds = suggestConnections(
-        idea.id, 
-        idea.title, 
-        idea.description, 
-        idea.tags, 
-        allIdeas
-      );
+      
+      // Simple tag-based matching for now (will use AI in future)
+      const otherIdeas = allIdeas.filter(otherIdea => otherIdea.id !== idea.id);
+      const relatedIdeas = otherIdeas.filter(otherIdea => {
+        // Count shared tags
+        const sharedTags = idea.tags.filter(tag => otherIdea.tags.includes(tag)).length;
+        // Consider related if they share at least one tag
+        return sharedTags > 0;
+      });
+      
+      // Get IDs of related ideas, up to 3
+      const connectionIds = relatedIdeas.slice(0, 3).map(relatedIdea => relatedIdea.id);
       
       // Update idea with connections
       if (connectionIds.length > 0) {
         await storage.updateIdeaConnections(idea.id, connectionIds);
       }
+      
+      // In future versions, we'll use the async API call:
+      // const connectionIds = await suggestConnections(
+      //   idea.id, idea.title, idea.description, idea.tags, allIdeas
+      // );
       
       res.status(201).json(idea);
     } catch (err) {

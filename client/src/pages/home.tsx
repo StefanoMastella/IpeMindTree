@@ -7,6 +7,7 @@ import IdeasGrid from "@/components/ideas-grid";
 import MobileNav from "@/components/mobile-nav";
 import CreateIdeaModal from "@/components/create-idea-modal";
 import IdeaDetailModal from "@/components/idea-detail-modal";
+import ApiTest from "@/components/api-test";
 import { useIdeaDetail } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { PlusIcon } from "lucide-react";
@@ -59,6 +60,9 @@ export default function Home() {
               <h2 className="text-2xl font-bold text-secondary-dark mb-2 font-roboto">Community Brain for Ipê</h2>
               <p className="text-secondary max-w-2xl mx-auto">Share ideas, discover connections, and collaborate with your community to build a collective knowledge base.</p>
             </div>
+            
+            {/* API Test Component - For Development Only */}
+            <ApiTest />
             
             {/* Search and Filter Bar */}
             <SearchBar 
