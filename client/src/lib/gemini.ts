@@ -1,31 +1,51 @@
-import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/generative-ai';
+// Flash API 2.0 - Uma alternativa para integração com APIs de IA
 
-// Initialize the Google Generative AI SDK
-const setupGemini = () => {
-  // Usar a chave fornecida diretamente
-  const apiKey = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
+// Abordagem alternativa em vez de usar o SDK do Google Generative AI
+// Esta implementação usa fetch diretamente para maior controle
+const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+
+// Função alternativa para chamada direta à API
+const callGeminiFlashAPI = async (prompt: string) => {
+  console.log("Chamando Gemini Flash API 2.0...");
   
-  console.log("Inicializando Gemini API com chave:", apiKey.substring(0, 5) + "...");
-  
-  if (!apiKey) {
-    console.error('Gemini API key is missing');
-    return null;
+  try {
+    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        contents: [
+          {
+            parts: [
+              { text: prompt }
+            ]
+          }
+        ],
+        generationConfig: {
+          temperature: 0.9,
+          maxOutputTokens: 2048,
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error(`API responded with status: ${response.status}`);
+    }
+    
+    const data = await response.json();
+    // Extrair o texto gerado da resposta
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error("Erro ao chamar Gemini Flash API:", error);
+    throw error;
   }
-  
-  return new GoogleGenerativeAI(apiKey);
 };
 
 // Generate tags for an idea
 export async function generateTags(title: string, description: string): Promise<string[]> {
   try {
-    const genAI = setupGemini();
-    if (!genAI) {
-      return fallbackGenerateTags(title, description);
-    }
-    
-    // For text-only input, use the gemini-pro model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    
     const prompt = `
     Analyze this idea and generate 3-5 relevant tags for it. 
     The tags should be single words, all lowercase.
@@ -37,16 +57,14 @@ export async function generateTags(title: string, description: string): Promise<
     Example response: community,education,technology
     `;
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = await callGeminiFlashAPI(prompt);
     
     // Parse the comma-separated list
     const tags = text.split(',').map(tag => tag.trim().toLowerCase());
     
     return tags.slice(0, 5); // Limit to 5 tags
   } catch (error) {
-    console.error('Error generating tags with Gemini:', error);
+    console.error('Error generating tags with Gemini Flash:', error);
     return fallbackGenerateTags(title, description);
   }
 }
@@ -78,11 +96,6 @@ export async function suggestConnections(
   allIdeas: any[]
 ): Promise<number[]> {
   try {
-    const genAI = setupGemini();
-    if (!genAI) {
-      return fallbackSuggestConnections(ideaId, tags, allIdeas);
-    }
-    
     // Filter out the current idea
     const otherIdeas = allIdeas.filter(idea => idea.id !== ideaId);
     
@@ -92,9 +105,6 @@ export async function suggestConnections(
     
     // Only process a reasonable number of other ideas to avoid token limits
     const ideasToAnalyze = otherIdeas.slice(0, 10);
-    
-    // For text-only input, use the gemini-pro model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     const prompt = `
     I need to find meaningful connections between different ideas in a community brain application.
@@ -119,9 +129,7 @@ export async function suggestConnections(
     Example response: 5,2,9
     `;
     
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    const text = response.text().trim();
+    const text = await callGeminiFlashAPI(prompt);
     
     // Parse the comma-separated IDs
     const connectionIds = text.split(',')
@@ -131,7 +139,7 @@ export async function suggestConnections(
     
     return connectionIds;
   } catch (error) {
-    console.error('Error suggesting connections with Gemini:', error);
+    console.error('Error suggesting connections with Gemini Flash:', error);
     return fallbackSuggestConnections(ideaId, tags, allIdeas);
   }
 }
@@ -161,19 +169,10 @@ function fallbackSuggestConnections(
 // Test function
 export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the IMT (Ipê Mind Totem) is in 1-2 sentences."): Promise<string> {
   try {
-    const genAI = setupGemini();
-    if (!genAI) {
-      throw new Error('Failed to initialize Gemini API. Check your API key.');
-    }
-    
-    // For text-only input, use the gemini-pro model
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-    
-    const result = await model.generateContent(prompt);
-    const response = await result.response;
-    return response.text();
+    // Chamando diretamente a API Flash 2.0
+    return await callGeminiFlashAPI(prompt);
   } catch (error) {
-    console.error('Error testing Gemini API:', error);
+    console.error('Error testing Gemini Flash API:', error);
     throw error;
   }
 }
