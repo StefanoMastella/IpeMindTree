@@ -152,7 +152,7 @@ export default function ChatInterface() {
                       </div>
                     </div>
                     {message.role === "user" && (
-                      <Avatar className="h-8 w-8 bg-white text-primary">
+                      <Avatar className="h-8 w-8 bg-secondary text-secondary-foreground">
                         <User className="h-4 w-4" />
                       </Avatar>
                     )}
@@ -163,14 +163,14 @@ export default function ChatInterface() {
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="max-w-[80%] bg-gray-100">
+              <Card className="max-w-[80%] bg-muted text-foreground">
                 <CardContent className="p-3 flex items-center space-x-2">
-                  <Avatar className="h-8 w-8 bg-primary/80 text-white">
+                  <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
                     <Bot className="h-4 w-4" />
                   </Avatar>
                   <div className="flex items-center space-x-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span className="text-sm text-gray-500">Processando...</span>
+                    <Loader2 className="h-4 w-4 animate-spin text-primary" />
+                    <span className="text-sm text-muted-foreground">Processando...</span>
                   </div>
                 </CardContent>
               </Card>
@@ -184,7 +184,7 @@ export default function ChatInterface() {
           <Button
             variant="outline"
             size="sm"
-            className="text-xs"
+            className="text-xs border-primary/40 text-primary hover:text-primary-foreground hover:bg-primary/90"
             onClick={clearMessages}
           >
             <TrashIcon className="h-3 w-3 mr-1" />
@@ -194,7 +194,7 @@ export default function ChatInterface() {
           <Button
             variant="outline"
             size="sm"
-            className="text-xs"
+            className="text-xs border-primary/40 text-primary hover:text-primary-foreground hover:bg-primary/90"
             onClick={() => {
               setLocalMessages([
                 {
@@ -217,10 +217,14 @@ export default function ChatInterface() {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Digite sua pergunta..."
-            className="flex-grow"
+            className="flex-grow bg-background border-border"
             disabled={isLoading}
           />
-          <Button type="submit" disabled={!input.trim() || isLoading}>
+          <Button 
+            type="submit" 
+            disabled={!input.trim() || isLoading}
+            className="bg-primary hover:bg-primary/80"
+          >
             {isLoading ? (
               <Loader2 className="h-4 w-4 animate-spin" />
             ) : (
