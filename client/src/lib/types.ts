@@ -66,3 +66,29 @@ export const formatDate = (dateString: string) => {
     });
   }
 };
+
+// Tipos para o chat
+export interface ChatMessage {
+  id: string;
+  content: string;
+  role: "user" | "assistant";
+  timestamp: Date;
+}
+
+export interface ChatContextType {
+  messages: ChatMessage[];
+  isLoading: boolean;
+  sendMessage: (message: string) => Promise<void>;
+  clearMessages: () => void;
+}
+
+// Context para o chat
+const ChatContext = createContext<ChatContextType>({
+  messages: [],
+  isLoading: false,
+  sendMessage: async () => {},
+  clearMessages: () => {}
+});
+
+export const ChatProvider = ChatContext.Provider;
+export const useChat = () => useContext(ChatContext);

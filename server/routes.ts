@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/gemini";
+import { callGeminiAPI } from "./llm-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Test Endpoint - Usando Google Gemini API em vez da OpenAI
@@ -200,6 +201,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (err) {
       console.error("Error creating comment:", err);
       res.status(500).json({ message: "Failed to create comment" });
+    }
+  });
+
+  // Chat API - Permite conversar com a IA sobre as ideias
+  app.post("/api/chat", async (req, res) => {
+    try {
+      const { question } = req.body;
+      
+      if (!question || typeof question !== 'string') {
+        return res.status(400).json({ message: "Invalid question format. Please provide a text question." });
+      }
+      
+      // Chamar o serviço LLM com a pergunta do usuário
+      const response = await callGeminiAPI(question);
+      
+      res.json({
+        question,
+        answer: response
+      });
+    } catch (err) {
+      console.error("Error in chat API:", err);
+      res.status(500).json({ 
+        message: "Failed to process your question",
+        error: err instanceof Error ? err.message : String(err)
+      });
     }
   });
 
