@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { useChat, type ChatMessage } from "@/lib/types";
+import { type ChatMessage } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
@@ -37,20 +37,24 @@ export default function ChatInterface() {
       setInput("");
       
       // Chama a API de chat
-      const response = await apiRequest<{ answer: string }>({
-        method: "POST",
-        url: "/api/chat",
-        data: { question: message }
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: message })
       });
       
-      if (!response) {
-        throw new Error("Falha ao obter resposta do servidor");
+      if (!response.ok) {
+        throw new Error(`Falha ao obter resposta do servidor: ${response.status}`);
       }
+      
+      const data = await response.json();
       
       // Adiciona a resposta do assistente
       const assistantMessage: ChatMessage = {
         id: nanoid(),
-        content: response.answer,
+        content: data.answer,
         role: "assistant",
         timestamp: new Date()
       };

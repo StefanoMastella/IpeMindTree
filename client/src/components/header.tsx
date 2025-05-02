@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain } from "lucide-react";
+import { Brain, MessageSquareText } from "lucide-react";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -28,6 +28,12 @@ export default function Header() {
           <Link href="/">
             <a className={`${location === "/" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium`}>
               Home
+            </a>
+          </Link>
+          <Link href="/chat">
+            <a className={`${location === "/chat" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium flex items-center`}>
+              <MessageSquareText className="h-4 w-4 mr-1" />
+              Chat
             </a>
           </Link>
           <Link href="/explore">
@@ -66,6 +72,12 @@ export default function Header() {
           <Link href="/">
             <a className={`${location === "/" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2`}>
               Home
+            </a>
+          </Link>
+          <Link href="/chat">
+            <a className={`${location === "/chat" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+              <MessageSquareText className="h-4 w-4 mr-1" />
+              Chat com IA
             </a>
           </Link>
           <Link href="/explore">

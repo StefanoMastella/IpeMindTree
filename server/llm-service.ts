@@ -24,7 +24,7 @@ async function getIdeasContext(): Promise<string> {
     ideas.forEach((idea: Idea, index: number) => {
       context += `Ideia #${idea.id}: "${idea.title}"\n`;
       context += `Descrição: ${idea.description}\n`;
-      context += `Tags: ${idea.tags.join(", ")}\n`;
+      context += `Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : idea.tags}\n`;
       context += `Autor: ${idea.author}\n`;
       context += `Data: ${new Date(idea.createdAt).toLocaleDateString("pt-BR")}\n`;
       

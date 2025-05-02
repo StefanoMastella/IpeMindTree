@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import IdeaDetail from "@/pages/idea-detail";
+import Chat from "@/pages/chat";
 import { useState } from "react";
 import { IdeaDetailProvider } from "./lib/types";
 
@@ -14,6 +15,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/ideas/:id" component={IdeaDetail} />
+      <Route path="/chat" component={Chat} />
       <Route component={NotFound} />
     </Switch>
   );
