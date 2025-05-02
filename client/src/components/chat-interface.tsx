@@ -5,10 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar } from "@/components/ui/avatar";
 import { Loader2, Send, Bot, User, TrashIcon, RefreshCw } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { nanoid } from "nanoid";
 import { useToast } from "@/hooks/use-toast";
-import { apiRequest } from "@/lib/queryClient";
 
 export default function ChatInterface() {
   const [input, setInput] = useState("");
@@ -112,7 +110,7 @@ export default function ChatInterface() {
   }, []);
 
   return (
-    <div className="flex flex-col h-full max-h-[80vh] border rounded-lg shadow-lg bg-white">
+    <div className="flex flex-col h-[70vh] border rounded-lg shadow-lg bg-white">
       <div className="p-4 border-b bg-gradient-to-r from-primary to-primary-dark text-white rounded-t-lg">
         <div className="flex items-center space-x-2">
           <Bot className="h-6 w-6" />
@@ -123,7 +121,7 @@ export default function ChatInterface() {
         </p>
       </div>
 
-      <ScrollArea className="flex-grow p-4 max-h-[60vh] overflow-y-auto" ref={scrollAreaRef}>
+      <div className="flex-grow p-4 overflow-y-auto h-[40vh]" ref={scrollAreaRef}>
         <div className="space-y-4">
           {localMessages.map((message) => (
             <div
@@ -179,7 +177,7 @@ export default function ChatInterface() {
             </div>
           )}
         </div>
-      </ScrollArea>
+      </div>
 
       <div className="p-4 border-t bg-gray-50">
         <div className="flex justify-between mb-2">
