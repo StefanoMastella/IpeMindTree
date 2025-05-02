@@ -141,7 +141,10 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="max-w-2xl">
         <DialogHeader className="flex justify-between items-center p-4 border-b border-gray-200">
-          <DialogTitle className="text-xl font-medium text-secondary-dark font-roboto">Add a New Idea</DialogTitle>
+          <div>
+            <DialogTitle className="text-xl font-medium text-secondary-dark font-roboto">Add to Ipê Mind Tree</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">Share your idea with the community - any kind of idea is welcome!</p>
+          </div>
           <Button 
             variant="ghost" 
             className="h-8 w-8 p-0" 
@@ -176,8 +179,20 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
           </div>
           
           <div className="mb-4">
-            <label className="block text-secondary-dark font-medium mb-2">Tags</label>
-            <div className="flex flex-wrap gap-2 mb-2 empty:hidden">
+            <div className="flex items-center justify-between mb-2">
+              <label className="text-secondary-dark font-medium">Tags <span className="text-xs text-gray-400 font-normal">(optional)</span></label>
+              <Button 
+                type="button" 
+                variant="ghost" 
+                size="sm" 
+                className="text-xs text-primary h-7"
+                onClick={handleGenerateTags}
+              >
+                Generate tags automatically
+              </Button>
+            </div>
+            
+            <div className="flex flex-wrap gap-2 mb-2 empty:hidden min-h-8">
               {tags.map((tag, index) => (
                 <div 
                   key={index} 
@@ -212,17 +227,8 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                 Add
               </Button>
             </div>
-            <div className="flex justify-between items-center mt-1">
-              <p className="text-xs text-gray-500">Tag your idea to help others find it</p>
-              <Button 
-                type="button" 
-                variant="ghost" 
-                size="sm" 
-                className="text-xs text-primary"
-                onClick={handleGenerateTags}
-              >
-                Generate tags automatically
-              </Button>
+            <div className="mt-1">
+              <p className="text-xs text-gray-500">Tags help connect your idea with others, but they're not required. Our AI can suggest tags or generate them for you.</p>
             </div>
           </div>
           

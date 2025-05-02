@@ -57,8 +57,9 @@ export default function Home() {
           {/* Hero Section */}
           <section className="mb-10">
             <div className="text-center mb-8">
-              <h2 className="text-2xl font-bold text-secondary-dark mb-2 font-roboto">Community Brain for Ipê</h2>
-              <p className="text-secondary max-w-2xl mx-auto">Share ideas, discover connections, and collaborate with your community to build a collective knowledge base.</p>
+              <h2 className="text-3xl font-bold text-secondary-dark mb-2 font-roboto">Ipê Mind Tree</h2>
+              <p className="text-secondary max-w-2xl mx-auto mb-2">Share any idea, big or small, and let our AI help find surprising connections with other community ideas.</p>
+              <p className="text-sm text-primary italic">Tap the + button to share your thoughts with the community!</p>
             </div>
             
             {/* API Test Component - For Development Only */}
@@ -85,13 +86,19 @@ export default function Home() {
         </div>
       </main>
       
-      <Button
-        id="create-idea-btn"
-        onClick={() => setIsCreateModalOpen(true)}
-        className="fixed right-6 bottom-20 md:bottom-6 z-10 bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors"
-      >
-        <PlusIcon className="h-6 w-6" />
-      </Button>
+      <div className="fixed right-6 bottom-20 md:bottom-6 z-10 flex flex-col items-end gap-2">
+        <div className="bg-white text-secondary-dark px-3 py-2 rounded-lg shadow-md text-sm font-medium animate-pulse">
+          Add your idea here!
+        </div>
+        <Button
+          id="create-idea-btn"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="bg-primary hover:bg-primary-dark text-white w-16 h-16 rounded-full shadow-lg flex items-center justify-center transition-colors border-4 border-white"
+          aria-label="Add new idea"
+        >
+          <PlusIcon className="h-8 w-8" />
+        </Button>
+      </div>
       
       <MobileNav />
       <Footer />
