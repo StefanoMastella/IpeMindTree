@@ -4,9 +4,13 @@ import Header from "@/components/header";
 import Footer from "@/components/footer";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Brain, FileText, Lightbulb, Network } from "lucide-react";
+import { Brain, FileText, Lightbulb, Network, PlusIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import CreateIdeaModal from "@/components/create-idea-modal";
 
 export default function Chat() {
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+  
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
@@ -155,7 +159,24 @@ export default function Chat() {
         </div>
       </main>
       
+      <div className="fixed right-6 bottom-20 md:bottom-6 z-10">
+        <Button
+          id="create-idea-btn"
+          onClick={() => setIsCreateModalOpen(true)}
+          className="bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors border-4 border-white"
+          aria-label="Add new idea"
+        >
+          <PlusIcon className="h-6 w-6" />
+        </Button>
+      </div>
+      
       <Footer />
+      
+      {/* Modal de criação de ideia */}
+      <CreateIdeaModal
+        isOpen={isCreateModalOpen}
+        onClose={() => setIsCreateModalOpen(false)}
+      />
     </div>
   );
 }
