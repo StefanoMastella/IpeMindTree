@@ -22,7 +22,7 @@ export const ideas = pgTable("ideas", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  tags: text("tags").notNull(),  // Armazenado como JSON string
+  tags: text("tags").notNull().default('[]'),  // Armazenado como JSON string, default array vazio
   author: text("author").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   connections: text("connections").notNull().default('[]'),  // Armazenado como JSON string
@@ -32,13 +32,12 @@ export const insertIdeaSchema = createInsertSchema(ideas)
   .pick({
     title: true,
     description: true,
-    tags: true,
     author: true,
   })
   .extend({
     title: z.string().min(3).max(100),
     description: z.string().min(10),
-    tags: z.array(z.string()),
+    tags: z.array(z.string()).optional().default([]), // Tags são opcionais
   });
 
 export type InsertIdea = z.infer<typeof insertIdeaSchema>;

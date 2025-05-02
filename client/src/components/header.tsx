@@ -18,7 +18,7 @@ export default function Header() {
           <Brain className="text-primary mr-2 h-6 w-6" />
           <Link href="/">
             <h1 className="text-xl font-semibold font-roboto text-secondary-dark cursor-pointer">
-              IMT - Ipê Mind Totem
+              Ipê Mind Tree
             </h1>
           </Link>
         </div>

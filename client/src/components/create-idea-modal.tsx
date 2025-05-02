@@ -32,10 +32,21 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
     setTags(tags.filter(tag => tag !== tagToRemove));
   };
   
-  const handleGenerateTags = () => {
+  const handleGenerateTags = async () => {
     if (title || description) {
-      const generatedTags = generateTags(title, description);
-      setTags(prevTags => [...new Set([...prevTags, ...generatedTags])]);
+      try {
+        const generatedTags = await generateTags(title, description);
+        if (generatedTags && Array.isArray(generatedTags)) {
+          setTags(prevTags => [...new Set([...prevTags, ...generatedTags])]);
+        }
+      } catch (error) {
+        console.error("Error generating tags:", error);
+        toast({
+          title: "Error Generating Tags",
+          description: "Could not generate tags automatically. You can add them manually.",
+          variant: "destructive",
+        });
+      }
     } else {
       toast({
         title: "Cannot Generate Tags",
@@ -67,32 +78,50 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
     setIsSubmitting(true);
     
     try {
+      // Se não houver tags, gerar automaticamente
+      let ideaTags = tags;
+      if (tags.length === 0) {
+        try {
+          // Tentar gerar tags automaticamente
+          const generatedTags = await generateTags(title, description);
+          if (generatedTags && Array.isArray(generatedTags)) {
+            ideaTags = generatedTags;
+          } else {
+            ideaTags = []; // Fallback para array vazio se a geração falhar
+          }
+        } catch (error) {
+          console.error("Error generating tags:", error);
+          ideaTags = []; // Fallback para array vazio se ocorrer erro
+        }
+      }
+      
+      // Enviar a ideia para o servidor
       await apiRequest("POST", "/api/ideas", {
         title: title.trim(),
         description: description.trim(),
-        tags: tags.length > 0 ? tags : generateTags(title, description),
-        author: "Current User" // In a real app, this would be the logged-in user
+        tags: ideaTags,
+        author: "Current User" // Em um app real, seria o usuário logado
       });
       
-      // Reset form and close modal
+      // Resetar formulário e fechar modal
       setTitle("");
       setDescription("");
       setTags([]);
       setTagInput("");
       onClose();
       
-      // Invalidate ideas query to refresh the list
+      // Invalidar query de ideias para atualizar a lista
       queryClient.invalidateQueries({ queryKey: ["/api/ideas"] });
       
       toast({
-        title: "Idea Shared Successfully",
-        description: "Your idea has been added to the community brain!",
+        title: "Ideia Compartilhada com Sucesso",
+        description: "Sua ideia foi adicionada à Ipê Mind Tree!",
       });
     } catch (error) {
       console.error("Failed to submit idea:", error);
       toast({
-        title: "Failed to Share Idea",
-        description: "There was an error sharing your idea. Please try again.",
+        title: "Falha ao Compartilhar Ideia",
+        description: "Houve um erro ao compartilhar sua ideia. Por favor, tente novamente.",
         variant: "destructive",
       });
     } finally {

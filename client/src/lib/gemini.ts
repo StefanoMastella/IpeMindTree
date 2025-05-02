@@ -1,4 +1,5 @@
 // Flash API 2.0 - Uma alternativa para integração com APIs de IA
+import { getFullContext, getPersonalityPrompt } from './llm-context';
 
 // Abordagem alternativa em vez de usar o SDK do Google Generative AI
 // Esta implementação usa fetch diretamente para maior controle
@@ -6,8 +7,13 @@ const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
 // Função alternativa para chamada direta à API
-const callGeminiFlashAPI = async (prompt: string) => {
+const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
   console.log("Chamando Gemini Flash API 2.0...");
+  
+  // Adicionar o contexto da Ipê Mind Tree ao prompt, se necessário
+  const fullPrompt = useContext 
+    ? `${getPersonalityPrompt()}\n\n${prompt}`
+    : prompt;
   
   try {
     const response = await fetch(`${API_URL}?key=${API_KEY}`, {
@@ -19,7 +25,7 @@ const callGeminiFlashAPI = async (prompt: string) => {
         contents: [
           {
             parts: [
-              { text: prompt }
+              { text: fullPrompt }
             ]
           }
         ],
@@ -167,7 +173,7 @@ function fallbackSuggestConnections(
 }
 
 // Test function
-export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the IMT (Ipê Mind Totem) is in 1-2 sentences."): Promise<string> {
+export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the Ipê Mind Tree is in 1-2 sentences."): Promise<string> {
   try {
     // Chamando diretamente a API Flash 2.0
     return await callGeminiFlashAPI(prompt);
