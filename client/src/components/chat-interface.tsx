@@ -110,13 +110,13 @@ export default function ChatInterface() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[70vh] border rounded-lg shadow-lg bg-white">
-      <div className="p-4 border-b bg-gradient-to-r from-primary to-primary-dark text-white rounded-t-lg">
+    <div className="flex flex-col h-[70vh] border border-border rounded-lg shadow-lg bg-card">
+      <div className="p-4 border-b border-primary/20 bg-card text-foreground rounded-t-lg">
         <div className="flex items-center space-x-2">
-          <Bot className="h-6 w-6" />
-          <h2 className="text-xl font-semibold">Ipê Mind</h2>
+          <Bot className="h-6 w-6 text-primary" />
+          <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ipê Mind</h2>
         </div>
-        <p className="text-sm opacity-90">
+        <p className="text-sm text-muted-foreground">
           Converse com nossa IA e explore ideias da comunidade
         </p>
       </div>
@@ -131,14 +131,14 @@ export default function ChatInterface() {
               <Card
                 className={`max-w-[80%] ${
                   message.role === "user"
-                    ? "bg-primary text-white"
-                    : "bg-gray-100 text-gray-900"
+                    ? "bg-primary text-primary-foreground"
+                    : "bg-muted text-foreground"
                 }`}
               >
                 <CardContent className="p-3">
                   <div className="flex items-start space-x-2">
                     {message.role === "assistant" && (
-                      <Avatar className="h-8 w-8 bg-primary/80 text-white">
+                      <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
                         <Bot className="h-4 w-4" />
                       </Avatar>
                     )}
@@ -179,7 +179,7 @@ export default function ChatInterface() {
         </div>
       </div>
 
-      <div className="p-4 border-t bg-gray-50">
+      <div className="p-4 border-t border-border bg-card">
         <div className="flex justify-between mb-2">
           <Button
             variant="outline"
