@@ -1,0 +1,58 @@
+# Protótipo IMT - Ipê Mind Totem (Flutter)
+
+## Descrição
+
+Este protótipo visa criar um aplicativo para smartphone (iOS e Android) e web, chamado IMT (Ipê Mind Totem), que funcione como um "cérebro comunitário" para o Ipê e outras comunidades. O aplicativo permitirá que os usuários lancem ideias, projetos e recursos sem restrições, e que explorem as conexões entre eles.
+
+## Funcionalidades Essenciais (MVP)
+
+1.  **Interface:**
+    *   Tela inicial com campo de texto para lançamento de ideias.
+    *   Lista de ideias lançadas, exibindo título, descrição e tags.
+    *   Tela de detalhes da ideia, exibindo informações completas e conexões com outras ideias.
+    *   Interface de voz para lançamento de ideias (opcional).
+2.  **Banco de Dados:**
+    *   Armazenamento de ideias em um banco de dados (Google Sheets ou Airtable).
+    *   Estrutura de dados para cada ideia: título, descrição, tags, autor, data de criação, conexões com outras ideias.
+3.  **Modelo LLM:**
+    *   Integração com um modelo LLM (Gemini por possuir maior janela de contexto) para:
+        *   Gerar tags automaticamente para cada ideia.
+        *   Sugerir conexões entre ideias.
+        *   Responder a perguntas sobre as ideias.
+4.  **Workflow:**
+    *   Orquestração do fluxo de dados entre a interface, o banco de dados e o modelo LLM usando n8n ou Zapier.
+
+## Implementação (Flutter)
+
+1.  **Configurar o Ambiente:**
+    *   Instalar o Flutter SDK no Replit.
+    *   Criar um novo projeto Flutter.
+2.  **Criar a Interface:**
+    *   Usar os widgets do Flutter para criar a interface do aplicativo.
+    *   Implementar a tela inicial, a lista de ideias e a tela de detalhes da ideia.
+3.  **Integrar o Banco de Dados:**
+    *   Usar a API do Google Sheets ou Airtable para ler e escrever dados no banco de dados.
+    *   Implementar a lógica para salvar novas ideias no banco de dados.
+4.  **Integrar o Modelo LLM:**
+    *   Usar a API da OpenAI ou Hugging Face Transformers para enviar texto para o modelo LLM e receber respostas.
+    *   Implementar a lógica para gerar tags automaticamente e sugerir conexões entre ideias.
+5.  **Implementar o Workflow:**
+    *   Usar n8n ou Zapier para orquestrar o fluxo de dados entre a interface, o banco de dados e o modelo LLM.
+    *   Implementar webhooks para receber dados da interface e enviar dados para o banco de dados e o modelo LLM.
+
+## Inspiração (Honcho)
+
+Analisar o código-fonte do Honcho (https://github.com/plastic-labs/honcho?tab=readme-ov-file#license) para identificar ideias e abordagens que podem ser aplicadas ao IMT. Ou mesmo utilizar os códigos opensource pra montar este app.
+
+## Próximos Passos
+
+1.  Configurar o ambiente de desenvolvimento Flutter no Replit.
+2.  Criar a tela inicial do aplicativo.
+3.  Implementar a lógica para salvar novas ideias no banco de dados.
+
+## Considerações
+
+*   Este é um protótipo inicial, focado nas funcionalidades essenciais.
+*   A interface pode ser aprimorada posteriormente com base no feedback dos usuários.
+*   A integração com o modelo LLM pode ser implementada gradualmente.
+*   A segurança e a escalabilidade devem ser consideradas em versões futuras do aplicativo.
