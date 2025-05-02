@@ -1,35 +1,24 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
+import { testGeminiAPI } from '@/lib/gemini';
 
 export default function ApiTest() {
   const [result, setResult] = useState<string>('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const testOpenAI = async () => {
+  const testGemini = async () => {
     setIsLoading(true);
     setError(null);
     
     try {
-      const response = await fetch("/api/test-openai", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          prompt: "Say hello in Portuguese and explain what the IMT (Ipê Mind Totem) is in 1-2 sentences."
-        })
-      });
-
-      const data = await response.json();
+      const response = await testGeminiAPI(
+        "Say hello in Portuguese and explain what the IMT (Ipê Mind Totem) is in 1-2 sentences."
+      );
       
-      if (!response.ok) {
-        throw new Error(data.error?.message || data.message || 'Unknown error occurred');
-      }
-      
-      setResult(JSON.stringify(data, null, 2));
+      setResult(response);
     } catch (err) {
-      console.error('Error testing OpenAI API:', err);
+      console.error('Error testing Gemini API:', err);
       setError(err instanceof Error ? err.message : String(err));
     } finally {
       setIsLoading(false);
@@ -38,14 +27,14 @@ export default function ApiTest() {
 
   return (
     <div className="p-4 border rounded-lg mb-4 bg-gray-50">
-      <h3 className="text-lg font-medium mb-2">API Test</h3>
+      <h3 className="text-lg font-medium mb-2">AI API Test</h3>
       
       <Button 
-        onClick={testOpenAI} 
+        onClick={testGemini} 
         disabled={isLoading}
         className="mb-4"
       >
-        {isLoading ? "Testing..." : "Test OpenAI API"}
+        {isLoading ? "Testing..." : "Test Gemini API"}
       </Button>
       
       {error && (

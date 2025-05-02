@@ -3,40 +3,22 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
 import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
-import { suggestConnections, generateTags } from "../client/src/lib/llm";
+import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // API Test Endpoint
-  app.post("/api/test-openai", async (req, res) => {
+  // API Test Endpoint - Usando Google Gemini API em vez da OpenAI
+  app.post("/api/test-gemini", async (req, res) => {
     try {
       const { prompt } = req.body;
+      // Nota: Como estamos usando a Google Gemini API diretamente no cliente,
+      // este endpoint está sendo mantido apenas para referência futura.
+      // As chamadas à API são feitas diretamente do cliente para o serviço Gemini.
       
-      const response = await fetch("https://api.openai.com/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`
-        },
-        body: JSON.stringify({
-          model: "gpt-3.5-turbo",
-          messages: [
-            { role: "system", content: "You are a helpful assistant." },
-            { role: "user", content: prompt || "Say hello in Portuguese" }
-          ]
-        })
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json();
-        return res.status(response.status).json(errorData);
-      }
-      
-      const data = await response.json();
-      res.json(data);
+      res.json({ message: "Gemini API is being called directly from the client" });
     } catch (error) {
-      console.error("OpenAI API test error:", error);
+      console.error("Gemini API test error:", error);
       res.status(500).json({ 
-        message: "Failed to test OpenAI API", 
+        message: "Failed to test Gemini API", 
         error: error instanceof Error ? error.message : String(error) 
       });
     }
