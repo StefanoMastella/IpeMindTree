@@ -2,7 +2,11 @@ import { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } from '@google/ge
 
 // Initialize the Google Generative AI SDK
 const setupGemini = () => {
-  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  // Usar a chave fornecida diretamente
+  const apiKey = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
+  
+  console.log("Inicializando Gemini API com chave:", apiKey.substring(0, 5) + "...");
+  
   if (!apiKey) {
     console.error('Gemini API key is missing');
     return null;
