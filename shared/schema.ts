@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar, array } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -17,15 +17,15 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 
-// Idea model
+// Modelo Idea
 export const ideas = pgTable("ideas", {
   id: serial("id").primaryKey(),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  tags: text("tags").array().notNull(),
+  tags: text("tags").notNull(),  // Armazenado como JSON string
   author: text("author").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
-  connections: integer("connections").array().notNull().default([]),
+  connections: text("connections").notNull().default('[]'),  // Armazenado como JSON string
 });
 
 export const insertIdeaSchema = createInsertSchema(ideas)
@@ -47,7 +47,7 @@ export type Idea = typeof ideas.$inferSelect;
 // Comment model
 export const comments = pgTable("comments", {
   id: serial("id").primaryKey(),
-  ideaId: integer("idea_id").notNull(),
+  ideaId: integer("idea_id").notNull().references(() => ideas.id),
   author: text("author").notNull(),
   content: text("content").notNull(),
   createdAt: timestamp("created_at").notNull().defaultNow(),
