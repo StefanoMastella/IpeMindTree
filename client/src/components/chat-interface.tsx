@@ -16,14 +16,14 @@ export default function ChatInterface() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { toast } = useToast();
 
-  // Função para enviar mensagem
+  // Function to send message
   const sendMessage = async (message: string) => {
     if (!message.trim()) return;
     
     try {
       setIsLoading(true);
 
-      // Adiciona a mensagem do usuário à lista local
+      // Add user message to local list
       const userMessage: ChatMessage = {
         id: nanoid(),
         content: message.trim(),
@@ -34,7 +34,7 @@ export default function ChatInterface() {
       setLocalMessages(prev => [...prev, userMessage]);
       setInput("");
       
-      // Chama a API de chat
+      // Call the chat API
       const response = await fetch('/api/chat', {
         method: 'POST',
         headers: {
@@ -44,12 +44,12 @@ export default function ChatInterface() {
       });
       
       if (!response.ok) {
-        throw new Error(`Falha ao obter resposta do servidor: ${response.status}`);
+        throw new Error(`Failed to get server response: ${response.status}`);
       }
       
       const data = await response.json();
       
-      // Adiciona a resposta do assistente
+      // Add assistant response
       const assistantMessage: ChatMessage = {
         id: nanoid(),
         content: data.answer,
@@ -59,10 +59,10 @@ export default function ChatInterface() {
       
       setLocalMessages(prev => [...prev, assistantMessage]);
     } catch (error) {
-      console.error("Erro ao enviar mensagem:", error);
+      console.error("Error sending message:", error);
       toast({
-        title: "Erro ao enviar mensagem",
-        description: "Não foi possível obter uma resposta. Tente novamente mais tarde.",
+        title: "Error sending message",
+        description: "Could not get a response. Please try again later.",
         variant: "destructive"
       });
     } finally {
@@ -70,12 +70,12 @@ export default function ChatInterface() {
     }
   };
   
-  // Limpar mensagens
+  // Clear messages
   const clearMessages = () => {
     setLocalMessages([]);
   };
 
-  // Função para lidar com o envio do formulário
+  // Function to handle form submission
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     sendMessage(input);
@@ -101,7 +101,7 @@ export default function ChatInterface() {
       setLocalMessages([
         {
           id: nanoid(),
-          content: "Olá! Sou a Ipê Mind, assistente da Ipê Mind Tree. Como posso ajudar você a explorar as ideias da nossa comunidade hoje?",
+          content: "Hello! I'm Ipê Mind, assistant of the Ipê Mind Tree. How can I help you explore our community's ideas today?",
           role: "assistant",
           timestamp: new Date()
         }
@@ -199,7 +199,7 @@ export default function ChatInterface() {
               setLocalMessages([
                 {
                   id: nanoid(),
-                  content: "Olá! Sou a Ipê Mind, assistente da Ipê Mind Tree. Como posso ajudar você a explorar as ideias da nossa comunidade hoje?",
+                  content: "Hello! I'm Ipê Mind, assistant of the Ipê Mind Tree. How can I help you explore our community's ideas today?",
                   role: "assistant",
                   timestamp: new Date()
                 }
