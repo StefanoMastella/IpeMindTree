@@ -26,12 +26,12 @@ export default function Header() {
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-8 items-center">
           <Link href="/">
-            <a className={`${location === "/" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium`}>
+            <a className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
               Home
             </a>
           </Link>
           <Link href="/chat">
-            <a className={`${location === "/chat" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium flex items-center`}>
+            <a className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
               <MessageSquareText className="h-4 w-4 mr-1" />
               Chat
             </a>
