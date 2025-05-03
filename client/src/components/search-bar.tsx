@@ -46,8 +46,8 @@ export default function SearchBar({
         <div className="flex space-x-2">
           <div className="relative w-full md:w-auto">
             <Select value={selectedTag} onValueChange={setSelectedTag}>
-              <SelectTrigger className="bg-gray-50 w-[140px]">
-                <SelectValue placeholder="Filter by tag" />
+              <SelectTrigger className="bg-gray-50 w-[140px] text-gray-900">
+                <SelectValue placeholder="Filter by tag" className="text-gray-900" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All tags</SelectItem>
@@ -66,8 +66,8 @@ export default function SearchBar({
           
           <div className="relative w-full md:w-auto">
             <Select value={sortOrder} onValueChange={setSortOrder}>
-              <SelectTrigger className="bg-gray-50 w-[140px]">
-                <SelectValue placeholder="Sort order" />
+              <SelectTrigger className="bg-gray-50 w-[140px] text-gray-900">
+                <SelectValue placeholder="Sort order" className="text-gray-900" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="recent">Recent first</SelectItem>
