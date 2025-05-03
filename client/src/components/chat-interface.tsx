@@ -117,7 +117,7 @@ export default function ChatInterface() {
           <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ipê Mind</h2>
         </div>
         <p className="text-sm text-muted-foreground">
-          Converse com nossa IA e explore ideias da comunidade
+          Chat with our AI and explore community ideas
         </p>
       </div>
 
@@ -132,7 +132,7 @@ export default function ChatInterface() {
                 className={`max-w-[80%] ${
                   message.role === "user"
                     ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-foreground"
+                    : "bg-secondary text-secondary-foreground"
                 }`}
               >
                 <CardContent className="p-3">
@@ -163,14 +163,14 @@ export default function ChatInterface() {
           ))}
           {isLoading && (
             <div className="flex justify-start">
-              <Card className="max-w-[80%] bg-muted text-foreground">
+              <Card className="max-w-[80%] bg-secondary text-secondary-foreground">
                 <CardContent className="p-3 flex items-center space-x-2">
                   <Avatar className="h-8 w-8 bg-primary text-primary-foreground">
                     <Bot className="h-4 w-4" />
                   </Avatar>
                   <div className="flex items-center space-x-2">
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
-                    <span className="text-sm text-muted-foreground">Processando...</span>
+                    <span className="text-sm text-muted-foreground">Processing...</span>
                   </div>
                 </CardContent>
               </Card>
@@ -188,7 +188,7 @@ export default function ChatInterface() {
             onClick={clearMessages}
           >
             <TrashIcon className="h-3 w-3 mr-1" />
-            Limpar
+            Clear
           </Button>
           
           <Button
@@ -207,7 +207,7 @@ export default function ChatInterface() {
             }}
           >
             <RefreshCw className="h-3 w-3 mr-1" />
-            Reiniciar
+            Restart
           </Button>
         </div>
         
@@ -216,7 +216,7 @@ export default function ChatInterface() {
             ref={inputRef}
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Digite sua pergunta..."
+            placeholder="Type your question..."
             className="flex-grow bg-background border-border"
             disabled={isLoading}
           />
