@@ -103,29 +103,29 @@ export default function Chat() {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <FileText className="h-5 w-5 mr-2 text-blue-500" />
-                      Dicas de Uso
+                      Usage Tips
                     </CardTitle>
                     <CardDescription>
-                      Como aproveitar melhor a Ipê Mind
+                      How to get the most out of Ipê Mind
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <ul className="space-y-3 text-sm">
+                    <ul className="space-y-3 text-sm text-foreground">
                       <li className="flex">
-                        <span className="font-medium mr-2">1.</span>
-                        <span>Seja específico em suas perguntas para obter respostas mais precisas</span>
+                        <span className="font-medium mr-2 text-primary">1.</span>
+                        <span>Be specific in your questions to get more accurate answers</span>
                       </li>
                       <li className="flex">
-                        <span className="font-medium mr-2">2.</span>
-                        <span>Pergunte sobre conexões entre ideias para descobrir padrões interessantes</span>
+                        <span className="font-medium mr-2 text-primary">2.</span>
+                        <span>Ask about connections between ideas to discover interesting patterns</span>
                       </li>
                       <li className="flex">
-                        <span className="font-medium mr-2">3.</span>
-                        <span>Utilize referências a temas ou categorias para explorar grupos de ideias</span>
+                        <span className="font-medium mr-2 text-primary">3.</span>
+                        <span>Use references to themes or categories to explore groups of ideas</span>
                       </li>
                       <li className="flex">
-                        <span className="font-medium mr-2">4.</span>
-                        <span>Peça sugestões de como sua ideia pode se conectar com outras já existentes</span>
+                        <span className="font-medium mr-2 text-primary">4.</span>
+                        <span>Ask for suggestions on how your idea can connect with existing ones</span>
                       </li>
                     </ul>
                   </CardContent>
@@ -136,22 +136,22 @@ export default function Chat() {
             <Card className="mt-6">
               <CardHeader>
                 <CardTitle className="flex items-center">
-                  <Network className="h-5 w-5 mr-2 text-purple-500" />
-                  Explorando Conexões
+                  <Network className="h-5 w-5 mr-2 text-primary" />
+                  Exploring Connections
                 </CardTitle>
                 <CardDescription>
-                  Descubra como as ideias se conectam
+                  Discover how ideas connect
                 </CardDescription>
               </CardHeader>
               <CardContent className="text-sm">
-                <p>
-                  A Ipê Mind identifica conexões entre ideias com base em temas, objetivos e potenciais 
-                  colaborações. Quanto mais ideias são adicionadas à plataforma, mais rica se torna
-                  a rede de conhecimento coletivo.
+                <p className="text-foreground">
+                  Ipê Mind identifies connections between ideas based on themes, objectives, and potential 
+                  collaborations. The more ideas are added to the platform, the richer the
+                  collective knowledge network becomes.
                 </p>
-                <p className="mt-2">
-                  Experimente perguntar: "Quais ideias estão relacionadas à sustentabilidade?"
-                  ou "Como a ideia de horta comunitária se conecta com outras iniciativas?"
+                <p className="mt-2 text-foreground">
+                  Try asking: "Which ideas are related to sustainability?"
+                  or "How does the community garden idea connect with other initiatives?"
                 </p>
               </CardContent>
             </Card>
@@ -163,7 +163,7 @@ export default function Chat() {
         <Button
           id="create-idea-btn"
           onClick={() => setIsCreateModalOpen(true)}
-          className="bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors border-4 border-white"
+          className="bg-primary hover:bg-primary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors border-2 border-primary/40"
           aria-label="Add new idea"
         >
           <PlusIcon className="h-6 w-6" />
@@ -172,7 +172,7 @@ export default function Chat() {
       
       <Footer />
       
-      {/* Modal de criação de ideia */}
+      {/* Idea creation modal */}
       <CreateIdeaModal
         isOpen={isCreateModalOpen}
         onClose={() => setIsCreateModalOpen(false)}

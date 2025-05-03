@@ -8,7 +8,7 @@ import MobileNav from "@/components/mobile-nav";
 import CreateIdeaModal from "@/components/create-idea-modal";
 import IdeaDetailModal from "@/components/idea-detail-modal";
 import ApiTest from "@/components/api-test";
-import { useIdeaDetail } from "@/lib/types";
+import { useIdeaDetail, type Idea } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { PlusIcon, MessageSquareText } from "lucide-react";
 import { Link } from "wouter";
@@ -21,12 +21,12 @@ export default function Home() {
   const { selectedIdea, setSelectedIdea } = useIdeaDetail();
   
   // Fetch ideas from the API
-  const { data: ideas = [], isLoading, isError } = useQuery({
+  const { data: ideas = [], isLoading, isError } = useQuery<Idea[]>({
     queryKey: ["/api/ideas"],
   });
   
   // Filter and sort ideas based on search, tag, and sort order
-  const filteredIdeas = ideas.filter((idea: any) => {
+  const filteredIdeas = ideas.filter((idea: Idea) => {
     const matchesSearch = searchTerm === "" || 
       idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       idea.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -38,7 +38,7 @@ export default function Home() {
   });
   
   // Sort ideas
-  const sortedIdeas = [...filteredIdeas].sort((a: any, b: any) => {
+  const sortedIdeas = [...filteredIdeas].sort((a: Idea, b: Idea) => {
     if (sortOrder === "recent") {
       return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
     } else if (sortOrder === "popular") {
