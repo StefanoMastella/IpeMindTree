@@ -72,8 +72,8 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
           <>
             <div className="overflow-y-auto flex-grow p-6">
               <div className="mb-6">
-                <h4 className="text-lg font-medium text-secondary-dark mb-2 font-roboto">Description</h4>
-                <p className="text-secondary mb-4">{idea?.description}</p>
+                <h4 className="text-lg font-medium text-foreground mb-2 font-roboto">Description</h4>
+                <p className="text-white mb-4">{idea?.description}</p>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
                   {idea?.tags.map((tag: string, index: number) => (
@@ -97,13 +97,13 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
               
               {/* Connections Visualization */}
               <div className="mb-6">
-                <h4 className="text-lg font-medium text-secondary-dark mb-4 font-roboto">Connections</h4>
+                <h4 className="text-lg font-medium text-foreground mb-4 font-roboto">Connections</h4>
                 <ConnectionsVisualization ideaId={ideaId} />
               </div>
               
               {/* Comments Section */}
               <div>
-                <h4 className="text-lg font-medium text-secondary-dark mb-4 font-roboto">Discussion</h4>
+                <h4 className="text-lg font-medium text-foreground mb-4 font-roboto">Discussion</h4>
                 
                 <form onSubmit={handleSubmitComment} className="mb-4">
                   <Textarea
@@ -123,7 +123,7 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                 <div className="space-y-4">
                   {comments.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <p className="text-secondary">No comments yet. Be the first to start the discussion!</p>
+                      <p className="text-foreground">No comments yet. Be the first to start the discussion!</p>
                     </div>
                   ) : (
                     comments.map((comment: any) => (
@@ -132,7 +132,7 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                           <span className="font-medium text-foreground">{comment.author}</span>
                           <span className="mx-2 text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
                         </div>
-                        <p className="text-secondary text-sm">{comment.content}</p>
+                        <p className="text-foreground text-sm">{comment.content}</p>
                       </div>
                     ))
                   )}
