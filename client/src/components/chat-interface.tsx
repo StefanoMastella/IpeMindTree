@@ -81,21 +81,21 @@ export default function ChatInterface() {
     sendMessage(input);
   };
 
-  // Rolar para baixo quando novas mensagens são adicionadas
+  // Scroll down when new messages are added
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [localMessages]);
 
-  // Focar no input quando o componente é montado
+  // Focus input when component mounts
   useEffect(() => {
     if (inputRef.current) {
       inputRef.current.focus();
     }
   }, []);
 
-  // Mensagem inicial do assistente
+  // Initial assistant message
   useEffect(() => {
     if (localMessages.length === 0) {
       setLocalMessages([
