@@ -19,8 +19,8 @@ export default function IdeaCard({ idea, onClick }: IdeaCardProps) {
       onClick={() => onClick(idea.id)}
     >
       <CardContent className="p-4">
-        <h4 className="text-lg font-medium text-secondary-dark font-roboto mb-2">{idea.title}</h4>
-        <p className="text-secondary text-sm mb-3 line-clamp-3">{idea.description}</p>
+        <h4 className="text-lg font-medium text-foreground font-roboto mb-2">{idea.title}</h4>
+        <p className="text-white text-sm mb-3 line-clamp-3">{idea.description}</p>
         
         <div className="flex flex-wrap gap-2 mb-3">
           {idea.tags.map((tag, index) => (
@@ -46,7 +46,7 @@ export default function IdeaCard({ idea, onClick }: IdeaCardProps) {
       <CardFooter className="bg-gray-50 px-4 py-2 flex justify-between items-center">
         <div className="flex items-center">
           <LinkIcon className="h-4 w-4 text-primary mr-1" />
-          <span className="text-sm text-secondary">
+          <span className="text-sm text-foreground">
             {idea.connections.length} connection{idea.connections.length !== 1 ? 's' : ''}
           </span>
         </div>
