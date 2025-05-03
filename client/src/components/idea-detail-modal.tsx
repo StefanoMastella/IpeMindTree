@@ -123,16 +123,16 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                 <div className="space-y-4">
                   {comments.length === 0 ? (
                     <div className="bg-gray-50 p-4 rounded-lg text-center">
-                      <p className="text-foreground">No comments yet. Be the first to start the discussion!</p>
+                      <p className="text-gray-700">No comments yet. Be the first to start the discussion!</p>
                     </div>
                   ) : (
                     comments.map((comment: any) => (
                       <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
                         <div className="flex items-center mb-2">
-                          <span className="font-medium text-foreground">{comment.author}</span>
-                          <span className="mx-2 text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
+                          <span className="font-medium text-gray-900">{comment.author}</span>
+                          <span className="mx-2 text-xs text-gray-700">{formatDate(comment.createdAt)}</span>
                         </div>
-                        <p className="text-foreground text-sm">{comment.content}</p>
+                        <p className="text-gray-900 text-sm">{comment.content}</p>
                       </div>
                     ))
                   )}
