@@ -12,12 +12,12 @@ export default function Header() {
   };
   
   return (
-    <header className="bg-white shadow-sm">
+    <header className="bg-background shadow-sm border-b border-border">
       <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div className="flex items-center">
           <Brain className="text-primary mr-2 h-6 w-6" />
           <Link href="/">
-            <h1 className="text-xl font-semibold font-roboto text-secondary-dark cursor-pointer">
+            <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent cursor-pointer">
               Ipê Mind Tree
             </h1>
           </Link>
@@ -67,7 +67,7 @@ export default function Header() {
       </div>
       
       {/* Mobile Navigation */}
-      <div className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden bg-white px-4 py-2 shadow-inner`}>
+      <div className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden bg-background px-4 py-2 shadow-inner border-t border-border`}>
         <nav className="flex flex-col space-y-3">
           <Link href="/">
             <a className={`${location === "/" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2`}>
@@ -77,7 +77,7 @@ export default function Header() {
           <Link href="/chat">
             <a className={`${location === "/chat" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
               <MessageSquareText className="h-4 w-4 mr-1" />
-              Chat com IA
+              Chat
             </a>
           </Link>
           <Link href="/explore">

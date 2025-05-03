@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from "react";
-import { ForceGraph2D } from "react-force-graph";
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -8,24 +7,8 @@ import { type Idea } from "@/lib/types";
 import Header from "@/components/header";
 import { getQueryFn } from "@/lib/queryClient";
 
-interface GraphData {
-  nodes: Array<{
-    id: string;
-    name: string;
-    val: number;
-    color: string;
-  }>;
-  links: Array<{
-    source: string;
-    target: string;
-    value: number;
-  }>;
-}
-
 export default function Explore() {
-  const graphRef = useRef<any>();
-  const [graphData, setGraphData] = useState<GraphData>({ nodes: [], links: [] });
-  const [hoveredNode, setHoveredNode] = useState<any>(null);
+  const [selectedIdea, setSelectedIdea] = useState<Idea | null>(null);
 
   // Fetch ideas
   const { data: ideas, isLoading } = useQuery({
@@ -33,39 +16,8 @@ export default function Explore() {
     queryFn: getQueryFn({ on401: "throw" }),
   });
 
-  // Generate graph data when ideas are loaded
-  useEffect(() => {
-    if (!ideas) return;
-
-    const nodes = ideas.map((idea: Idea) => ({
-      id: idea.id.toString(),
-      name: idea.title,
-      val: 1 + (idea.connections?.length || 0) * 0.5,
-      description: idea.description,
-      color: getColorFromTags(idea.tags),
-      tags: idea.tags
-    }));
-
-    const links: any[] = [];
-
-    // Create links between connected ideas
-    ideas.forEach((idea: Idea) => {
-      if (idea.connections && idea.connections.length > 0) {
-        idea.connections.forEach(connId => {
-          links.push({
-            source: idea.id.toString(),
-            target: connId.toString(),
-            value: 1
-          });
-        });
-      }
-    });
-
-    setGraphData({ nodes, links });
-  }, [ideas]);
-
   // Get color based on tags
-  const getColorFromTags = (tags: string[]) => {
+  const getColorFromTags = (tags: string[] = []) => {
     if (!tags || tags.length === 0) return "#666";
     
     // Predefined color mapping for common tag themes
@@ -96,21 +48,6 @@ export default function Explore() {
     return "#3182CE";
   };
 
-  const handleNodeHover = (node: any) => {
-    setHoveredNode(node);
-    if (graphRef.current) {
-      graphRef.current.centerAt(node?.x, node?.y, 1000);
-      if (node) graphRef.current.zoom(2.5, 1000);
-    }
-  };
-
-  const handleBackgroundClick = () => {
-    setHoveredNode(null);
-    if (graphRef.current) {
-      graphRef.current.zoom(1, 800);
-    }
-  };
-
   return (
     <div className="flex flex-col min-h-screen bg-background">
       <Header />
@@ -129,40 +66,77 @@ export default function Explore() {
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="relative rounded-lg border border-border overflow-hidden bg-black/20">
-            <div 
-              className="h-[60vh]"
-              style={{ 
-                background: "linear-gradient(180deg, rgba(13,12,34,0.8) 0%, rgba(5,6,20,0.9) 100%)",
-              }}
-            >
-              {graphData.nodes.length > 0 && (
-                <ForceGraph2D
-                  ref={graphRef}
-                  graphData={graphData}
-                  nodeRelSize={6}
-                  nodeLabel={(node: any) => `${node.name}`}
-                  nodeColor={(node: any) => node.color}
-                  linkWidth={1}
-                  linkColor={() => "rgba(100, 130, 200, 0.2)"}
-                  backgroundColor="rgba(0,0,0,0)"
-                  onNodeHover={handleNodeHover}
-                  onBackgroundClick={handleBackgroundClick}
-                  width={800}
-                  height={600}
-                />
-              )}
+          <div className="relative rounded-lg border border-border overflow-hidden bg-card/20">
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {Array.isArray(ideas) && ideas.map((idea: Idea) => (
+                  <Card 
+                    key={idea.id}
+                    className="bg-card hover:bg-card/90 transition-colors cursor-pointer border-primary/20 hover:border-primary/40"
+                    style={{ 
+                      borderLeftColor: getColorFromTags(idea.tags), 
+                      borderLeftWidth: "4px"
+                    }}
+                    onClick={() => setSelectedIdea(idea)}
+                  >
+                    <CardContent className="p-4">
+                      <h3 className="text-lg font-medium text-foreground">{idea.title}</h3>
+                      <p className="text-sm mt-2 text-muted-foreground line-clamp-2">
+                        {idea.description}
+                      </p>
+                      
+                      {/* Display tags */}
+                      {idea.tags && idea.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-3">
+                          {idea.tags.slice(0, 3).map((tag, idx) => (
+                            <span 
+                              key={idx} 
+                              className="text-xs px-2 py-1 rounded-full bg-secondary/20 text-secondary-foreground"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                          {idea.tags.length > 3 && (
+                            <span className="text-xs px-2 py-1 text-muted-foreground">
+                              +{idea.tags.length - 3} more
+                            </span>
+                          )}
+                        </div>
+                      )}
+                      
+                      {/* Display connections count if any */}
+                      {idea.connections && idea.connections.length > 0 && (
+                        <div className="mt-3 text-xs text-muted-foreground">
+                          <span className="bg-primary/10 text-primary px-2 py-1 rounded-full">
+                            {idea.connections.length} connection{idea.connections.length !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
             
-            {hoveredNode && (
-              <Card className="absolute bottom-4 right-4 w-72 bg-card text-card-foreground shadow-xl border-primary/30">
+            {selectedIdea && (
+              <Card className="absolute bottom-4 right-4 w-80 bg-card text-card-foreground shadow-xl border-primary/30 max-h-[80vh] overflow-y-auto">
                 <CardContent className="p-4">
-                  <h3 className="text-lg font-bold text-primary">{hoveredNode.name}</h3>
-                  <p className="text-sm mt-2 text-foreground/80">{hoveredNode.description?.substring(0, 120)}...</p>
+                  <Button 
+                    variant="ghost" 
+                    size="icon"
+                    className="absolute top-2 right-2 h-6 w-6"
+                    onClick={() => setSelectedIdea(null)}
+                  >
+                    <span className="sr-only">Close</span>
+                    ✕
+                  </Button>
+                
+                  <h3 className="text-lg font-bold text-primary pr-6">{selectedIdea.title}</h3>
+                  <p className="text-sm mt-2 text-foreground/80">{selectedIdea.description}</p>
                   
-                  {hoveredNode.tags && hoveredNode.tags.length > 0 && (
+                  {selectedIdea.tags && selectedIdea.tags.length > 0 && (
                     <div className="flex flex-wrap gap-1 mt-3">
-                      {hoveredNode.tags.map((tag: string, idx: number) => (
+                      {selectedIdea.tags.map((tag, idx) => (
                         <span 
                           key={idx} 
                           className="text-xs px-2 py-1 rounded-full bg-secondary text-secondary-foreground"
@@ -173,13 +147,19 @@ export default function Explore() {
                     </div>
                   )}
                   
+                  <div className="mt-4 pt-3 border-t border-border">
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Created by {selectedIdea.author} on {new Date(selectedIdea.createdAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  
                   <Button 
                     variant="outline" 
                     size="sm" 
                     className="mt-3 w-full border-primary/30 text-primary"
-                    onClick={() => window.location.href = `/idea/${hoveredNode.id}`}
+                    onClick={() => window.location.href = `/ideas/${selectedIdea.id}`}
                   >
-                    View Details
+                    View Full Details
                   </Button>
                 </CardContent>
               </Card>

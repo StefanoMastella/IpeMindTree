@@ -18,6 +18,8 @@ function Router() {
       <Route path="/" component={Home} />
       <Route path="/ideas/:id" component={IdeaDetail} />
       <Route path="/chat" component={Chat} />
+      <Route path="/explore" component={Explore} />
+      <Route path="/about" component={About} />
       <Route component={NotFound} />
     </Switch>
   );
