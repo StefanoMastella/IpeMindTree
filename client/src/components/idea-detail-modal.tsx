@@ -129,7 +129,7 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                     comments.map((comment: any) => (
                       <div key={comment.id} className="bg-gray-50 p-3 rounded-lg">
                         <div className="flex items-center mb-2">
-                          <span className="font-medium text-secondary-dark">{comment.author}</span>
+                          <span className="font-medium text-foreground">{comment.author}</span>
                           <span className="mx-2 text-xs text-gray-500">{formatDate(comment.createdAt)}</span>
                         </div>
                         <p className="text-secondary text-sm">{comment.content}</p>

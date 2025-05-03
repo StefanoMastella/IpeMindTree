@@ -81,11 +81,11 @@ export default function ConnectionsVisualization({ ideaId }: ConnectionsVisualiz
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
         {/* Related Ideas */}
         <div className="connection-group">
-          <h5 className="text-sm font-medium text-secondary-dark mb-3 font-roboto">Related Ideas</h5>
+          <h5 className="text-sm font-medium text-foreground mb-3 font-roboto">Related Ideas</h5>
           
           <div className="flex flex-col space-y-3">
             {connectedIdeas.length === 0 ? (
-              <div className="p-3 bg-white rounded-lg text-center text-secondary">
+              <div className="p-3 bg-white rounded-lg text-center text-foreground">
                 No connected ideas yet
               </div>
             ) : (
@@ -99,7 +99,7 @@ export default function ConnectionsVisualization({ ideaId }: ConnectionsVisualiz
                     <Lightbulb className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-secondary-dark font-medium">{connectedIdea.title}</p>
+                    <p className="text-foreground font-medium">{connectedIdea.title}</p>
                     <p className="text-xs text-gray-500">{connectedIdea.connectionReason}</p>
                   </div>
                 </div>
@@ -110,11 +110,11 @@ export default function ConnectionsVisualization({ ideaId }: ConnectionsVisualiz
         
         {/* Suggested Resources */}
         <div className="connection-group">
-          <h5 className="text-sm font-medium text-secondary-dark mb-3 font-roboto">Suggested Resources</h5>
+          <h5 className="text-sm font-medium text-foreground mb-3 font-roboto">Suggested Resources</h5>
           
           <div className="flex flex-col space-y-3">
             {suggestedResources.length === 0 ? (
-              <div className="p-3 bg-white rounded-lg text-center text-secondary">
+              <div className="p-3 bg-white rounded-lg text-center text-foreground">
                 No suggested resources yet
               </div>
             ) : (
@@ -127,7 +127,7 @@ export default function ConnectionsVisualization({ ideaId }: ConnectionsVisualiz
                     <BookOpen className="h-5 w-5" />
                   </div>
                   <div>
-                    <p className="text-secondary-dark font-medium">{resource.title}</p>
+                    <p className="text-foreground font-medium">{resource.title}</p>
                     <p className="text-xs text-gray-500">{resource.description}</p>
                   </div>
                 </div>
