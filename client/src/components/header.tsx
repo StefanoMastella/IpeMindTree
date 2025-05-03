@@ -37,12 +37,12 @@ export default function Header() {
             </a>
           </Link>
           <Link href="/explore">
-            <a className={`${location === "/explore" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium`}>
+            <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
               Explore
             </a>
           </Link>
           <Link href="/about">
-            <a className={`${location === "/about" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium`}>
+            <a className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
               About
             </a>
           </Link>
@@ -56,7 +56,7 @@ export default function Header() {
         
         {/* Mobile Menu Button */}
         <button 
-          className="md:hidden flex items-center text-secondary" 
+          className="md:hidden flex items-center text-foreground" 
           onClick={toggleMobileMenu}
           aria-label="Toggle menu"
         >
@@ -70,23 +70,23 @@ export default function Header() {
       <div className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden bg-background px-4 py-2 shadow-inner border-t border-border`}>
         <nav className="flex flex-col space-y-3">
           <Link href="/">
-            <a className={`${location === "/" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2`}>
+            <a className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
               Home
             </a>
           </Link>
           <Link href="/chat">
-            <a className={`${location === "/chat" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+            <a className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
               <MessageSquareText className="h-4 w-4 mr-1" />
               Chat
             </a>
           </Link>
           <Link href="/explore">
-            <a className={`${location === "/explore" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2`}>
+            <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
               Explore
             </a>
           </Link>
           <Link href="/about">
-            <a className={`${location === "/about" ? "text-primary" : "text-secondary hover:text-primary transition-colors"} font-medium py-2`}>
+            <a className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
               About
             </a>
           </Link>
