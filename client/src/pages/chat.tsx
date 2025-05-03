@@ -22,8 +22,8 @@ export default function Chat() {
               <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary-dark bg-clip-text text-transparent">
                 Ipê Mind Chat
               </h1>
-              <p className="text-gray-600 mt-2">
-                Converse com a IA da Ipê Mind Tree e descubra conexões entre ideias
+              <p className="text-foreground/80 font-medium mt-2">
+                Chat with Ipê Mind AI and discover connections between ideas
               </p>
             </div>
             
@@ -33,9 +33,9 @@ export default function Chat() {
           <div className="lg:col-span-1">
             <Tabs defaultValue="about" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="about">Sobre</TabsTrigger>
-                <TabsTrigger value="ideas">Ideias</TabsTrigger>
-                <TabsTrigger value="tips">Dicas</TabsTrigger>
+                <TabsTrigger value="about">About</TabsTrigger>
+                <TabsTrigger value="ideas">Ideas</TabsTrigger>
+                <TabsTrigger value="tips">Tips</TabsTrigger>
               </TabsList>
               
               <TabsContent value="about" className="mt-4">
@@ -43,22 +43,22 @@ export default function Chat() {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Brain className="h-5 w-5 mr-2 text-primary" />
-                      O que é a Ipê Mind?
+                      What is Ipê Mind?
                     </CardTitle>
                     <CardDescription>
-                      Conheça nossa assistente virtual
+                      Meet our virtual assistant
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
-                    <p className="text-sm">
-                      A Ipê Mind é uma assistente virtual que conhece todas as ideias compartilhadas
-                      na plataforma Ipê Mind Tree. Ela pode ajudar você a:
+                    <p className="text-sm text-foreground">
+                      Ipê Mind is a virtual assistant that knows all the ideas shared
+                      in the Ipê Mind Tree platform. It can help you to:
                     </p>
-                    <ul className="list-disc list-inside mt-2 text-sm space-y-1">
-                      <li>Descobrir ideias relacionadas a um tema específico</li>
-                      <li>Entender as conexões entre diferentes ideias</li>
-                      <li>Obter sugestões de colaboração entre projetos</li>
-                      <li>Explorar o conhecimento coletivo da comunidade</li>
+                    <ul className="list-disc list-inside mt-2 text-sm space-y-1 text-foreground">
+                      <li>Discover ideas related to a specific theme</li>
+                      <li>Understand connections between different ideas</li>
+                      <li>Get suggestions for collaboration between projects</li>
+                      <li>Explore the collective knowledge of the community</li>
                     </ul>
                   </CardContent>
                 </Card>
@@ -69,29 +69,29 @@ export default function Chat() {
                   <CardHeader>
                     <CardTitle className="flex items-center">
                       <Lightbulb className="h-5 w-5 mr-2 text-yellow-500" />
-                      Ideias Populares
+                      Popular Ideas
                     </CardTitle>
                     <CardDescription>
-                      Tente perguntar sobre estas ideias
+                      Try asking about these ideas
                     </CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-3">
-                    <div className="border p-2 rounded-md hover:bg-gray-50 cursor-pointer">
-                      <h4 className="font-medium">Horta Comunitária</h4>
-                      <p className="text-xs text-gray-500">
-                        Projeto de agricultura urbana colaborativa
+                    <div className="border border-primary/20 p-2 rounded-md hover:bg-card/80 cursor-pointer">
+                      <h4 className="font-medium text-foreground">Community Garden</h4>
+                      <p className="text-xs text-foreground/70">
+                        Urban agricultural collaborative project
                       </p>
                     </div>
-                    <div className="border p-2 rounded-md hover:bg-gray-50 cursor-pointer">
-                      <h4 className="font-medium">Festival de Artes</h4>
-                      <p className="text-xs text-gray-500">
-                        Evento cultural para apresentações artísticas
+                    <div className="border border-primary/20 p-2 rounded-md hover:bg-card/80 cursor-pointer">
+                      <h4 className="font-medium text-foreground">Arts Festival</h4>
+                      <p className="text-xs text-foreground/70">
+                        Cultural event for artistic presentations
                       </p>
                     </div>
-                    <div className="border p-2 rounded-md hover:bg-gray-50 cursor-pointer">
-                      <h4 className="font-medium">Oficinas de Capacitação</h4>
-                      <p className="text-xs text-gray-500">
-                        Compartilhamento de habilidades entre moradores
+                    <div className="border border-primary/20 p-2 rounded-md hover:bg-card/80 cursor-pointer">
+                      <h4 className="font-medium text-foreground">Skills Workshops</h4>
+                      <p className="text-xs text-foreground/70">
+                        Knowledge sharing between community members
                       </p>
                     </div>
                   </CardContent>
