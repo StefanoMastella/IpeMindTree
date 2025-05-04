@@ -471,7 +471,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                       onClick={handleAddLink}
                       className="bg-primary text-white rounded-l-none"
                     >
-                      Adicionar
+                      Add
                     </Button>
                   </div>
                 </div>
@@ -482,13 +482,13 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                     variant="outline" 
                     onClick={() => setActiveTab("form")}
                   >
-                    Voltar para Detalhes
+                    Back to Details
                   </Button>
                   <Button 
                     type="button" 
                     onClick={() => setActiveTab("images")}
                   >
-                    Adicionar Imagens
+                    Add Images
                   </Button>
                 </div>
               </div>
@@ -497,9 +497,9 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
             <TabsContent value="images">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium mb-2">Adicionar Imagem</h3>
+                  <h3 className="text-lg font-medium mb-2">Add Image</h3>
                   <p className="text-sm text-gray-500 mb-4">
-                    Adicione uma imagem para ilustrar sua ideia. Ela será exibida junto com a descrição.
+                    Add an image to illustrate your idea. It will be displayed along with the description.
                   </p>
                   
                   <ImageUploader 
@@ -510,7 +510,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                   {uploadedImageId && (
                     <div className="mt-3 p-2 bg-green-50 text-green-700 rounded-md text-sm flex items-center">
                       <ImageIcon className="h-4 w-4 mr-2" />
-                      Imagem adicionada com sucesso! Ela será associada à sua ideia quando você compartilhar.
+                      Image successfully added! It will be associated with your idea when you share.
                     </div>
                   )}
                 </div>
@@ -521,13 +521,13 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                     variant="outline" 
                     onClick={() => setActiveTab("links")}
                   >
-                    Adicionar Links
+                    Add Links
                   </Button>
                   <Button 
                     type="button" 
                     onClick={() => setActiveTab("form")}
                   >
-                    Voltar para Detalhes
+                    Back to Details
                   </Button>
                 </div>
               </div>
