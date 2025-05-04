@@ -1,5 +1,5 @@
 import { storage } from '../storage';
-import { googleDriveService } from './google-drive';
+import { obsidianImporter } from './obsidian-importer';
 import { ObsidianNode, ObsidianLink, ImportLog } from '@shared/schema';
 
 /**
@@ -8,12 +8,33 @@ import { ObsidianNode, ObsidianLink, ImportLog } from '@shared/schema';
  */
 export class ObsidianService {
   /**
-   * Inicia o processo de importação do Obsidian a partir do Google Drive
-   * @param folderId ID da pasta do Google Drive
+   * Importa arquivos do Obsidian a partir de uma URL de download
+   * @param downloadUrl URL para download dos arquivos
    * @param username Nome do usuário que está realizando a importação
    */
-  async importFromGoogleDrive(folderId: string, username: string): Promise<boolean> {
-    return await googleDriveService.importObsidianFromDrive(folderId, username);
+  async importFromUrl(downloadUrl: string, username: string): Promise<boolean> {
+    return await obsidianImporter.importFromDownloadUrl(downloadUrl, username);
+  }
+  
+  /**
+   * Importa arquivos do Obsidian a partir de arquivos markdown enviados pelo usuário
+   * @param files Lista de arquivos com nome e conteúdo
+   * @param username Nome do usuário que está realizando a importação
+   */
+  async importFromFiles(files: { name: string, content: string }[], username: string): Promise<boolean> {
+    try {
+      // Processa os arquivos enviados
+      const markdownFiles = obsidianImporter.processUploadedFiles(files);
+      
+      // Analisa os arquivos para extrair nós e links
+      const { nodes, links } = obsidianImporter.parseObsidianData(markdownFiles);
+      
+      // Salva no banco de dados
+      return await obsidianImporter.saveToDatabase(nodes, links, 'upload', username);
+    } catch (error) {
+      console.error('Erro ao importar arquivos:', error);
+      return false;
+    }
   }
   
   /**
@@ -124,10 +145,10 @@ export class ObsidianService {
       });
       
       // Pontuação por tags
-      if (node.tags) {
+      if (node.tags && Array.isArray(node.tags)) {
         keywords.forEach(keyword => {
-          node.tags.forEach(tag => {
-            if (tag.toLowerCase().includes(keyword.toLowerCase())) {
+          node.tags!.forEach(tag => {
+            if (typeof tag === 'string' && tag.toLowerCase().includes(keyword.toLowerCase())) {
               score += 2;
             }
           });

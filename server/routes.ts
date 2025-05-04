@@ -319,6 +319,191 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Obsidian API - Endpoints para gerenciar mapas mentais do Obsidian
+  
+  // Obter todos os nós do Obsidian
+  app.get("/api/obsidian/nodes", async (req, res) => {
+    try {
+      const nodes = await obsidianService.getAllNodes();
+      res.json(nodes);
+    } catch (err) {
+      console.error("Error getting Obsidian nodes:", err);
+      res.status(500).json({ 
+        message: "Failed to retrieve Obsidian nodes",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Obter um nó específico do Obsidian
+  app.get("/api/obsidian/nodes/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid node ID" });
+      }
+      
+      const node = await obsidianService.getNodeById(id);
+      if (!node) {
+        return res.status(404).json({ message: "Obsidian node not found" });
+      }
+      
+      res.json(node);
+    } catch (err) {
+      console.error("Error getting Obsidian node:", err);
+      res.status(500).json({ 
+        message: "Failed to retrieve Obsidian node",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Obter links de um nó específico do Obsidian
+  app.get("/api/obsidian/nodes/:id/links", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid node ID" });
+      }
+      
+      const node = await obsidianService.getNodeById(id);
+      if (!node) {
+        return res.status(404).json({ message: "Obsidian node not found" });
+      }
+      
+      const links = await obsidianService.getNodeLinks(id);
+      res.json(links);
+    } catch (err) {
+      console.error("Error getting Obsidian node links:", err);
+      res.status(500).json({ 
+        message: "Failed to retrieve Obsidian node links",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Obter dados de rede para visualização
+  app.get("/api/obsidian/network", async (req, res) => {
+    try {
+      const networkData = await obsidianService.getNetworkData();
+      res.json(networkData);
+    } catch (err) {
+      console.error("Error getting Obsidian network data:", err);
+      res.status(500).json({ 
+        message: "Failed to retrieve Obsidian network data",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Iniciar importação do Obsidian a partir de uma URL
+  app.post("/api/obsidian/import-url", async (req, res) => {
+    try {
+      const { url, username } = req.body;
+      
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ 
+          message: "Invalid URL. Please provide a valid download URL."
+        });
+      }
+      
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ 
+          message: "Invalid username. Please provide a username for the import log."
+        });
+      }
+      
+      // Inicia o processo de importação (que pode ser demorado)
+      // Retorna imediatamente, enquanto o processo continua em background
+      res.status(202).json({ 
+        message: "Import process started", 
+        url 
+      });
+      
+      // Executa o processo de importação em background
+      obsidianService.importFromUrl(url, username)
+        .then((success: boolean) => {
+          console.log(`Obsidian import from URL ${success ? 'completed successfully' : 'failed'}`);
+        })
+        .catch((error: Error) => {
+          console.error("Error during Obsidian import from URL:", error);
+        });
+    } catch (err) {
+      console.error("Error starting Obsidian import from URL:", err);
+      res.status(500).json({ 
+        message: "Failed to start Obsidian import from URL",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Importar arquivos do Obsidian a partir de conteúdo fornecido
+  app.post("/api/obsidian/import-files", async (req, res) => {
+    try {
+      const { files, username } = req.body;
+      
+      if (!Array.isArray(files) || files.length === 0) {
+        return res.status(400).json({ 
+          message: "Invalid files. Please provide an array of markdown files."
+        });
+      }
+      
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ 
+          message: "Invalid username. Please provide a username for the import log."
+        });
+      }
+      
+      // Validação básica dos arquivos
+      const validFiles = files.filter(file => 
+        file && 
+        typeof file.name === 'string' && 
+        typeof file.content === 'string' &&
+        file.name.endsWith('.md')
+      );
+      
+      if (validFiles.length === 0) {
+        return res.status(400).json({ 
+          message: "No valid markdown files provided. Files must have 'name' and 'content' properties."
+        });
+      }
+      
+      // Inicia o processo de importação
+      const result = await obsidianService.importFromFiles(validFiles, username);
+      
+      if (result) {
+        res.status(200).json({ 
+          message: "Files imported successfully", 
+          count: validFiles.length 
+        });
+      } else {
+        res.status(500).json({ 
+          message: "Failed to import files"
+        });
+      }
+    } catch (err) {
+      console.error("Error importing Obsidian files:", err);
+      res.status(500).json({ 
+        message: "Error importing Obsidian files",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Obter logs de importação
+  app.get("/api/obsidian/import-logs", async (req, res) => {
+    try {
+      const logs = await obsidianService.getImportLogs();
+      res.json(logs);
+    } catch (err) {
+      console.error("Error getting import logs:", err);
+      res.status(500).json({ 
+        message: "Failed to retrieve import logs",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
