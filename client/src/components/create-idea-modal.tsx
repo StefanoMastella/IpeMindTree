@@ -502,10 +502,10 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
           </Button>
           
           <Button 
-            type="submit"
-            form="create-idea-form"
+            type="button"
             className="bg-primary text-white"
             disabled={isSubmitting}
+            onClick={handleSubmit}
           >
             <MessageSquare className="h-4 w-4 mr-1" />
             <span>{isSubmitting ? "Sharing..." : "Share Idea"}</span>
