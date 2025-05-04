@@ -1,6 +1,26 @@
-import { Telegraf, session } from 'telegraf';
+import { Telegraf, session, Markup, Context } from 'telegraf';
 import { ragService } from '../services/rag-service';
 import { message } from 'telegraf/filters';
+import { storage } from '../storage';
+
+// Interface para os dados de sessão do usuário
+interface SessionData {
+  // Estado do processo de criação de ideia
+  ideaCreation?: {
+    step: 'title' | 'description' | 'tags' | 'author' | 'confirm';
+    data: {
+      title?: string;
+      description?: string;
+      tags?: string[];
+      author?: string;
+    };
+  };
+}
+
+// Estendendo o contexto do Telegraf para incluir dados de sessão
+interface BotContext extends Context {
+  session: SessionData;
+}
 
 /**
  * Classe que gerencia o bot do Telegram integrado ao Ipê Mind Tree
@@ -9,7 +29,7 @@ export class TelegramBot {
   private bot: Telegraf;
   
   constructor(token: string) {
-    this.bot = new Telegraf(token);
+    this.bot = new Telegraf<BotContext>(token);
     this.setupMiddleware();
     this.setupCommands();
   }
