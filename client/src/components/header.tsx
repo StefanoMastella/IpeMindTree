@@ -16,7 +16,7 @@ export default function Header() {
       <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8 flex justify-between items-center">
         <div className="flex items-center">
           <Brain className="text-primary mr-2 h-6 w-6" />
-          <Link href="/">
+          <Link href="/" className="no-underline">
             <h1 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent cursor-pointer">
               Ipê Mind Tree
             </h1>
@@ -25,32 +25,22 @@ export default function Header() {
         
         {/* Desktop Navigation */}
         <nav className="hidden md:flex space-x-8 items-center">
-          <Link href="/">
-            <a className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
-              Home
-            </a>
+          <Link href="/" className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
+            Home
           </Link>
-          <Link href="/chat">
-            <a className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
-              <MessageSquareText className="h-4 w-4 mr-1" />
-              Chat
-            </a>
+          <Link href="/chat" className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
+            <MessageSquareText className="h-4 w-4 mr-1" />
+            Chat
           </Link>
-          <Link href="/explore">
-            <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
-              Explore
-            </a>
+          <Link href="/explore" className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
+            Explore
           </Link>
-          <Link href="/obsidian">
-            <a className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
-              <Braces className="h-4 w-4 mr-1" />
-              Obsidian
-            </a>
+          <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
+            <Braces className="h-4 w-4 mr-1" />
+            Obsidian
           </Link>
-          <Link href="/about">
-            <a className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
-              About
-            </a>
+          <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
+            About
           </Link>
           <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -75,32 +65,22 @@ export default function Header() {
       {/* Mobile Navigation */}
       <div className={`${isMobileMenuOpen ? "block" : "hidden"} md:hidden bg-background px-4 py-2 shadow-inner border-t border-border`}>
         <nav className="flex flex-col space-y-3">
-          <Link href="/">
-            <a className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
-              Home
-            </a>
+          <Link href="/" className={`${location === "/" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
+            Home
           </Link>
-          <Link href="/chat">
-            <a className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
-              <MessageSquareText className="h-4 w-4 mr-1" />
-              Chat
-            </a>
+          <Link href="/chat" className={`${location === "/chat" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+            <MessageSquareText className="h-4 w-4 mr-1" />
+            Chat
           </Link>
-          <Link href="/explore">
-            <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
-              Explore
-            </a>
+          <Link href="/explore" className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
+            Explore
           </Link>
-          <Link href="/obsidian">
-            <a className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
-              <Braces className="h-4 w-4 mr-1" />
-              Obsidian
-            </a>
+          <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+            <Braces className="h-4 w-4 mr-1" />
+            Obsidian
           </Link>
-          <Link href="/about">
-            <a className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
-              About
-            </a>
+          <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
+            About
           </Link>
           <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
