@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { z } from "zod";
 import multer from "multer";
 import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
+import * as schema from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
@@ -11,6 +12,7 @@ import { obsidianService } from "./services/obsidian-service";
 import { log } from "./vite";
 import { setupAuthRoutes, requireAuth } from "./auth";
 import fileService, { uploadImage } from "./services/file-service";
+import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configurar rotas de autenticação
@@ -334,6 +336,185 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Images API - Endpoints para gerenciar imagens
+  
+  // Upload de imagem sem vincular a uma ideia
+  app.post("/api/images", uploadImage.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+      }
+
+      // Salvar a imagem no banco de dados
+      const image = await storage.createImage({
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        path: fileService.getFileUrl(req.file.filename),
+        uploadedBy: req.body.uploadedBy || 'Usuário'
+      });
+
+      res.status(201).json(image);
+    } catch (err) {
+      console.error("Erro ao fazer upload de imagem:", err);
+      res.status(500).json({ 
+        message: "Falha ao enviar imagem", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Listar todas as imagens
+  app.get("/api/images", async (req, res) => {
+    try {
+      // Esta função ainda não está implementada no armazenamento
+      // Será necessário adicionar um método para listar todas as imagens
+      const images = await db.select().from(schema.images).orderBy(schema.images.createdAt, 'desc');
+      res.json(images);
+    } catch (err) {
+      console.error("Erro ao listar imagens:", err);
+      res.status(500).json({ 
+        message: "Falha ao listar imagens", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Upload de imagem para uma ideia
+  app.post("/api/ideas/:id/images", uploadImage.single('image'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+      }
+
+      const ideaId = parseInt(req.params.id);
+      if (isNaN(ideaId)) {
+        return res.status(400).json({ message: "ID da ideia inválido" });
+      }
+
+      // Verificar se a ideia existe
+      const idea = await storage.getIdea(ideaId);
+      if (!idea) {
+        return res.status(404).json({ message: "Ideia não encontrada" });
+      }
+
+      // Salvar a imagem no banco de dados
+      const image = await storage.createImage({
+        filename: req.file.filename,
+        originalName: req.file.originalname,
+        mimeType: req.file.mimetype,
+        size: req.file.size,
+        path: fileService.getFileUrl(req.file.filename),
+        uploadedBy: req.body.uploadedBy || 'Usuário'
+      });
+
+      // Definir se a imagem será a principal
+      const isMainImage = req.body.isMainImage === 'true' || req.body.isMainImage === true;
+      
+      // Vincular a imagem à ideia
+      const ideaImage = await storage.linkImageToIdea(ideaId, image.id, isMainImage);
+
+      res.status(201).json({
+        image,
+        ideaImage
+      });
+    } catch (err) {
+      console.error("Erro ao fazer upload de imagem:", err);
+      res.status(500).json({ 
+        message: "Falha ao enviar imagem", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
+  // Listar imagens de uma ideia
+  app.get("/api/ideas/:id/images", async (req, res) => {
+    try {
+      const ideaId = parseInt(req.params.id);
+      if (isNaN(ideaId)) {
+        return res.status(400).json({ message: "ID da ideia inválido" });
+      }
+
+      // Verificar se a ideia existe
+      const idea = await storage.getIdea(ideaId);
+      if (!idea) {
+        return res.status(404).json({ message: "Ideia não encontrada" });
+      }
+
+      // Buscar as imagens vinculadas à ideia
+      const images = await storage.getImagesByIdeaId(ideaId);
+
+      res.json(images);
+    } catch (err) {
+      console.error("Erro ao buscar imagens:", err);
+      res.status(500).json({ 
+        message: "Falha ao buscar imagens", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
+  // Definir imagem principal para uma ideia
+  app.put("/api/ideas/:ideaId/images/:imageId/main", async (req, res) => {
+    try {
+      const ideaId = parseInt(req.params.ideaId);
+      const imageId = parseInt(req.params.imageId);
+
+      if (isNaN(ideaId) || isNaN(imageId)) {
+        return res.status(400).json({ message: "IDs inválidos" });
+      }
+
+      // Definir esta imagem como principal
+      await storage.setMainImage(ideaId, imageId);
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Erro ao definir imagem principal:", err);
+      res.status(500).json({ 
+        message: "Falha ao definir imagem principal", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
+  // Excluir uma imagem vinculada a uma ideia
+  app.delete("/api/ideas/:ideaId/images/:imageId", async (req, res) => {
+    try {
+      const ideaId = parseInt(req.params.ideaId);
+      const imageId = parseInt(req.params.imageId);
+
+      if (isNaN(ideaId) || isNaN(imageId)) {
+        return res.status(400).json({ message: "IDs inválidos" });
+      }
+
+      // Buscar a imagem
+      const image = await storage.getImage(imageId);
+      if (!image) {
+        return res.status(404).json({ message: "Imagem não encontrada" });
+      }
+
+      // Desvincular a imagem da ideia
+      await storage.unlinkImageFromIdea(ideaId, imageId);
+
+      // Verificar se a imagem está vinculada a outras ideias
+      // Se não estiver, excluir o arquivo físico também
+      const imagePath = image.path;
+      await storage.deleteImage(imageId);
+      
+      // Excluir o arquivo físico
+      await fileService.deleteFile(imagePath.replace('/uploads/', ''));
+
+      res.json({ success: true });
+    } catch (err) {
+      console.error("Erro ao excluir imagem:", err);
+      res.status(500).json({ 
+        message: "Falha ao excluir imagem", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
   // Obsidian API - Endpoints para gerenciar mapas mentais do Obsidian
   
   // Obter todos os nós do Obsidian
