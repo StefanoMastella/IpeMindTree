@@ -96,10 +96,10 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                 <div className="mb-6 flex justify-center">
                   <img 
                     src={images[0].path} 
-                    alt={idea?.title || 'Imagem da ideia'} 
+                    alt={idea?.title || 'Idea image'} 
                     className="max-w-full h-auto max-h-[300px] rounded-lg shadow-md"
                   />
-                  {/* Debug: Mostra informações da imagem em desenvolvimento */}
+                  {/* Debug: Shows image information in development */}
                   {process.env.NODE_ENV === 'development' && (
                     <div className="absolute bottom-2 right-2 bg-black/50 text-white p-1 text-xs rounded">
                       ID: {images[0].id} | Path: {images[0].path && images[0].path.substring(0, 30)}...
@@ -204,19 +204,19 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                   <AlertDialogTrigger asChild>
                     <Button variant="outline" className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200">
                       <Trash2 className="h-4 w-4 mr-1" />
-                      <span className="text-sm">Excluir</span>
+                      <span className="text-sm">Delete</span>
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent>
                     <AlertDialogHeader>
-                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                      <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                       <AlertDialogDescription>
-                        Esta ação excluirá permanentemente a ideia "{idea?.title}" e não pode ser desfeita.
-                        Todos os comentários e conexões também serão removidos.
+                        This action will permanently delete the idea "{idea?.title}" and cannot be undone.
+                        All comments and connections will also be removed.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
-                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogCancel>Cancel</AlertDialogCancel>
                       <AlertDialogAction
                         onClick={() => {
                           setIsDeleting(true);
@@ -225,15 +225,15 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                               onClose();
                               queryClient.invalidateQueries({ queryKey: ["/api/ideas"] });
                               toast({
-                                title: "Ideia excluída",
-                                description: "A ideia foi removida com sucesso da Ipê Mind Tree.",
+                                title: "Idea deleted",
+                                description: "The idea has been successfully removed from Ipê Mind Tree.",
                               });
                             })
                             .catch((error) => {
-                              console.error("Erro ao excluir ideia:", error);
+                              console.error("Error deleting idea:", error);
                               toast({
-                                title: "Erro ao excluir",
-                                description: "Não foi possível excluir a ideia. Tente novamente.",
+                                title: "Delete error",
+                                description: "The idea could not be deleted. Please try again.",
                                 variant: "destructive"
                               });
                             })
@@ -244,7 +244,7 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                         className="bg-red-500 text-white hover:bg-red-600 focus:ring-red-500"
                         disabled={isDeleting}
                       >
-                        {isDeleting ? "Excluindo..." : "Sim, excluir ideia"}
+                        {isDeleting ? "Deleting..." : "Yes, delete idea"}
                       </AlertDialogAction>
                     </AlertDialogFooter>
                   </AlertDialogContent>
@@ -252,13 +252,13 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                 
                 <Button variant="ghost" className="flex items-center text-secondary hover:text-primary">
                   <Share className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Compartilhar</span>
+                  <span className="text-sm">Share</span>
                 </Button>
               </div>
               
               <Button className="bg-primary text-white">
                 <LinkIcon className="h-4 w-4 mr-1" />
-                <span>Adicionar Conexão</span>
+                <span>Add Connection</span>
               </Button>
             </DialogFooter>
           </>
