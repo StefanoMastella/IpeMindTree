@@ -54,40 +54,40 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
-// Middleware para anexar os dados do usuário às requisições autenticadas
+// Middleware to attach user data to authenticated requests
 const attachUser = async (req: Request, res: Response, next: NextFunction) => {
   if (req.session.userId) {
     try {
       const user = await storage.getUser(req.session.userId);
       if (user) {
-        // Omitir senha antes de anexar o usuário ao request
+        // Omit password before attaching user to request
         const { password, ...safeUser } = user;
         req.user = safeUser as User;
       }
     } catch (error) {
-      console.error('Erro ao obter usuário:', error);
+      console.error('Error getting user:', error);
     }
   }
   next();
 };
 
-// Configurar rotas de autenticação
+// Configure authentication routes
 export function setupAuthRoutes(app: Express) {
   configureSessionMiddleware(app);
   app.use(attachUser);
   
-  // Rota de registro
+  // Registration route
   app.post('/api/auth/register', async (req, res) => {
     try {
       const userData: InsertUser = req.body;
       
-      // Verificar se usuário já existe
+      // Check if user already exists
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
         return res.status(400).json({ message: 'Nome de usuário já está em uso.' });
       }
       
-      // Criar usuário com senha criptografada
+      // Create user with encrypted password
       const hashedUser = {
         ...userData,
         password: hashPassword(userData.password)
@@ -107,7 +107,7 @@ export function setupAuthRoutes(app: Express) {
     }
   });
   
-  // Rota de login
+  // Login route
   app.post('/api/auth/login', async (req, res) => {
     try {
       const { username, password } = req.body;
@@ -135,7 +135,7 @@ export function setupAuthRoutes(app: Express) {
     }
   });
   
-  // Rota de logout
+  // Logout route
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy(err => {
       if (err) {
@@ -146,7 +146,7 @@ export function setupAuthRoutes(app: Express) {
     });
   });
   
-  // Rota para obter usuário atual
+  // Route to get current user
   app.get('/api/auth/me', requireAuth, (req, res) => {
     res.json(req.user);
   });
