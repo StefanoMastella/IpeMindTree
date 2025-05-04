@@ -135,7 +135,8 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
       }
       
       if (uploadedImageId) {
-        requestData.imageId = uploadedImageId;
+        requestData.imageId = uploadedImageId.toString(); // Garante que imageId seja enviado como string
+        console.log(`Enviando imageId como string: "${uploadedImageId.toString()}"`);
       }
       
       console.log("Dados a serem enviados:", requestData);
