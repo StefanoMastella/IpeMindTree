@@ -10,6 +10,7 @@ import { ragService } from "./services/rag-service";
 import { obsidianService } from "./services/obsidian-service";
 import { log } from "./vite";
 import { setupAuthRoutes, requireAuth } from "./auth";
+import fileService, { uploadImage } from "./services/file-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Configurar rotas de autenticação
