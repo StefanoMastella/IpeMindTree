@@ -121,8 +121,16 @@ export function ImageUploader({
       });
 
       if (onImageUploaded) {
-        console.log('Chamando callback onImageUploaded com:', imageData);
-        onImageUploaded(imageData);
+        // Se o backend retornar { image: {...} }, use diretamente, caso contrário, adapte o formato
+        if (imageData.image) {
+          console.log('Chamando callback onImageUploaded com formato já esperado:', imageData);
+          onImageUploaded(imageData);
+        } else {
+          // Adapta para o formato esperado pelo CreateIdeaModal
+          const adaptedData = { image: imageData };
+          console.log('Adaptando formato da resposta para:', adaptedData);
+          onImageUploaded(adaptedData);
+        }
       }
 
       // Resetar após 1 segundo

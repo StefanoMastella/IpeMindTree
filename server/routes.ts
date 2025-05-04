@@ -430,7 +430,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         uploadedBy: req.body.uploadedBy || 'Usuário'
       });
 
-      res.status(201).json(image);
+      // Retornar a imagem dentro de um objeto com propriedade 'image'
+      console.log("Imagem salva com sucesso:", image);
+      res.status(201).json({ image });
     } catch (err) {
       console.error("Erro ao fazer upload de imagem:", err);
       res.status(500).json({ 

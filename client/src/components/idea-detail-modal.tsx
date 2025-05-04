@@ -95,10 +95,16 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
               {images && images.length > 0 && (
                 <div className="mb-6 flex justify-center">
                   <img 
-                    src={`/api/images/${images[0].id}`} 
-                    alt={idea?.title} 
+                    src={images[0].path} 
+                    alt={idea?.title || 'Imagem da ideia'} 
                     className="max-w-full h-auto max-h-[300px] rounded-lg shadow-md"
                   />
+                  {/* Debug: Mostra informações da imagem em desenvolvimento */}
+                  {process.env.NODE_ENV === 'development' && (
+                    <div className="absolute bottom-2 right-2 bg-black/50 text-white p-1 text-xs rounded">
+                      ID: {images[0].id} | Path: {images[0].path && images[0].path.substring(0, 30)}...
+                    </div>
+                  )}
                 </div>
               )}
               
