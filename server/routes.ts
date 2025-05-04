@@ -5,6 +5,7 @@ import { z } from "zod";
 import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 import { callGeminiAPI } from "./llm-service";
+import { ragService } from "./services/rag-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Test Endpoint - Usando Google Gemini API em vez da OpenAI
@@ -224,6 +225,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Error in chat API:", err);
       res.status(500).json({ 
         message: "Failed to process your question",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
+  // Telegram API - Endpoints para integração com o bot do Telegram
+  
+  // Endpoint para consulta RAG do bot do Telegram
+  app.post("/api/telegram/query", async (req, res) => {
+    try {
+      // Verificação básica de autenticação (melhorar em produção)
+      const apiKey = req.headers['x-api-key'];
+      if (apiKey !== process.env.TELEGRAM_API_KEY) {
+        return res.status(401).json({ success: false, error: "Unauthorized" });
+      }
+      
+      const { query, userId } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Invalid query format. Please provide a text query." 
+        });
+      }
+      
+      // Consultar o serviço RAG
+      const response = await ragService.queryRag(query);
+      
+      res.json({ 
+        success: true, 
+        response,
+        userId
+      });
+    } catch (err) {
+      console.error("Error in Telegram RAG query API:", err);
+      res.status(500).json({ 
+        success: false, 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Endpoint para listar ideias recentes com resumos
+  app.get("/api/telegram/recent-ideas", async (req, res) => {
+    try {
+      // Verificação básica de autenticação (melhorar em produção)
+      const apiKey = req.headers['x-api-key'];
+      if (apiKey !== process.env.TELEGRAM_API_KEY) {
+        return res.status(401).json({ success: false, error: "Unauthorized" });
+      }
+      
+      const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
+      
+      // Obter ideias recentes com resumos gerados pela IA
+      const recentIdeas = await ragService.getRecentIdeasWithSummaries(limit);
+      
+      res.json({ 
+        success: true, 
+        ideas: recentIdeas
+      });
+    } catch (err) {
+      console.error("Error getting recent ideas for Telegram:", err);
+      res.status(500).json({ 
+        success: false, 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
+  // Webhook para receber atualizações do Telegram (para uso futuro)
+  app.post("/api/telegram/webhook", async (req, res) => {
+    try {
+      // Verificação básica de autenticação (melhorar em produção)
+      const apiKey = req.headers['x-api-key'];
+      if (apiKey !== process.env.TELEGRAM_API_KEY) {
+        return res.status(401).json({ success: false, error: "Unauthorized" });
+      }
+      
+      // Processar a atualização do Telegram
+      const update = req.body;
+      console.log("Telegram webhook update:", JSON.stringify(update));
+      
+      // Em uma implementação futura, processar aqui os diferentes tipos de atualizações
+      
+      res.sendStatus(200);
+    } catch (err) {
+      console.error("Error in Telegram webhook:", err);
+      res.status(500).json({ 
+        success: false, 
         error: err instanceof Error ? err.message : String(err)
       });
     }
