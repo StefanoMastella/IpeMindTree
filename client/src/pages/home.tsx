@@ -72,8 +72,8 @@ export default function Home() {
               </div>
             </div>
             
-            {/* API Test Component - For Development Only */}
-            <ApiTest />
+            {/* API Test Component - Comentado conforme solicitado pelo cliente 
+            <ApiTest /> */}
             
             {/* Search and Filter Bar */}
             <SearchBar 
