@@ -86,7 +86,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         tags: req.body.tags || [],
         links: req.body.links || [],
+        imageId: req.body.imageId ? parseInt(req.body.imageId) : undefined,
       };
+      
+      // Logs adicionais para debug da imagem
+      if (req.body.imageId) {
+        console.log(`Recebeu imageId: ${req.body.imageId} tipo: ${typeof req.body.imageId}`);
+        console.log(`Após processamento: ${formattedData.imageId} tipo: ${typeof formattedData.imageId}`);
+      }
       
       console.log("Dados formatados para validação:", formattedData);
       
