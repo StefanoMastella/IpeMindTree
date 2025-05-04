@@ -217,12 +217,16 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
   
   // Método para lidar com o upload de imagem
   const handleImageUploaded = (data: any) => {
+    console.log("ImageUploader retornou:", data);
+    
     if (data && data.image && data.image.id) {
       const imageId = data.image.id;
+      console.log(`Definindo uploadedImageId para: ${imageId} (tipo: ${typeof imageId})`);
       setUploadedImageId(imageId);
       
       // Salvar a imagem no localStorage para persistir entre mudanças de aba
       localStorage.setItem('tempUploadedImageId', imageId.toString());
+      console.log(`Salvou no localStorage: ${imageId.toString()}`);
       
       toast({
         title: "Imagem adicionada",
@@ -231,6 +235,8 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
       
       // Voltar para a aba principal
       setActiveTab("form");
+    } else {
+      console.error("Dados inválidos retornados pelo ImageUploader:", data);
     }
   };
   

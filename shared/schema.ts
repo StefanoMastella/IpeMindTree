@@ -58,7 +58,7 @@ export const insertIdeaSchema = createInsertSchema(ideas)
     description: z.string().min(10),
     tags: z.array(z.string()).optional(), // Tags são totalmente opcionais
     links: z.array(z.string()).optional(), // Links são totalmente opcionais
-    imageId: z.number().optional(), // ID da imagem opcional
+    imageId: z.union([z.string(), z.number()]).optional().transform(val => val ? Number(val) : undefined), // ID da imagem opcional - aceita string ou number e converte para number
   });
 
 export type InsertIdea = z.infer<typeof insertIdeaSchema>;

@@ -86,13 +86,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         tags: req.body.tags || [],
         links: req.body.links || [],
-        imageId: req.body.imageId ? parseInt(req.body.imageId) : undefined,
+        imageId: req.body.imageId,  // O schema Zod cuidará da conversão para número
       };
       
       // Logs adicionais para debug da imagem
       if (req.body.imageId) {
         console.log(`Recebeu imageId: ${req.body.imageId} tipo: ${typeof req.body.imageId}`);
-        console.log(`Após processamento: ${formattedData.imageId} tipo: ${typeof formattedData.imageId}`);
+        console.log(`Dados formatados: ${JSON.stringify(formattedData)}`);
       }
       
       console.log("Dados formatados para validação:", formattedData);
