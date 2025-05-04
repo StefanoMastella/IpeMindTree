@@ -8,9 +8,34 @@ const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-
 
 export class RagService {
   private apiKey: string;
+  private obsidianContext: string = '';
+  private lastContextUpdate: Date = new Date(0);
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
+  }
+  
+  /**
+   * Atualiza o contexto do Obsidian se necessário
+   * O contexto é atualizado no máximo uma vez a cada hora para evitar sobrecarga
+   */
+  private async updateObsidianContextIfNeeded() {
+    const now = new Date();
+    const oneHour = 60 * 60 * 1000; // 1 hora em milissegundos
+    
+    if (now.getTime() - this.lastContextUpdate.getTime() > oneHour) {
+      try {
+        // Importa dinamicamente para evitar dependência circular
+        const { obsidianService } = await import('./obsidian-service');
+        this.obsidianContext = await obsidianService.getObsidianContext();
+        this.lastContextUpdate = now;
+        console.log('Contexto do Obsidian atualizado com sucesso');
+      } catch (error) {
+        console.error('Erro ao atualizar contexto do Obsidian:', error);
+        // Se houver erro, mantenha o contexto vazio
+        this.obsidianContext = '';
+      }
+    }
   }
 
   /**
@@ -49,10 +74,13 @@ export class RagService {
 
   /**
    * Método principal para consultar o RAG com uma pergunta do usuário
-   * Inclui o contexto da aplicação e das ideias armazenadas
+   * Inclui o contexto da aplicação, das ideias armazenadas e do Obsidian
    */
   async queryRag(userQuestion: string): Promise<string> {
     try {
+      // Atualizar o contexto do Obsidian se necessário
+      await this.updateObsidianContextIfNeeded();
+      
       // Obter o contexto base da aplicação e o contexto atual das ideias
       const baseContext = getFullContext();
       const ideasContext = await this.getIdeasContext();
@@ -63,10 +91,13 @@ ${baseContext}
 
 ${ideasContext}
 
+${this.obsidianContext}
+
 Pergunta do usuário: ${userQuestion}
 
-Responda de forma concisa e útil. Se a pergunta envolver ideias específicas, mencione-as pelo nome/número.
-Se a pergunta não estiver relacionada às ideias ou à Ipê Mind Tree, explique gentilmente que você está 
+Responda de forma concisa e útil. Se a pergunta envolver ideias específicas ou documentos do Obsidian, mencione-os pelo nome/número.
+Use o conhecimento do Obsidian quando relevante para enriquecer suas respostas.
+Se a pergunta não estiver relacionada às ideias, ao Obsidian ou à Ipê Mind Tree, explique gentilmente que você está 
 focado em ajudar com questões relacionadas às ideias e ao projeto Ipê Mind Tree.
 `;
       

@@ -6,6 +6,7 @@ import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
+import { obsidianService } from "./services/obsidian-service";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // API Test Endpoint - Usando Google Gemini API em vez da OpenAI
