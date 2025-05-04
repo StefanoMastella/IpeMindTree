@@ -6,14 +6,23 @@ import {
   type Comment, 
   type InsertComment,
   type Resource,
+  type ObsidianNode, 
+  type InsertObsidianNode,
+  type ObsidianLink, 
+  type InsertObsidianLink,
+  type ImportLog, 
+  type InsertImportLog,
   users,
   ideas,
   comments,
-  resources
+  resources,
+  obsidianNodes,
+  obsidianLinks,
+  importLogs
 } from "@shared/schema";
 
 import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql, desc, or } from "drizzle-orm";
 
 export interface IStorage {
   // User methods
@@ -34,6 +43,27 @@ export interface IStorage {
   
   // Resource methods
   getSuggestedResources(ideaId: number): Promise<Resource[]>;
+  
+  // Obsidian methods
+  getAllObsidianNodes(): Promise<ObsidianNode[]>;
+  getObsidianNode(id: number): Promise<ObsidianNode | undefined>;
+  getObsidianNodeByPath(path: string): Promise<ObsidianNode | undefined>;
+  createObsidianNode(node: InsertObsidianNode): Promise<ObsidianNode>;
+  updateObsidianNode(id: number, node: Partial<InsertObsidianNode>): Promise<ObsidianNode>;
+  deleteObsidianNode(id: number): Promise<void>;
+  
+  // Obsidian links methods
+  getObsidianLinks(nodeId: number): Promise<ObsidianLink[]>;
+  createObsidianLink(link: InsertObsidianLink): Promise<ObsidianLink>;
+  deleteObsidianLink(id: number): Promise<void>;
+  
+  // Import logs methods
+  getImportLogs(): Promise<ImportLog[]>;
+  createImportLog(log: InsertImportLog): Promise<ImportLog>;
+  
+  // Bulk import methods
+  bulkCreateObsidianNodes(nodes: InsertObsidianNode[]): Promise<ObsidianNode[]>;
+  bulkCreateObsidianLinks(links: InsertObsidianLink[]): Promise<ObsidianLink[]>;
 }
 
 // Implementação de armazenamento em banco de dados
@@ -253,6 +283,95 @@ export class DatabaseStorage implements IStorage {
     }
     
     return resourceRecords;
+  }
+  
+  // Obsidian methods
+  async getAllObsidianNodes(): Promise<ObsidianNode[]> {
+    return await db.select().from(obsidianNodes).orderBy(obsidianNodes.title);
+  }
+  
+  async getObsidianNode(id: number): Promise<ObsidianNode | undefined> {
+    const [node] = await db.select().from(obsidianNodes).where(eq(obsidianNodes.id, id));
+    return node;
+  }
+  
+  async getObsidianNodeByPath(path: string): Promise<ObsidianNode | undefined> {
+    const [node] = await db.select().from(obsidianNodes).where(eq(obsidianNodes.path, path));
+    return node;
+  }
+  
+  async createObsidianNode(node: InsertObsidianNode): Promise<ObsidianNode> {
+    const [createdNode] = await db.insert(obsidianNodes).values(node).returning();
+    return createdNode;
+  }
+  
+  async updateObsidianNode(id: number, node: Partial<InsertObsidianNode>): Promise<ObsidianNode> {
+    const [updatedNode] = await db
+      .update(obsidianNodes)
+      .set({ ...node, updatedAt: new Date() })
+      .where(eq(obsidianNodes.id, id))
+      .returning();
+    return updatedNode;
+  }
+  
+  async deleteObsidianNode(id: number): Promise<void> {
+    // Primeiro, remover todos os links associados a este nó
+    await db
+      .delete(obsidianLinks)
+      .where(
+        or(
+          eq(obsidianLinks.sourceId, id),
+          eq(obsidianLinks.targetId, id)
+        )
+      );
+    
+    // Depois, remover o nó
+    await db.delete(obsidianNodes).where(eq(obsidianNodes.id, id));
+  }
+  
+  // Obsidian links methods
+  async getObsidianLinks(nodeId: number): Promise<ObsidianLink[]> {
+    return await db
+      .select()
+      .from(obsidianLinks)
+      .where(
+        or(
+          eq(obsidianLinks.sourceId, nodeId),
+          eq(obsidianLinks.targetId, nodeId)
+        )
+      );
+  }
+  
+  async createObsidianLink(link: InsertObsidianLink): Promise<ObsidianLink> {
+    const [createdLink] = await db.insert(obsidianLinks).values(link).returning();
+    return createdLink;
+  }
+  
+  async deleteObsidianLink(id: number): Promise<void> {
+    await db.delete(obsidianLinks).where(eq(obsidianLinks.id, id));
+  }
+  
+  // Import logs methods
+  async getImportLogs(): Promise<ImportLog[]> {
+    return await db.select().from(importLogs).orderBy(desc(importLogs.importedAt));
+  }
+  
+  async createImportLog(log: InsertImportLog): Promise<ImportLog> {
+    const [createdLog] = await db.insert(importLogs).values(log).returning();
+    return createdLog;
+  }
+  
+  // Bulk import methods
+  async bulkCreateObsidianNodes(nodes: InsertObsidianNode[]): Promise<ObsidianNode[]> {
+    if (nodes.length === 0) return [];
+    const createdNodes = await db.insert(obsidianNodes).values(nodes).returning();
+    return createdNodes;
+  }
+  
+  async bulkCreateObsidianLinks(links: InsertObsidianLink[]): Promise<ObsidianLink[]> {
+    if (links.length === 0) return [];
+    const createdLinks = await db.insert(obsidianLinks).values(links).returning();
+    return createdLinks;
   }
   
   // Método para inicialização de dados (usado apenas para desenvolvimento)

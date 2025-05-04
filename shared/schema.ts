@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, timestamp, varchar } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, timestamp, varchar, jsonb, boolean } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -75,3 +75,62 @@ export const resources = pgTable("resources", {
 });
 
 export type Resource = typeof resources.$inferSelect;
+
+// Tabela para armazenar os dados importados do Obsidian
+export const obsidianNodes = pgTable("obsidian_nodes", {
+  id: serial("id").primaryKey(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  path: text("path").notNull().unique(),
+  tags: text("tags").array(),
+  sourceType: text("source_type").default("obsidian").notNull(),
+  isImported: boolean("is_imported").default(true).notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull()
+});
+
+export type ObsidianNode = typeof obsidianNodes.$inferSelect;
+export const insertObsidianNodeSchema = createInsertSchema(obsidianNodes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertObsidianNode = z.infer<typeof insertObsidianNodeSchema>;
+
+// Tabela para armazenar as conexões entre nós do Obsidian
+export const obsidianLinks = pgTable("obsidian_links", {
+  id: serial("id").primaryKey(),
+  sourceId: integer("source_id").references(() => obsidianNodes.id).notNull(),
+  targetId: integer("target_id").references(() => obsidianNodes.id).notNull(),
+  type: text("type").default("link").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow().notNull()
+});
+
+export type ObsidianLink = typeof obsidianLinks.$inferSelect;
+export const insertObsidianLinkSchema = createInsertSchema(obsidianLinks).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertObsidianLink = z.infer<typeof insertObsidianLinkSchema>;
+
+// Tabela para registrar importações
+export const importLogs = pgTable("import_logs", {
+  id: serial("id").primaryKey(),
+  importSource: text("import_source").notNull(),
+  nodesCount: integer("nodes_count").notNull(),
+  linksCount: integer("links_count").notNull(),
+  success: boolean("success").notNull(),
+  error: text("error"),
+  metadata: jsonb("metadata"),
+  importedAt: timestamp("imported_at").defaultNow().notNull(),
+  importedBy: text("imported_by").notNull()
+});
+
+export type ImportLog = typeof importLogs.$inferSelect;
+export const insertImportLogSchema = createInsertSchema(importLogs).omit({
+  id: true,
+  importedAt: true,
+});
+export type InsertImportLog = z.infer<typeof insertImportLogSchema>;
