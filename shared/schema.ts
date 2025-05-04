@@ -2,6 +2,25 @@ import { pgTable, text, serial, integer, timestamp, varchar, jsonb, boolean } fr
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// Modelo para imagens
+export const images = pgTable("images", {
+  id: serial("id").primaryKey(),
+  filename: text("filename").notNull(),
+  originalName: text("original_name").notNull(),
+  mimeType: text("mime_type").notNull(),
+  size: integer("size").notNull(),
+  path: text("path").notNull(),
+  uploadedAt: timestamp("uploaded_at").defaultNow().notNull(),
+  uploadedBy: text("uploaded_by").notNull(),
+});
+
+export type Image = typeof images.$inferSelect;
+export const insertImageSchema = createInsertSchema(images).omit({
+  id: true,
+  uploadedAt: true,
+});
+export type InsertImage = z.infer<typeof insertImageSchema>;
+
 // User model
 export const users = pgTable("users", {
   id: serial("id").primaryKey(),
@@ -114,6 +133,23 @@ export const insertObsidianLinkSchema = createInsertSchema(obsidianLinks).omit({
   createdAt: true,
 });
 export type InsertObsidianLink = z.infer<typeof insertObsidianLinkSchema>;
+
+// Tabela de relação entre ideias e imagens
+export const ideaImages = pgTable("idea_images", {
+  id: serial("id").primaryKey(),
+  ideaId: integer("idea_id").references(() => ideas.id).notNull(),
+  imageId: integer("image_id").references(() => images.id).notNull(),
+  isMainImage: boolean("is_main_image").default(false).notNull(),
+  order: integer("order").default(0).notNull(),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+});
+
+export type IdeaImage = typeof ideaImages.$inferSelect;
+export const insertIdeaImageSchema = createInsertSchema(ideaImages).omit({
+  id: true,
+  createdAt: true,
+});
+export type InsertIdeaImage = z.infer<typeof insertIdeaImageSchema>;
 
 // Tabela para registrar importações
 export const importLogs = pgTable("import_logs", {

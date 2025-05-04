@@ -12,13 +12,19 @@ import {
   type InsertObsidianLink,
   type ImportLog, 
   type InsertImportLog,
+  type Image,
+  type InsertImage,
+  type IdeaImage,
+  type InsertIdeaImage,
   users,
   ideas,
   comments,
   resources,
   obsidianNodes,
   obsidianLinks,
-  importLogs
+  importLogs,
+  images,
+  ideaImages
 } from "@shared/schema";
 
 import { db } from "./db";
@@ -43,6 +49,18 @@ export interface IStorage {
   
   // Resource methods
   getSuggestedResources(ideaId: number): Promise<Resource[]>;
+  
+  // Image methods
+  getImage(id: number): Promise<Image | undefined>;
+  createImage(image: InsertImage): Promise<Image>;
+  deleteImage(id: number): Promise<void>;
+  getImagesByIdeaId(ideaId: number): Promise<Image[]>;
+  
+  // Idea Image methods
+  linkImageToIdea(ideaId: number, imageId: number, isMainImage?: boolean): Promise<IdeaImage>;
+  unlinkImageFromIdea(ideaId: number, imageId: number): Promise<void>;
+  setMainImage(ideaId: number, imageId: number): Promise<void>;
+  reorderIdeaImages(ideaId: number, imageIds: number[]): Promise<void>;
   
   // Obsidian methods
   getAllObsidianNodes(): Promise<ObsidianNode[]>;
@@ -349,6 +367,196 @@ export class DatabaseStorage implements IStorage {
   
   async deleteObsidianLink(id: number): Promise<void> {
     await db.delete(obsidianLinks).where(eq(obsidianLinks.id, id));
+  }
+  
+  // Image methods
+  async getImage(id: number): Promise<Image | undefined> {
+    const [image] = await db.select().from(images).where(eq(images.id, id));
+    return image;
+  }
+  
+  async createImage(insertImage: InsertImage): Promise<Image> {
+    const [image] = await db.insert(images).values(insertImage).returning();
+    return image;
+  }
+  
+  async deleteImage(id: number): Promise<void> {
+    // Primeiro, remover todas as associações com ideias
+    await db.delete(ideaImages).where(eq(ideaImages.imageId, id));
+    
+    // Depois, remover a imagem
+    await db.delete(images).where(eq(images.id, id));
+  }
+  
+  async getImagesByIdeaId(ideaId: number): Promise<Image[]> {
+    // Busca as relações entre ideias e imagens ordenadas pelo campo "order"
+    const ideaImageRelations = await db
+      .select()
+      .from(ideaImages)
+      .where(eq(ideaImages.ideaId, ideaId))
+      .orderBy(ideaImages.order);
+    
+    // Se não houver relações, retorna uma lista vazia
+    if (ideaImageRelations.length === 0) {
+      return [];
+    }
+    
+    // Busca as imagens baseadas nos IDs encontrados
+    const imageIds = ideaImageRelations.map(relation => relation.imageId);
+    const imageRecords = await Promise.all(
+      imageIds.map(id => this.getImage(id))
+    );
+    
+    // Filtra possíveis valores undefined e mantém a ordem original
+    return imageRecords.filter(Boolean) as Image[];
+  }
+  
+  // Idea Image methods
+  async linkImageToIdea(ideaId: number, imageId: number, isMainImage: boolean = false): Promise<IdeaImage> {
+    // Verifica se a ideia existe
+    const idea = await this.getIdea(ideaId);
+    if (!idea) {
+      throw new Error(`Idea with ID ${ideaId} not found`);
+    }
+    
+    // Verifica se a imagem existe
+    const image = await this.getImage(imageId);
+    if (!image) {
+      throw new Error(`Image with ID ${imageId} not found`);
+    }
+    
+    // Verifica se a relação já existe
+    const [existingRelation] = await db
+      .select()
+      .from(ideaImages)
+      .where(and(
+        eq(ideaImages.ideaId, ideaId),
+        eq(ideaImages.imageId, imageId)
+      ));
+    
+    // Se a relação já existe, apenas atualiza a flag isMainImage se necessário
+    if (existingRelation) {
+      if (existingRelation.isMainImage !== isMainImage) {
+        // Se estamos definindo esta imagem como principal, precisamos garantir que não haja outras imagens principais
+        if (isMainImage) {
+          await db
+            .update(ideaImages)
+            .set({ isMainImage: false })
+            .where(eq(ideaImages.ideaId, ideaId));
+        }
+        
+        const [updatedRelation] = await db
+          .update(ideaImages)
+          .set({ isMainImage })
+          .where(eq(ideaImages.id, existingRelation.id))
+          .returning();
+        
+        return updatedRelation;
+      }
+      
+      return existingRelation;
+    }
+    
+    // Se estamos definindo esta nova imagem como principal, precisamos garantir que não haja outras imagens principais
+    if (isMainImage) {
+      await db
+        .update(ideaImages)
+        .set({ isMainImage: false })
+        .where(eq(ideaImages.ideaId, ideaId));
+    }
+    
+    // Obtém a maior ordem atual para a ideia
+    const [{ maxOrder }] = await db
+      .select({ maxOrder: sql`COALESCE(MAX(${ideaImages.order}), -1)` })
+      .from(ideaImages)
+      .where(eq(ideaImages.ideaId, ideaId));
+    
+    // Cria a nova relação
+    const [newRelation] = await db
+      .insert(ideaImages)
+      .values({
+        ideaId,
+        imageId,
+        isMainImage,
+        order: maxOrder + 1
+      })
+      .returning();
+    
+    return newRelation;
+  }
+  
+  async unlinkImageFromIdea(ideaId: number, imageId: number): Promise<void> {
+    // Remove a relação entre a ideia e a imagem
+    await db
+      .delete(ideaImages)
+      .where(and(
+        eq(ideaImages.ideaId, ideaId),
+        eq(ideaImages.imageId, imageId)
+      ));
+    
+    // Se a imagem que foi removida era a principal, definir outra imagem como principal
+    const relations = await db
+      .select()
+      .from(ideaImages)
+      .where(eq(ideaImages.ideaId, ideaId))
+      .orderBy(ideaImages.order);
+    
+    if (relations.length > 0 && !relations.some(r => r.isMainImage)) {
+      await db
+        .update(ideaImages)
+        .set({ isMainImage: true })
+        .where(eq(ideaImages.id, relations[0].id));
+    }
+  }
+  
+  async setMainImage(ideaId: number, imageId: number): Promise<void> {
+    // Verifica se a relação entre ideia e imagem existe
+    const [relation] = await db
+      .select()
+      .from(ideaImages)
+      .where(and(
+        eq(ideaImages.ideaId, ideaId),
+        eq(ideaImages.imageId, imageId)
+      ));
+    
+    if (!relation) {
+      throw new Error(`No relation found between idea ${ideaId} and image ${imageId}`);
+    }
+    
+    // Define todas as imagens da ideia como não principais
+    await db
+      .update(ideaImages)
+      .set({ isMainImage: false })
+      .where(eq(ideaImages.ideaId, ideaId));
+    
+    // Define a imagem selecionada como principal
+    await db
+      .update(ideaImages)
+      .set({ isMainImage: true })
+      .where(eq(ideaImages.id, relation.id));
+  }
+  
+  async reorderIdeaImages(ideaId: number, imageIds: number[]): Promise<void> {
+    // Verifica se as relações existem
+    const relations = await db
+      .select()
+      .from(ideaImages)
+      .where(eq(ideaImages.ideaId, ideaId));
+    
+    const relationMap = new Map(relations.map(r => [r.imageId, r]));
+    
+    // Atualiza a ordem de cada imagem
+    for (let i = 0; i < imageIds.length; i++) {
+      const imageId = imageIds[i];
+      const relation = relationMap.get(imageId);
+      
+      if (relation) {
+        await db
+          .update(ideaImages)
+          .set({ order: i })
+          .where(eq(ideaImages.id, relation.id));
+      }
+    }
   }
   
   // Import logs methods
