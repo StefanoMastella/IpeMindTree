@@ -6,7 +6,7 @@ import session from 'express-session';
 import MemoryStore from 'memorystore';
 import { randomBytes } from 'crypto';
 
-// Tipo para extender o objeto de Request com usuário autenticado
+// Type to extend the Request object with authenticated user
 declare global {
   namespace Express {
     interface Request {
@@ -15,21 +15,21 @@ declare global {
   }
 }
 
-// Função para criar hash seguro de senha
+// Function to create secure password hash
 function hashPassword(password: string): string {
   return hashSync(password, 10);
 }
 
-// Função para verificar senha
+// Function to verify password
 function comparePasswords(password: string, hash: string): boolean {
   return compareSync(password, hash);
 }
 
-// Configurar middleware de sessão
+// Configure session middleware
 const configureSessionMiddleware = (app: Express) => {
   const MemoryStoreSession = MemoryStore(session);
   
-  // Gerar chave de sessão secreta
+  // Generate secret session key
   const sessionSecret = process.env.SESSION_SECRET || randomBytes(32).toString('hex');
   
   app.use(session({
@@ -37,19 +37,19 @@ const configureSessionMiddleware = (app: Express) => {
     resave: false,
     saveUninitialized: false,
     store: new MemoryStoreSession({
-      checkPeriod: 86400000 // Limpar sessões expiradas uma vez por dia
+      checkPeriod: 86400000 // Clean expired sessions once a day
     }),
     cookie: {
       secure: process.env.NODE_ENV === 'production',
-      maxAge: 7 * 24 * 60 * 60 * 1000 // 1 semana
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 1 week
     }
   }));
 };
 
-// Middleware para verificar autenticação
+// Middleware to verify authentication
 const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   if (!req.session.userId) {
-    return res.status(401).json({ message: 'Não autorizado. Por favor, faça login.' });
+    return res.status(401).json({ message: 'Unauthorized. Please login.' });
   }
   next();
 };
