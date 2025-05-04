@@ -1,239 +1,250 @@
 import { useState, useRef } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
-import { Loader2, Upload, FileText, AlertCircle, CheckCircle } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
-import { useQueryClient } from '@tanstack/react-query';
+import { useMutation } from '@tanstack/react-query';
+import { Upload, FileUp, X, Check, AlertCircle } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { useToast } from '@/hooks/use-toast';
+import { queryClient } from '@/lib/queryClient';
+import { Progress } from '@/components/ui/progress';
 
 export default function ObsidianUploader() {
   const { toast } = useToast();
-  const queryClient = useQueryClient();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
   const [files, setFiles] = useState<File[]>([]);
-  const [username, setUsername] = useState<string>("");
-  const [isUploading, setIsUploading] = useState<boolean>(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'success' | 'error'>('idle');
-  const [uploadMessage, setUploadMessage] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [progress, setProgress] = useState(0);
   
-  // Manipula a seleção de arquivos
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      const fileList = Array.from(event.target.files);
-      const markdownFiles = fileList.filter(file => file.name.endsWith('.md'));
+  // Mutação para enviar os arquivos do Obsidian
+  const uploadMutation = useMutation({
+    mutationFn: async (formData: FormData) => {
+      setIsUploading(true);
+      setProgress(0);
       
-      if (markdownFiles.length === 0) {
-        toast({
-          title: "Arquivos inválidos",
-          description: "Por favor, selecione apenas arquivos markdown (.md)",
-          variant: "destructive"
+      // Simular progresso
+      const intervalId = setInterval(() => {
+        setProgress(prev => {
+          const newProgress = prev + Math.random() * 10;
+          return newProgress > 90 ? 90 : newProgress;
         });
-        return;
-      }
+      }, 300);
       
-      setFiles(markdownFiles);
-    }
-  };
-  
-  // Manipula o envio de arquivos
-  const handleUpload = async () => {
-    if (files.length === 0) {
-      toast({
-        title: "Nenhum arquivo selecionado",
-        description: "Por favor, selecione pelo menos um arquivo markdown para importar",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    if (!username.trim()) {
-      toast({
-        title: "Nome de usuário necessário",
-        description: "Por favor, insira seu nome para associar à importação",
-        variant: "destructive"
-      });
-      return;
-    }
-    
-    setIsUploading(true);
-    setUploadStatus('idle');
-    setUploadMessage("");
-    
-    try {
-      // Prepara os arquivos para envio
-      const fileContents = await Promise.all(
-        files.map(async (file) => {
-          return {
-            name: file.name,
-            content: await file.text()
-          };
-        })
-      );
-      
-      // Envia os arquivos para a API
-      const response = await fetch('/api/obsidian/import-files', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          files: fileContents,
-          username
-        })
-      });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setUploadStatus('success');
-        setUploadMessage(`${data.count} arquivos importados com sucesso!`);
+      try {
+        const response = await fetch('/api/obsidian/upload', {
+          method: 'POST',
+          body: formData,
+        });
         
-        // Limpa os arquivos selecionados
-        setFiles([]);
-        if (fileInputRef.current) {
-          fileInputRef.current.value = '';
+        clearInterval(intervalId);
+        setProgress(100);
+        
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.message || 'Erro ao fazer upload dos arquivos');
         }
         
-        // Atualiza os dados no cliente
-        queryClient.invalidateQueries({ queryKey: ['/api/obsidian/nodes'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/obsidian/network'] });
-        queryClient.invalidateQueries({ queryKey: ['/api/obsidian/import-logs'] });
-        
-        toast({
-          title: "Importação concluída",
-          description: `${data.count} arquivos foram importados com sucesso.`,
-          variant: "default"
-        });
-      } else {
-        setUploadStatus('error');
-        setUploadMessage(data.message || "Erro desconhecido durante a importação");
-        
-        toast({
-          title: "Falha na importação",
-          description: data.message || "Ocorreu um erro ao importar os arquivos.",
-          variant: "destructive"
-        });
+        return await response.json();
+      } catch (error) {
+        clearInterval(intervalId);
+        setProgress(0);
+        throw error;
+      } finally {
+        setIsUploading(false);
       }
-    } catch (error) {
-      console.error("Erro ao fazer upload:", error);
-      setUploadStatus('error');
-      setUploadMessage("Ocorreu um erro durante o upload. Verifique o console para mais detalhes.");
-      
+    },
+    onSuccess: () => {
+      setFiles([]);
       toast({
-        title: "Erro no upload",
-        description: "Não foi possível completar o upload dos arquivos.",
-        variant: "destructive"
+        title: 'Upload concluído',
+        description: 'Os arquivos do Obsidian foram importados com sucesso.',
+        variant: 'default',
       });
-    } finally {
-      setIsUploading(false);
+      // Invalidar queries para atualizar os dados
+      queryClient.invalidateQueries({ queryKey: ['/api/obsidian/network'] });
+      queryClient.invalidateQueries({ queryKey: ['/api/obsidian/import-logs'] });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: 'Erro no upload',
+        description: error.message,
+        variant: 'destructive',
+      });
+    },
+  });
+  
+  // Lidar com seleção de arquivos
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      const newFiles = Array.from(e.target.files);
+      setFiles(prevFiles => [...prevFiles, ...newFiles]);
     }
   };
   
-  // Manipula o clique no botão de selecionar arquivos
-  const handleSelectFiles = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.click();
+  // Lidar com drag and drop
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    if (e.dataTransfer.files) {
+      const newFiles = Array.from(e.dataTransfer.files);
+      setFiles(prevFiles => [...prevFiles, ...newFiles]);
     }
+  };
+  
+  // Remover arquivo da lista
+  const removeFile = (index: number) => {
+    setFiles(prevFiles => prevFiles.filter((_, i) => i !== index));
+  };
+  
+  // Iniciar upload
+  const handleUpload = () => {
+    if (files.length === 0) {
+      toast({
+        title: 'Nenhum arquivo selecionado',
+        description: 'Por favor, selecione pelo menos um arquivo markdown para fazer upload.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    
+    const formData = new FormData();
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+    
+    uploadMutation.mutate(formData);
+  };
+  
+  // Renderizar lista de arquivos
+  const renderFileList = () => {
+    if (files.length === 0) return null;
+    
+    return (
+      <div className="mt-4 space-y-2">
+        <div className="text-sm font-medium">Arquivos selecionados:</div>
+        <div className="max-h-60 overflow-y-auto space-y-2">
+          {files.map((file, index) => (
+            <div key={index} className="flex items-center justify-between bg-muted/50 rounded-md p-2">
+              <div className="flex items-center space-x-2 truncate">
+                <FileUp className="h-4 w-4 text-primary" />
+                <span className="text-sm truncate">{file.name}</span>
+                <span className="text-xs text-muted-foreground">
+                  ({(file.size / 1024).toFixed(1)} KB)
+                </span>
+              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6"
+                onClick={() => removeFile(index)}
+                disabled={isUploading}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
   };
   
   return (
-    <Card className="w-full max-w-3xl">
+    <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-bold">Importar mapas mentais do Obsidian</CardTitle>
-        <CardDescription>
-          Faça upload dos seus arquivos markdown (.md) do Obsidian para incorporar
-          seu conhecimento ao Ipê Mind Tree.
-        </CardDescription>
+        <CardTitle className="text-xl font-bold">Importar Arquivos Obsidian</CardTitle>
       </CardHeader>
       
-      <CardContent className="space-y-4">
-        <div className="space-y-2">
-          <Label htmlFor="username">Seu nome</Label>
-          <Input
-            id="username"
-            placeholder="Digite seu nome"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-          />
-        </div>
-        
-        <div className="space-y-2">
-          <Label htmlFor="files">Arquivos Markdown (.md)</Label>
+      <CardContent>
+        <div
+          className={`
+            border-2 border-dashed rounded-lg p-8 text-center
+            ${isUploading ? 'bg-muted/50 cursor-not-allowed' : 'hover:bg-muted/50 cursor-pointer'}
+            transition-colors duration-200
+          `}
+          onClick={() => !isUploading && fileInputRef.current?.click()}
+          onDragOver={handleDragOver}
+          onDrop={!isUploading ? handleDrop : undefined}
+        >
           <Input
             ref={fileInputRef}
-            id="files"
             type="file"
-            accept=".md"
+            accept=".md,.markdown,.txt,.zip"
             multiple
             className="hidden"
             onChange={handleFileChange}
+            disabled={isUploading}
           />
           
-          <div 
-            className="border-2 border-dashed border-border rounded-md p-8 text-center cursor-pointer hover:bg-secondary/50 transition-colors"
-            onClick={handleSelectFiles}
-          >
-            <div className="flex flex-col items-center justify-center space-y-3">
-              <Upload className="h-10 w-10 text-muted-foreground" />
-              <div>
-                <p className="text-sm font-medium">
-                  Clique para selecionar arquivos ou arraste e solte aqui
-                </p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  Apenas arquivos markdown (.md) são suportados
-                </p>
-              </div>
-            </div>
-          </div>
+          <Upload className="h-10 w-10 mb-3 mx-auto text-muted-foreground" />
           
-          {files.length > 0 && (
-            <div className="mt-4">
-              <p className="text-sm font-medium">Arquivos selecionados ({files.length}):</p>
-              <ul className="text-sm text-muted-foreground mt-2 max-h-32 overflow-y-auto">
-                {files.map((file, index) => (
-                  <li key={index} className="flex items-center space-x-2 py-1">
-                    <FileText className="h-4 w-4" />
-                    <span>{file.name}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          <div className="space-y-2">
+            <h3 className="text-lg font-medium">
+              Arraste e solte arquivos aqui ou clique para selecionar
+            </h3>
+            <p className="text-sm text-muted-foreground">
+              Suporta arquivos .md, .markdown, .txt, ou um arquivo .zip contendo documentos do Obsidian
+            </p>
+          </div>
         </div>
         
-        {uploadStatus === 'success' && (
-          <Alert variant="default" className="bg-green-500/10 border-green-500">
-            <CheckCircle className="h-4 w-4 text-green-500" />
-            <AlertTitle className="text-green-500">Sucesso</AlertTitle>
-            <AlertDescription>{uploadMessage}</AlertDescription>
-          </Alert>
-        )}
+        {renderFileList()}
         
-        {uploadStatus === 'error' && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Erro</AlertTitle>
-            <AlertDescription>{uploadMessage}</AlertDescription>
-          </Alert>
+        {isUploading && (
+          <div className="mt-4 space-y-2">
+            <div className="flex justify-between text-sm">
+              <span>Processando arquivos...</span>
+              <span>{Math.round(progress)}%</span>
+            </div>
+            <Progress value={progress} className="h-2" />
+          </div>
         )}
       </CardContent>
       
-      <CardFooter>
-        <Button 
-          className="w-full"
-          onClick={handleUpload}
-          disabled={isUploading || files.length === 0}
-        >
-          {isUploading ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Importando...
-            </>
-          ) : "Importar Arquivos"}
-        </Button>
+      <CardFooter className="flex justify-between">
+        <div className="text-sm text-muted-foreground">
+          {files.length > 0 ? (
+            <span>
+              {files.length} {files.length === 1 ? 'arquivo selecionado' : 'arquivos selecionados'}
+            </span>
+          ) : null}
+        </div>
+        
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={() => {
+              setFiles([]);
+              if (fileInputRef.current) fileInputRef.current.value = '';
+            }}
+            disabled={files.length === 0 || isUploading}
+          >
+            Limpar
+          </Button>
+          
+          <Button
+            onClick={handleUpload}
+            disabled={files.length === 0 || isUploading}
+            className="flex items-center gap-2"
+          >
+            {isUploading ? (
+              <>
+                <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent"></span>
+                <span>Processando...</span>
+              </>
+            ) : (
+              <>
+                <Upload className="h-4 w-4" />
+                <span>Importar</span>
+              </>
+            )}
+          </Button>
+        </div>
       </CardFooter>
     </Card>
   );
