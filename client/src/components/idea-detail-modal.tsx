@@ -6,7 +6,19 @@ import { useState } from "react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { formatDate } from "@/lib/types";
 import ConnectionsVisualization from "@/components/connections-visualization";
-import { Heart, Share, Link as LinkIcon, X } from "lucide-react";
+import { Heart, Share, Link as LinkIcon, X, Trash2 } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface IdeaDetailModalProps {
   ideaId: number;
@@ -15,7 +27,9 @@ interface IdeaDetailModalProps {
 }
 
 export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailModalProps) {
+  const { toast } = useToast();
   const [comment, setComment] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
   
   // Fetch idea details
   const { data: idea, isLoading } = useQuery({
@@ -180,19 +194,65 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
             
             <DialogFooter className="border-t border-gray-200 p-4 flex justify-between items-center bg-gray-50">
               <div className="flex space-x-2">
-                <Button variant="ghost" className="flex items-center text-secondary hover:text-primary">
-                  <Heart className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Like</span>
-                </Button>
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button variant="outline" className="flex items-center text-red-500 hover:text-red-700 hover:bg-red-50 border-red-200">
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      <span className="text-sm">Excluir</span>
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>Tem certeza?</AlertDialogTitle>
+                      <AlertDialogDescription>
+                        Esta ação excluirá permanentemente a ideia "{idea?.title}" e não pode ser desfeita.
+                        Todos os comentários e conexões também serão removidos.
+                      </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => {
+                          setIsDeleting(true);
+                          apiRequest("DELETE", `/api/ideas/${ideaId}`)
+                            .then(() => {
+                              onClose();
+                              queryClient.invalidateQueries({ queryKey: ["/api/ideas"] });
+                              toast({
+                                title: "Ideia excluída",
+                                description: "A ideia foi removida com sucesso da Ipê Mind Tree.",
+                              });
+                            })
+                            .catch((error) => {
+                              console.error("Erro ao excluir ideia:", error);
+                              toast({
+                                title: "Erro ao excluir",
+                                description: "Não foi possível excluir a ideia. Tente novamente.",
+                                variant: "destructive"
+                              });
+                            })
+                            .finally(() => {
+                              setIsDeleting(false);
+                            });
+                        }}
+                        className="bg-red-500 text-white hover:bg-red-600 focus:ring-red-500"
+                        disabled={isDeleting}
+                      >
+                        {isDeleting ? "Excluindo..." : "Sim, excluir ideia"}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+                
                 <Button variant="ghost" className="flex items-center text-secondary hover:text-primary">
                   <Share className="h-4 w-4 mr-1" />
-                  <span className="text-sm">Share</span>
+                  <span className="text-sm">Compartilhar</span>
                 </Button>
               </div>
               
               <Button className="bg-primary text-white">
                 <LinkIcon className="h-4 w-4 mr-1" />
-                <span>Add Connection</span>
+                <span>Adicionar Conexão</span>
               </Button>
             </DialogFooter>
           </>

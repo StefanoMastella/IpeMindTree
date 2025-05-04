@@ -42,6 +42,7 @@ export interface IStorage {
   createIdea(idea: InsertIdea): Promise<Idea>;
   updateIdeaConnections(id: number, connectionIds: number[]): Promise<Idea>;
   getConnectedIdeas(id: number): Promise<any[]>;  // Returns ideas with connection reason
+  deleteIdea(id: number): Promise<void>; // Novo método para excluir ideias
   
   // Comment methods
   getCommentsByIdeaId(ideaId: number): Promise<Comment[]>;
@@ -409,6 +410,40 @@ export class DatabaseStorage implements IStorage {
     
     // Filtra possíveis valores undefined e mantém a ordem original
     return imageRecords.filter(Boolean) as Image[];
+  }
+  
+  // Implementação do método para excluir uma ideia
+  async deleteIdea(id: number): Promise<void> {
+    // 1. Primeiro, verificar se a ideia existe
+    const idea = await this.getIdea(id);
+    if (!idea) {
+      throw new Error(`Idea with ID ${id} not found`);
+    }
+    
+    // 2. Remover todas as relações de imagens com esta ideia
+    await db.delete(ideaImages).where(eq(ideaImages.ideaId, id));
+    
+    // 3. Remover todos os comentários associados a esta ideia
+    await db.delete(comments).where(eq(comments.ideaId, id));
+    
+    // 4. Remover a ideia como conexão de outras ideias
+    // Obter todas as ideias que têm esta como conexão
+    const allIdeas = await this.getAllIdeas();
+    for (const otherIdea of allIdeas) {
+      if (otherIdea.connections.includes(id)) {
+        // Remover esta ideia das conexões
+        const updatedConnections = otherIdea.connections.filter(connId => connId !== id);
+        await db
+          .update(ideas)
+          .set({ connections: JSON.stringify(updatedConnections) })
+          .where(eq(ideas.id, otherIdea.id));
+      }
+    }
+    
+    // 5. Finalmente, excluir a ideia
+    await db.delete(ideas).where(eq(ideas.id, id));
+    
+    console.log(`Ideia ${id} excluída com sucesso`);
   }
   
   // Idea Image methods

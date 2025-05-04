@@ -240,6 +240,33 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Delete an idea
+  app.delete("/api/ideas/:id", async (req, res) => {
+    try {
+      const id = parseInt(req.params.id);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "ID de ideia inválido" });
+      }
+      
+      // Busca a ideia para garantir que existe
+      const idea = await storage.getIdea(id);
+      if (!idea) {
+        return res.status(404).json({ message: "Ideia não encontrada" });
+      }
+      
+      // Exclui a ideia
+      await storage.deleteIdea(id);
+      
+      res.status(200).json({ message: `Ideia ${id} excluída com sucesso` });
+    } catch (err) {
+      console.error("Erro ao excluir ideia:", err);
+      res.status(500).json({ 
+        message: "Falha ao excluir ideia", 
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+  
   // Create a new comment for an idea
   app.post("/api/ideas/:id/comments", async (req, res) => {
     try {
