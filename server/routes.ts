@@ -216,6 +216,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
+  // Get images for an idea
+  app.get("/api/ideas/:id/images", async (req, res) => {
+    try {
+      const ideaId = parseInt(req.params.id);
+      if (isNaN(ideaId)) {
+        return res.status(400).json({ message: "Invalid idea ID" });
+      }
+      
+      const images = await storage.getImagesByIdeaId(ideaId);
+      console.log(`Imagens encontradas para a ideia ${ideaId}:`, images);
+      res.json(images);
+    } catch (err) {
+      console.error("Error getting images:", err);
+      res.status(500).json({ message: "Failed to retrieve images" });
+    }
+  });
+  
   // Create a new comment for an idea
   app.post("/api/ideas/:id/comments", async (req, res) => {
     try {
