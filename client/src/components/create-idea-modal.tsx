@@ -74,10 +74,28 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (!title.trim() || !description.trim()) {
+    if (!title.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please provide both a title and description for your idea.",
+        description: "Please provide a title for your idea.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (!description.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please provide a description for your idea.",
+        variant: "destructive",
+      });
+      return;
+    }
+    
+    if (description.trim().length < 10) {
+      toast({
+        title: "Description Too Short",
+        description: "Your description must be at least 10 characters long.",
         variant: "destructive",
       });
       return;
@@ -279,7 +297,9 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                 </div>
                 
                 <div className="mb-4">
-                  <label htmlFor="idea-description" className="block text-secondary-dark font-medium mb-2">Description</label>
+                  <label htmlFor="idea-description" className="block text-secondary-dark font-medium mb-2">
+                    Description <span className="text-xs text-gray-500">(minimum 10 characters)</span>
+                  </label>
                   <Textarea
                     id="idea-description"
                     placeholder="Describe your idea in detail. What is it about? Why is it important? How could it be implemented?"
@@ -287,7 +307,13 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                     onChange={(e) => setDescription(e.target.value)}
                     rows={6}
                     required
+                    minLength={10}
                   />
+                  {description.length > 0 && description.length < 10 && (
+                    <p className="mt-1 text-sm text-red-500">
+                      A descrição deve ter pelo menos 10 caracteres. Atualmente: {description.length} caracteres.
+                    </p>
+                  )}
                 </div>
                 
                 <div className="mb-4">
