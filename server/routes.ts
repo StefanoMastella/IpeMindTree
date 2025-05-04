@@ -97,7 +97,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // ideaData.tags = await generateTags(ideaData.title, ideaData.description);
       }
       
+      // Cria a ideia no banco
       const idea = await storage.createIdea(ideaData);
+      
+      // Se um ID de imagem foi fornecido, anexá-lo à ideia
+      if (ideaData.imageId) {
+        try {
+          console.log(`Vinculando imagem ${ideaData.imageId} à ideia ${idea.id}`);
+          await storage.linkImageToIdea(idea.id, ideaData.imageId, true); // true = é a imagem principal
+        } catch (error) {
+          console.error("Erro ao vincular imagem à ideia:", error);
+          // Não falhar todo o processo se a vinculação da imagem falhar
+        }
+      }
       
       // Generate connections to other ideas
       const allIdeas = await storage.getAllIdeas();

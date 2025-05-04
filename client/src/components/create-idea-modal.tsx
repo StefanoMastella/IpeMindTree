@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -113,19 +113,11 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
         author: "Current User" // Em um app real, seria o usuário logado
       });
       
-      // Se a ideia foi criada com sucesso e temos uma imagem anexada
+      // Obter a ideia criada
       const ideaData = await response.json();
-      if (uploadedImageId && ideaData && ideaData.id) {
-        try {
-          // Vincular a imagem à ideia
-          await apiRequest("POST", `/api/ideas/${ideaData.id}/images/${uploadedImageId}/link`, {
-            isMainImage: true
-          });
-        } catch (error) {
-          console.error("Failed to link image to idea:", error);
-          // Não falhar o fluxo principal se isso falhar
-        }
-      }
+      
+      // Limpar o localStorage após sucesso
+      localStorage.removeItem('tempUploadedImageId');
       
       // Resetar formulário e fechar modal
       setTitle("");
@@ -195,7 +187,11 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
   // Método para lidar com o upload de imagem
   const handleImageUploaded = (data: any) => {
     if (data && data.image && data.image.id) {
-      setUploadedImageId(data.image.id);
+      const imageId = data.image.id;
+      setUploadedImageId(imageId);
+      
+      // Salvar a imagem no localStorage para persistir entre mudanças de aba
+      localStorage.setItem('tempUploadedImageId', imageId.toString());
       
       toast({
         title: "Imagem adicionada",
@@ -206,6 +202,22 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
       setActiveTab("form");
     }
   };
+  
+  // Efeito para restaurar informações da imagem carregada, caso o usuário mude de aba
+  useEffect(() => {
+    // Verificar se há uma imagem carregada temporariamente no localStorage
+    const savedImageId = localStorage.getItem('tempUploadedImageId');
+    if (savedImageId && !uploadedImageId) {
+      setUploadedImageId(parseInt(savedImageId));
+    }
+    
+    // Limpar localStorage quando o modal é fechado
+    return () => {
+      if (!isOpen) {
+        localStorage.removeItem('tempUploadedImageId');
+      }
+    };
+  }, [isOpen, uploadedImageId]);
   
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
