@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageSquareText } from "lucide-react";
+import { Brain, MessageSquareText, Braces } from "lucide-react";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -39,6 +39,12 @@ export default function Header() {
           <Link href="/explore">
             <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
               Explore
+            </a>
+          </Link>
+          <Link href="/obsidian">
+            <a className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
+              <Braces className="h-4 w-4 mr-1" />
+              Obsidian
             </a>
           </Link>
           <Link href="/about">
@@ -83,6 +89,12 @@ export default function Header() {
           <Link href="/explore">
             <a className={`${location === "/explore" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
               Explore
+            </a>
+          </Link>
+          <Link href="/obsidian">
+            <a className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+              <Braces className="h-4 w-4 mr-1" />
+              Obsidian
             </a>
           </Link>
           <Link href="/about">
