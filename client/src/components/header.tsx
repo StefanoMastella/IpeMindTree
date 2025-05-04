@@ -1,14 +1,20 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageSquareText, Braces } from "lucide-react";
+import { Brain, MessageSquareText, Braces, LogIn, LogOut, User } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location] = useLocation();
+  const { user, logoutMutation } = useAuth();
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+  
+  const handleLogout = () => {
+    logoutMutation.mutate();
   };
   
   return (
@@ -42,14 +48,29 @@ export default function Header() {
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
             About
           </Link>
-          <Link href="/auth" className="no-underline">
-            <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Sign In</span>
-            </Button>
-          </Link>
+{user ? (
+            <div className="flex items-center space-x-4">
+              <div className="hidden sm:block">
+                <span className="text-foreground font-medium">Olá, {user.username}</span>
+              </div>
+              <Button 
+                variant="outline" 
+                onClick={handleLogout} 
+                disabled={logoutMutation.isPending}
+                className="flex items-center space-x-1"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span>Sair</span>
+              </Button>
+            </div>
+          ) : (
+            <Link href="/auth" className="no-underline">
+              <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
+                <LogIn className="h-4 w-4 mr-1" />
+                <span>Entrar</span>
+              </Button>
+            </Link>
+          )}
         </nav>
         
         {/* Mobile Menu Button */}
@@ -84,14 +105,24 @@ export default function Header() {
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
             About
           </Link>
-          <Link href="/auth" className="no-underline w-full">
-            <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-              </svg>
-              <span>Sign In</span>
+{user ? (
+            <Button 
+              variant="outline" 
+              onClick={handleLogout} 
+              disabled={logoutMutation.isPending}
+              className="flex items-center space-x-1 w-full justify-center"
+            >
+              <LogOut className="h-4 w-4 mr-1" />
+              <span>Sair</span>
             </Button>
-          </Link>
+          ) : (
+            <Link href="/auth" className="no-underline w-full">
+              <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
+                <LogIn className="h-4 w-4 mr-1" />
+                <span>Entrar</span>
+              </Button>
+            </Link>
+          )}
         </nav>
       </div>
     </header>

@@ -1,245 +1,296 @@
 import { useState } from "react";
-import { useLocation, Link } from "wouter";
+import { Redirect } from "wouter";
+import { useAuth } from "@/hooks/use-auth";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { useToast } from "@/hooks/use-toast";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+
+// Schema para validação do formulário de login
+const loginSchema = z.object({
+  username: z.string()
+    .min(3, "O nome de usuário deve ter pelo menos 3 caracteres")
+    .max(50, "O nome de usuário não pode ter mais de 50 caracteres"),
+  password: z.string()
+    .min(6, "A senha deve ter pelo menos 6 caracteres")
+});
+
+// Schema para validação do formulário de registro
+const registerSchema = z.object({
+  username: z.string()
+    .min(3, "O nome de usuário deve ter pelo menos 3 caracteres")
+    .max(50, "O nome de usuário não pode ter mais de 50 caracteres"),
+  password: z.string()
+    .min(6, "A senha deve ter pelo menos 6 caracteres"),
+  passwordConfirm: z.string()
+}).refine((data) => data.password === data.passwordConfirm, {
+  message: "As senhas não coincidem",
+  path: ["passwordConfirm"],
+});
+
+type LoginFormValues = z.infer<typeof loginSchema>;
+type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const [location, setLocation] = useLocation();
-  const { toast } = useToast();
-  const [loginData, setLoginData] = useState({ username: "", password: "" });
-  const [registerData, setRegisterData] = useState({ username: "", password: "", confirmPassword: "" });
-  const [isLoading, setIsLoading] = useState(false);
+  const { user, loginMutation, registerMutation } = useAuth();
+  const [activeTab, setActiveTab] = useState<string>("login");
 
-  // Simulação de login - em uma versão real, isso seria conectado à API
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simula processamento
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Funcionalidade em desenvolvimento",
-        description: "O sistema de autenticação será implementado na próxima versão.",
-        variant: "default",
-      });
-    }, 1000);
-  };
-
-  // Simulação de registro - em uma versão real, isso seria conectado à API
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (registerData.password !== registerData.confirmPassword) {
-      toast({
-        title: "Erro de validação",
-        description: "As senhas não coincidem.",
-        variant: "destructive",
-      });
-      return;
-    }
-    
-    setIsLoading(true);
-    
-    // Simula processamento
-    setTimeout(() => {
-      setIsLoading(false);
-      toast({
-        title: "Funcionalidade em desenvolvimento",
-        description: "O sistema de registro será implementado na próxima versão.",
-        variant: "default",
-      });
-    }, 1000);
-  };
+  // Se o usuário já estiver autenticado, redirecionar para a página inicial
+  if (user) {
+    return <Redirect to="/" />;
+  }
 
   return (
-    <div className="flex min-h-screen flex-col items-center p-4 md:p-8">
-      {/* Barra de navegação superior */}
-      <div className="w-full max-w-6xl mb-8 flex justify-between items-center">
-        <Link href="/">
-          <div className="flex items-center cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19l-7-7 7-7m8 14l-7-7 7-7" />
-            </svg>
-            <span className="font-medium">Voltar à Home</span>
-          </div>
-        </Link>
-        
-        <div className="flex space-x-4">
-          <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
-          <Link href="/chat" className="text-foreground hover:text-primary transition-colors">Chat</Link>
-          <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
-          <Link href="/obsidian" className="text-foreground hover:text-primary transition-colors">Obsidian</Link>
-          <Link href="/about" className="text-foreground hover:text-primary transition-colors">About</Link>
-        </div>
-      </div>
-      
-      <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Coluna esquerda - Formulários */}
-        <div className="flex flex-col justify-center space-y-6">
-          <div className="text-center md:text-left">
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent mb-2">
+    <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
+      <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Seção do Hero */}
+        <div className="order-2 lg:order-1 flex flex-col justify-center">
+          <div className="space-y-6">
+            <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-500">
               Ipê Mind Tree
             </h1>
-            <p className="text-muted-foreground mb-8">
-              Acesse a plataforma e contribua com o conhecimento coletivo.
+            <p className="text-xl md:text-2xl text-muted-foreground">
+              Transforme ideias em uma rede de conhecimento interligado. Faça parte da nossa comunidade de mentes criativas!
             </p>
-          </div>
-
-          <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Cadastro</TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="login">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Login</CardTitle>
-                  <CardDescription>
-                    Entre com suas credenciais para acessar sua conta.
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleLogin}>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="username">Nome de usuário</Label>
-                      <Input 
-                        id="username" 
-                        placeholder="Seu nome de usuário" 
-                        value={loginData.username}
-                        onChange={(e) => setLoginData({...loginData, username: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="password">Senha</Label>
-                      <Input 
-                        id="password" 
-                        type="password" 
-                        placeholder="Sua senha" 
-                        value={loginData.password}
-                        onChange={(e) => setLoginData({...loginData, password: e.target.value})}
-                        required
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Processando..." : "Entrar"}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="register">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Cadastro</CardTitle>
-                  <CardDescription>
-                    Crie uma conta para participar da comunidade Ipê Mind Tree.
-                  </CardDescription>
-                </CardHeader>
-                <form onSubmit={handleRegister}>
-                  <CardContent className="space-y-4">
-                    <div className="space-y-2">
-                      <Label htmlFor="register-username">Nome de usuário</Label>
-                      <Input 
-                        id="register-username" 
-                        placeholder="Escolha um nome de usuário" 
-                        value={registerData.username}
-                        onChange={(e) => setRegisterData({...registerData, username: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-password">Senha</Label>
-                      <Input 
-                        id="register-password" 
-                        type="password" 
-                        placeholder="Escolha uma senha segura" 
-                        value={registerData.password}
-                        onChange={(e) => setRegisterData({...registerData, password: e.target.value})}
-                        required
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="register-confirm">Confirmar senha</Label>
-                      <Input 
-                        id="register-confirm" 
-                        type="password" 
-                        placeholder="Confirme sua senha" 
-                        value={registerData.confirmPassword}
-                        onChange={(e) => setRegisterData({...registerData, confirmPassword: e.target.value})}
-                        required
-                      />
-                    </div>
-                  </CardContent>
-                  <CardFooter>
-                    <Button type="submit" className="w-full" disabled={isLoading}>
-                      {isLoading ? "Processando..." : "Criar conta"}
-                    </Button>
-                  </CardFooter>
-                </form>
-              </Card>
-            </TabsContent>
-          </Tabs>
-        </div>
-
-        {/* Coluna direita - Hero section */}
-        <div className="hidden md:flex flex-col justify-center">
-          <div className="rounded-lg bg-gradient-to-br from-primary/20 to-accent/20 p-8 backdrop-blur">
-            <h2 className="text-2xl font-bold mb-4">Bem-vindo ao Ipê Mind Tree</h2>
-            <p className="mb-6 text-muted-foreground">
-              Uma plataforma colaborativa onde ideias se conectam e evoluem através da 
-              inteligência coletiva. Compartilhe suas ideias, explore conexões e 
-              contribua para o crescimento do conhecimento compartilhado.
-            </p>
-            <div className="space-y-4">
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                  </svg>
+            <div className="space-y-4 text-lg text-muted-foreground">
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-lg">🌱</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Compartilhe Ideias</h3>
-                  <p className="text-sm text-muted-foreground">Contribua com suas ideias e veja como elas se conectam com outras</p>
+                  <h3 className="font-medium">Plante suas ideias</h3>
+                  <p>Compartilhe conhecimento com a comunidade</p>
                 </div>
               </div>
-              
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                  </svg>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-lg">🔗</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Conecte Conhecimento</h3>
-                  <p className="text-sm text-muted-foreground">Explore mapas mentais e conexões que enriquecem o entendimento</p>
+                  <h3 className="font-medium">Conecte conceitos</h3>
+                  <p>Descubra relações entre ideias com ajuda da IA</p>
                 </div>
               </div>
-              
-              <div className="flex items-start space-x-3">
-                <div className="rounded-full bg-primary/10 p-2">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                  </svg>
+              <div className="flex items-start gap-4">
+                <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                  <span className="text-primary text-lg">🌳</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Converse com IA</h3>
-                  <p className="text-sm text-muted-foreground">Interaja com nossa IA que aprende continuamente com as ideias compartilhadas</p>
+                  <h3 className="font-medium">Cultive a árvore do conhecimento</h3>
+                  <p>Veja o conhecimento coletivo crescer organicamente</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* Seção de autenticação */}
+        <div className="order-1 lg:order-2 flex flex-col justify-center">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-xl mx-auto">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="login">Login</TabsTrigger>
+              <TabsTrigger value="register">Cadastro</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <LoginForm />
+            </TabsContent>
+            
+            <TabsContent value="register">
+              <RegisterForm />
+            </TabsContent>
+          </Tabs>
+        </div>
       </div>
     </div>
+  );
+}
+
+function LoginForm() {
+  const { loginMutation } = useAuth();
+  
+  const form = useForm<LoginFormValues>({
+    resolver: zodResolver(loginSchema),
+    defaultValues: {
+      username: "",
+      password: ""
+    }
+  });
+
+  function onSubmit(values: LoginFormValues) {
+    loginMutation.mutate(values);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Login</CardTitle>
+        <CardDescription>
+          Entre com sua conta para acessar todas as funcionalidades
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de usuário</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Digite seu nome de usuário" autoComplete="username" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Digite sua senha" 
+                      autoComplete="current-password"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? (
+                <>
+                  <span className="mr-2">Entrando...</span>
+                  <span className="animate-spin">⏳</span>
+                </>
+              ) : "Entrar"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
+  );
+}
+
+function RegisterForm() {
+  const { registerMutation } = useAuth();
+  
+  const form = useForm<RegisterFormValues>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      username: "",
+      password: "",
+      passwordConfirm: ""
+    }
+  });
+
+  function onSubmit(values: RegisterFormValues) {
+    // Omitir a confirmação de senha antes de enviar
+    const { passwordConfirm, ...registerData } = values;
+    registerMutation.mutate(registerData);
+  }
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Cadastro</CardTitle>
+        <CardDescription>
+          Crie sua conta para participar da comunidade Ipê Mind Tree
+        </CardDescription>
+      </CardHeader>
+      <CardContent>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            <FormField
+              control={form.control}
+              name="username"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nome de usuário</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Escolha um nome de usuário" autoComplete="username" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="password"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Senha</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Crie uma senha forte" 
+                      autoComplete="new-password"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="passwordConfirm"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirme sua senha</FormLabel>
+                  <FormControl>
+                    <Input 
+                      type="password" 
+                      placeholder="Digite a senha novamente" 
+                      autoComplete="new-password"
+                      {...field} 
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <Button 
+              type="submit" 
+              className="w-full" 
+              disabled={registerMutation.isPending}
+            >
+              {registerMutation.isPending ? (
+                <>
+                  <span className="mr-2">Criando conta...</span>
+                  <span className="animate-spin">⏳</span>
+                </>
+              ) : "Criar conta"}
+            </Button>
+          </form>
+        </Form>
+      </CardContent>
+    </Card>
   );
 }

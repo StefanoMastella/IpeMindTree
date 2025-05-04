@@ -35,12 +35,14 @@ function App() {
   
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
-          <Toaster />
-          <Router />
-        </IdeaDetailProvider>
-      </TooltipProvider>
+      <AuthProvider>
+        <TooltipProvider>
+          <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
+            <Toaster />
+            <Router />
+          </IdeaDetailProvider>
+        </TooltipProvider>
+      </AuthProvider>
     </QueryClientProvider>
   );
 }
