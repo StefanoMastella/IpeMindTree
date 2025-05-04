@@ -2,13 +2,22 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { z } from "zod";
+import multer from "multer";
 import { insertIdeaSchema, insertCommentSchema } from "@shared/schema";
 import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
 import { obsidianService } from "./services/obsidian-service";
+import { log } from "./vite";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configuração do multer para uploads de arquivos
+  const upload = multer({
+    storage: multer.memoryStorage(),
+    limits: {
+      fileSize: 10 * 1024 * 1024, // Limite de 10MB por arquivo
+    },
+  });
   // API Test Endpoint - Usando Google Gemini API em vez da OpenAI
   app.post("/api/test-gemini", async (req, res) => {
     try {
