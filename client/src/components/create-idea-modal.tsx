@@ -278,15 +278,15 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
             <TabsList className="w-full mb-4">
               <TabsTrigger value="form" className="flex items-center">
                 <MessageSquare className="mr-2 h-4 w-4" />
-                Detalhes da Ideia
+                Idea Details
               </TabsTrigger>
               <TabsTrigger value="links" className="flex items-center">
                 <LinkIcon className="mr-2 h-4 w-4" />
-                Links <span className="ml-1 text-xs">(opcional)</span>
+                Links <span className="ml-1 text-xs">(optional)</span>
               </TabsTrigger>
               <TabsTrigger value="images" className="flex items-center">
                 <ImageIcon className="mr-2 h-4 w-4" />
-                Imagens <span className="ml-1 text-xs">(opcional)</span>
+                Images <span className="ml-1 text-xs">(optional)</span>
               </TabsTrigger>
             </TabsList>
             
@@ -318,7 +318,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                   />
                   {description.length > 0 && description.length < 10 && (
                     <p className="mt-1 text-sm text-red-500">
-                      A descrição deve ter pelo menos 10 caracteres. Atualmente: {description.length} caracteres.
+                      Description must have at least 10 characters. Currently: {description.length} characters.
                     </p>
                   )}
                 </div>
@@ -396,7 +396,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                     {uploadedImageId && (
                       <div className="flex items-center px-3 py-1 bg-green-50 text-green-700 rounded-full">
                         <ImageIcon className="h-3 w-3 mr-1" />
-                        <span>1 imagem adicionada</span>
+                        <span>1 image added</span>
                       </div>
                     )}
                     
@@ -417,7 +417,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                     disabled={isSubmitting}
                   >
                     <MessageSquare className="h-5 w-5 mr-2" />
-                    <span className="text-lg font-medium">{isSubmitting ? "Compartilhando..." : "Compartilhar Ideia"}</span>
+                    <span className="text-lg font-medium">{isSubmitting ? "Sharing..." : "Share Idea"}</span>
                   </Button>
                 </div>
               </form>
@@ -426,15 +426,15 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
             <TabsContent value="links">
               <div className="space-y-4">
                 <div>
-                  <h3 className="text-lg font-medium mb-2">Adicionar Links</h3>
+                  <h3 className="text-lg font-medium mb-2">Add Links</h3>
                   <p className="text-sm text-gray-500 mb-4">
-                    Compartilhe links relevantes para sua ideia, como artigos, projetos semelhantes, inspirações, ou qualquer outro recurso útil.
+                    Share relevant links for your idea, such as articles, similar projects, inspirations, or any other useful resources.
                   </p>
                   
                   <div className="flex flex-wrap gap-2 mb-4 min-h-[50px] border border-border rounded-md p-3">
                     {links.length === 0 ? (
                       <div className="w-full text-center text-gray-400 py-2">
-                        Nenhum link adicionado ainda
+                        No links added yet
                       </div>
                     ) : (
                       links.map((link, index) => (
@@ -460,7 +460,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
                   <div className="flex">
                     <Input
                       type="url"
-                      placeholder="Adicionar URL (ex: https://example.com)"
+                      placeholder="Add URL (ex: https://example.com)"
                       value={linkInput}
                       onChange={(e) => setLinkInput(e.target.value)}
                       onKeyDown={handleLinkKeyDown}
