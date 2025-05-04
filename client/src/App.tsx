@@ -13,6 +13,7 @@ import ObsidianPage from "@/pages/obsidian-page";
 import AuthPage from "@/pages/auth-page";
 import { useState } from "react";
 import { IdeaDetailProvider } from "./lib/types";
+import { AuthProvider } from "./hooks/use-auth";
 
 function Router() {
   return (

@@ -9,8 +9,12 @@ import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
 import { obsidianService } from "./services/obsidian-service";
 import { log } from "./vite";
+import { setupAuthRoutes, requireAuth } from "./auth";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Configurar rotas de autenticação
+  setupAuthRoutes(app);
+
   // Configuração do multer para uploads de arquivos
   const upload = multer({
     storage: multer.memoryStorage(),
