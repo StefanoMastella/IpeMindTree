@@ -165,14 +165,14 @@ export class TelegramBot {
     // Comando de ajuda
     this.bot.command('help', (ctx) => {
       ctx.reply(
-        'Comandos disponíveis:\n\n' +
-        '/start - Inicia a conversa com o bot\n' +
-        '/help - Mostra esta mensagem de ajuda\n' +
-        '/ideas - Lista as ideias mais recentes\n' +
-        '/about - Informações sobre o Ipê Mind Tree\n' +
-        '/newidea - Compartilhe uma nova ideia na plataforma\n\n' +
-        'Você também pode simplesmente enviar uma pergunta para consultar ' +
-        'diretamente a nossa base de conhecimento!'
+        'Available commands:\n\n' +
+        '/start - Start a conversation with the bot\n' +
+        '/help - Shows this help message\n' +
+        '/ideas - Lists the most recent ideas\n' +
+        '/about - Information about Ipê Mind Tree\n' +
+        '/newidea - Share a new idea on the platform\n\n' +
+        'You can also simply send a question to directly query ' +
+        'our knowledge base!'
       );
     });
     
@@ -263,12 +263,12 @@ export class TelegramBot {
     this.bot.command('about', (ctx) => {
       ctx.reply(
         'Ipê Mind Tree 🌳\n\n' +
-        'Uma plataforma de conhecimento colaborativo que permite capturar, ' +
-        'conectar e explorar ideias de forma fluida através de uma interface ' +
-        'potencializada por inteligência artificial.\n\n' +
-        'O Ipê Mind Tree faz parte do ecossistema de Ipê City, promovendo ' +
-        'a inteligência coletiva através da tecnologia.\n\n' +
-        'Acesse: https://ipemindtree.com'
+        'A collaborative knowledge platform that allows you to capture, ' +
+        'connect and explore ideas fluidly through an interface ' +
+        'powered by artificial intelligence.\n\n' +
+        'Ipê Mind Tree is part of the Ipê City ecosystem, promoting ' +
+        'collective intelligence through technology.\n\n' +
+        'Visit: https://ipemindtree.com'
       );
     });
     
@@ -338,8 +338,8 @@ export class TelegramBot {
     
     // Manipulador de erros
     this.bot.catch((err, ctx) => {
-      console.error('Erro no bot do Telegram:', err);
-      ctx.reply('Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.');
+      console.error('Error in Telegram bot:', err);
+      ctx.reply('An error occurred while processing your request. Please try again later.');
     });
   }
   
@@ -373,6 +373,6 @@ export function initializeTelegramBot() {
     const telegramBot = new TelegramBot(token);
     telegramBot.start();
   } catch (error) {
-    console.error('Erro ao inicializar o bot do Telegram:', error);
+    console.error('Error initializing Telegram bot:', error);
   }
 }
