@@ -115,12 +115,12 @@ export function setupAuthRoutes(app: Express) {
       // Find user
       const user = await storage.getUserByUsername(username);
       if (!user) {
-        return res.status(401).json({ message: 'Credenciais inválidas.' });
+        return res.status(401).json({ message: 'Invalid credentials.' });
       }
       
-      // Verificar senha
+      // Verify password
       if (!comparePasswords(password, user.password)) {
-        return res.status(401).json({ message: 'Credenciais inválidas.' });
+        return res.status(401).json({ message: 'Invalid credentials.' });
       }
       
       // Start session
@@ -130,8 +130,8 @@ export function setupAuthRoutes(app: Express) {
       const { password: _, ...safeUser } = user;
       res.json(safeUser);
     } catch (error) {
-      console.error('Erro no login:', error);
-      res.status(500).json({ message: 'Erro ao fazer login.' });
+      console.error('Login error:', error);
+      res.status(500).json({ message: 'Error logging in.' });
     }
   });
   
@@ -139,10 +139,10 @@ export function setupAuthRoutes(app: Express) {
   app.post('/api/auth/logout', (req, res) => {
     req.session.destroy(err => {
       if (err) {
-        console.error('Erro ao fazer logout:', err);
-        return res.status(500).json({ message: 'Erro ao fazer logout.' });
+        console.error('Logout error:', err);
+        return res.status(500).json({ message: 'Error logging out.' });
       }
-      res.json({ message: 'Logout realizado com sucesso.' });
+      res.json({ message: 'Logout successful.' });
     });
   });
   
