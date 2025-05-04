@@ -513,6 +513,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  
+  // Upload de arquivos do Obsidian
+  app.post("/api/obsidian/upload", upload.array('files'), async (req, res) => {
+    try {
+      // Verificar se existem arquivos enviados
+      if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
+        return res.status(400).json({ message: "No files uploaded" });
+      }
+      
+      // Processar os arquivos recebidos
+      const files = req.files.map((file: any) => ({
+        name: file.originalname,
+        content: file.buffer.toString('utf-8')
+      }));
+      
+      // Nome do usuário para o log de importação
+      const username = "usuário"; // Em uma versão com autenticação, usar o nome do usuário atual
+      
+      // Importar os arquivos
+      const success = await obsidianService.importFromFiles(files, username);
+      
+      if (success) {
+        res.status(200).json({ 
+          message: "Files imported successfully",
+          importedFiles: files.length
+        });
+      } else {
+        res.status(500).json({ message: "Failed to import files" });
+      }
+    } catch (err) {
+      console.error("Error uploading Obsidian files:", err);
+      res.status(500).json({ 
+        message: "Failed to process uploaded files",
+        error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
