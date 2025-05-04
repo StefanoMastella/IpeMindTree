@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-// Configuração para servir arquivos estáticos da pasta de uploads
+// Configuration to serve static files from the uploads folder
 app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use((req, res, next) => {
@@ -43,7 +43,7 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Inicializar o banco de dados com dados de exemplo
+  // Initialize the database with sample data
   try {
     await (storage as any).seedInitialData();
   } catch (error) {
@@ -80,12 +80,12 @@ app.use((req, res, next) => {
   }, () => {
     log(`serving on port ${port}`);
     
-    // Inicializar o bot do Telegram após o servidor estar rodando
+    // Initialize the Telegram bot after the server is running
     try {
       initializeTelegramBot();
-      log('Bot do Telegram inicializado');
+      log('Telegram bot initialized');
     } catch (error) {
-      console.error('Erro ao inicializar o bot do Telegram:', error);
+      console.error('Error initializing Telegram bot:', error);
     }
   });
 })();

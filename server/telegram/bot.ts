@@ -4,9 +4,9 @@ import { message } from 'telegraf/filters';
 import { storage } from '../storage';
 import { Update, CallbackQuery } from 'telegraf/typings/core/types/typegram';
 
-// Interface para os dados de sessão do usuário
+// Interface for user session data
 interface SessionData {
-  // Estado do processo de criação de ideia
+  // Idea creation process state
   ideaCreation?: {
     step: 'title' | 'description' | 'tags' | 'author' | 'confirm';
     data: {
@@ -18,13 +18,13 @@ interface SessionData {
   };
 }
 
-// Estendendo o contexto do Telegraf para incluir dados de sessão
+// Extending Telegraf context to include session data
 interface BotContext extends Context {
   session: SessionData;
 }
 
 /**
- * Classe que gerencia o bot do Telegram integrado ao Ipê Mind Tree
+ * Class that manages the Telegram bot integrated with Ipê Mind Tree
  */
 export class TelegramBot {
   private bot: Telegraf<BotContext>;
@@ -36,7 +36,7 @@ export class TelegramBot {
   }
   
   /**
-   * Configura middleware e estado da sessão
+   * Configure middleware and session state
    */
   private setupMiddleware() {
     // Inicializa o middleware de sessão com tipo correto
@@ -52,7 +52,7 @@ export class TelegramBot {
   }
   
   /**
-   * Função para lidar com as etapas de criação de ideia
+   * Function to handle idea creation steps
    */
   private async handleIdeaCreationStep(ctx: BotContext, text: string) {
     const { ideaCreation } = ctx.session;
@@ -150,7 +150,7 @@ export class TelegramBot {
   }
   
   /**
-   * Configura comandos e handlers de mensagens
+   * Configure commands and message handlers
    */
   private setupCommands() {
     // Comando de início
