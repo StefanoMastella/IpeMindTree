@@ -95,10 +95,10 @@ export function setupAuthRoutes(app: Express) {
       
       const newUser = await storage.createUser(hashedUser);
       
-      // Iniciar sessão
+      // Start session
       req.session.userId = newUser.id;
       
-      // Retornar usuário sem a senha
+      // Return user without password
       const { password, ...safeUser } = newUser;
       res.status(201).json(safeUser);
     } catch (error) {
@@ -112,7 +112,7 @@ export function setupAuthRoutes(app: Express) {
     try {
       const { username, password } = req.body;
       
-      // Buscar usuário
+      // Find user
       const user = await storage.getUserByUsername(username);
       if (!user) {
         return res.status(401).json({ message: 'Credenciais inválidas.' });
@@ -123,10 +123,10 @@ export function setupAuthRoutes(app: Express) {
         return res.status(401).json({ message: 'Credenciais inválidas.' });
       }
       
-      // Iniciar sessão
+      // Start session
       req.session.userId = user.id;
       
-      // Retornar usuário sem a senha
+      // Return user without password
       const { password: _, ...safeUser } = user;
       res.json(safeUser);
     } catch (error) {
