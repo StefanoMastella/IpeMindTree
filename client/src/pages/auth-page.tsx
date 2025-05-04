@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useLocation } from "wouter";
+import { useLocation, Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -57,7 +57,27 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4 md:p-8">
+    <div className="flex min-h-screen flex-col items-center p-4 md:p-8">
+      {/* Barra de navegação superior */}
+      <div className="w-full max-w-6xl mb-8 flex justify-between items-center">
+        <Link href="/">
+          <div className="flex items-center cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-primary mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19l-7-7 7-7m8 14l-7-7 7-7" />
+            </svg>
+            <span className="font-medium">Voltar à Home</span>
+          </div>
+        </Link>
+        
+        <div className="flex space-x-4">
+          <Link href="/" className="text-foreground hover:text-primary transition-colors">Home</Link>
+          <Link href="/chat" className="text-foreground hover:text-primary transition-colors">Chat</Link>
+          <Link href="/explore" className="text-foreground hover:text-primary transition-colors">Explore</Link>
+          <Link href="/obsidian" className="text-foreground hover:text-primary transition-colors">Obsidian</Link>
+          <Link href="/about" className="text-foreground hover:text-primary transition-colors">About</Link>
+        </div>
+      </div>
+      
       <div className="w-full max-w-6xl grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Coluna esquerda - Formulários */}
         <div className="flex flex-col justify-center space-y-6">
