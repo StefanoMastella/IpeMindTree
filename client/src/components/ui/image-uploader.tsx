@@ -112,6 +112,7 @@ export function ImageUploader({
       }
 
       const imageData = await response.json();
+      console.log('Imagem enviada com sucesso. Dados da imagem:', imageData);
       setUploadProgress(100);
 
       toast({
@@ -120,6 +121,7 @@ export function ImageUploader({
       });
 
       if (onImageUploaded) {
+        console.log('Chamando callback onImageUploaded com:', imageData);
         onImageUploaded(imageData);
       }
 
