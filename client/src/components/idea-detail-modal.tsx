@@ -29,6 +29,12 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
     enabled: isOpen && ideaId !== null
   });
   
+  // Fetch image data if available
+  const { data: images = [] } = useQuery({
+    queryKey: [`/api/ideas/${ideaId}/images`],
+    enabled: isOpen && ideaId !== null
+  });
+  
   // Handle comment submission
   const handleSubmitComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -71,12 +77,23 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
         ) : (
           <>
             <div className="overflow-y-auto flex-grow p-6">
+              {/* Imagem principal, se houver */}
+              {images && images.length > 0 && (
+                <div className="mb-6 flex justify-center">
+                  <img 
+                    src={`/api/images/${images[0].id}`} 
+                    alt={idea?.title} 
+                    className="max-w-full h-auto max-h-[300px] rounded-lg shadow-md"
+                  />
+                </div>
+              )}
+              
               <div className="mb-6">
                 <h4 className="text-lg font-medium text-foreground mb-2 font-roboto">Description</h4>
                 <p className="text-white mb-4">{idea?.description}</p>
                 
                 <div className="flex flex-wrap gap-2 mb-3">
-                  {idea?.tags.map((tag: string, index: number) => (
+                  {idea?.tags?.map((tag: string, index: number) => (
                     <span 
                       key={index} 
                       className="bg-primary-light text-primary text-xs px-2 py-1 rounded-full"
@@ -85,6 +102,27 @@ export default function IdeaDetailModal({ ideaId, isOpen, onClose }: IdeaDetailM
                     </span>
                   ))}
                 </div>
+                
+                {idea?.links && idea.links.length > 0 && (
+                  <div className="mb-4">
+                    <h4 className="text-md font-medium text-foreground mb-2 font-roboto">Links</h4>
+                    <div className="space-y-1">
+                      {idea.links.map((link: string, index: number) => (
+                        <div key={index} className="flex items-center">
+                          <LinkIcon className="h-3 w-3 mr-2 text-blue-400" />
+                          <a 
+                            href={link} 
+                            target="_blank" 
+                            rel="noopener noreferrer" 
+                            className="text-blue-400 hover:text-blue-500 hover:underline text-sm truncate"
+                          >
+                            {link}
+                          </a>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 
                 <div className="flex items-center text-sm text-gray-500 mt-4">
                   <User className="h-4 w-4 mr-1" />
