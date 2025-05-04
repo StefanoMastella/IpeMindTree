@@ -349,7 +349,7 @@ export class TelegramBot {
   public start() {
     // Iniciar o bot no modo polling
     this.bot.launch();
-    console.log('Bot do Telegram iniciado com sucesso!');
+    console.log('Telegram bot started successfully!');
     
     // Configurar encerramento gracioso
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
@@ -365,7 +365,7 @@ export function initializeTelegramBot() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
   
   if (!token) {
-    console.error('TELEGRAM_BOT_TOKEN não encontrado nas variáveis de ambiente');
+    console.error('TELEGRAM_BOT_TOKEN not found in environment variables');
     return;
   }
   
