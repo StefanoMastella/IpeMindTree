@@ -114,6 +114,11 @@ export default function IdeaDetail() {
           </CardContent>
         </Card>
         
+        {/* Imagens da Ideia */}
+        <div className="mb-6">
+          <IdeaImages ideaId={parseInt(id)} editable={true} />
+        </div>
+
         {/* Connections Visualization */}
         <div className="mb-6">
           <h2 className="text-lg font-medium text-secondary-dark mb-4">Connections</h2>

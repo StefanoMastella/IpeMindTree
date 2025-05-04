@@ -368,9 +368,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Listar todas as imagens
   app.get("/api/images", async (req, res) => {
     try {
-      // Esta função ainda não está implementada no armazenamento
-      // Será necessário adicionar um método para listar todas as imagens
-      const images = await db.select().from(schema.images).orderBy(schema.images.createdAt, 'desc');
+      // Usamos a instância de DB diretamente
+      const images = await db.query.images.findMany();
       res.json(images);
     } catch (err) {
       console.error("Erro ao listar imagens:", err);
