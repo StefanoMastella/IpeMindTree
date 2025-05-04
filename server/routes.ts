@@ -79,8 +79,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new idea
   app.post("/api/ideas", async (req, res) => {
     try {
-      const parseResult = insertIdeaSchema.safeParse(req.body);
+      console.log("Recebendo dados para criação de ideia:", req.body);
+      
+      // Garantir que campos opcionais estejam presentes para validação
+      const formattedData = {
+        ...req.body,
+        tags: req.body.tags || [],
+        links: req.body.links || [],
+      };
+      
+      console.log("Dados formatados para validação:", formattedData);
+      
+      const parseResult = insertIdeaSchema.safeParse(formattedData);
       if (!parseResult.success) {
+        console.log("Erro na validação:", parseResult.error.errors);
         return res.status(400).json({ message: "Invalid idea data", errors: parseResult.error.errors });
       }
       

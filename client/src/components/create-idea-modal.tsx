@@ -103,15 +103,27 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
         }
       }
       
-      // Enviar a ideia para o servidor
-      const response = await apiRequest("POST", "/api/ideas", {
+      // Preparar dados para o envio sem campos opcionais vazios
+      const requestData: any = {
         title: title.trim(),
         description: description.trim(),
         tags: ideaTags,
-        links: links,
-        imageId: uploadedImageId, // ID da imagem carregada (se houver)
         author: "Current User" // Em um app real, seria o usuário logado
-      });
+      };
+      
+      // Adicionar campos opcionais apenas se possuem valor
+      if (links && links.length > 0) {
+        requestData.links = links;
+      }
+      
+      if (uploadedImageId) {
+        requestData.imageId = uploadedImageId;
+      }
+      
+      console.log("Dados a serem enviados:", requestData);
+      
+      // Enviar a ideia para o servidor
+      const response = await apiRequest("POST", "/api/ideas", requestData);
       
       // Obter a ideia criada
       const ideaData = await response.json();

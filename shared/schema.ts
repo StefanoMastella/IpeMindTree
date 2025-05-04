@@ -56,8 +56,8 @@ export const insertIdeaSchema = createInsertSchema(ideas)
   .extend({
     title: z.string().min(3).max(100),
     description: z.string().min(10),
-    tags: z.array(z.string()).optional().default([]), // Tags são opcionais
-    links: z.array(z.string()).optional().default([]), // Links são opcionais
+    tags: z.array(z.string()).optional(), // Tags são totalmente opcionais
+    links: z.array(z.string()).optional(), // Links são totalmente opcionais
     imageId: z.number().optional(), // ID da imagem opcional
   });
 

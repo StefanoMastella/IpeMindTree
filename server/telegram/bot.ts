@@ -234,6 +234,7 @@ export class TelegramBot {
           title,
           description,
           tags: tags || [],
+          links: [],  // Campo obrigatório conforme schema
           author
         };
         
