@@ -30,7 +30,7 @@ export default function ObsidianNetwork() {
     queryFn: async () => {
       const response = await fetch('/api/obsidian/network');
       if (!response.ok) {
-        throw new Error('Falha ao carregar dados da rede Obsidian');
+        throw new Error('Failed to load Obsidian network data');
       }
       return response.json();
     }
@@ -60,7 +60,7 @@ export default function ObsidianNetwork() {
     return (
       <div className="flex flex-col items-center justify-center h-96">
         <Loader2 className="h-8 w-8 animate-spin text-primary" />
-        <p className="mt-4 text-muted-foreground">Carregando rede do Obsidian...</p>
+        <p className="mt-4 text-muted-foreground">Loading Obsidian network...</p>
       </div>
     );
   }
@@ -68,9 +68,9 @@ export default function ObsidianNetwork() {
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-96 text-destructive">
-        <p className="font-semibold">Erro ao carregar rede do Obsidian</p>
+        <p className="font-semibold">Error loading Obsidian network</p>
         <p className="text-sm text-muted-foreground mt-2">
-          {error instanceof Error ? error.message : 'Erro desconhecido'}
+          {error instanceof Error ? error.message : 'Unknown error'}
         </p>
       </div>
     );
@@ -97,10 +97,10 @@ export default function ObsidianNetwork() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-bold">Rede de Conhecimento do Obsidian</CardTitle>
+        <CardTitle className="text-xl font-bold">Obsidian Knowledge Network</CardTitle>
         <CardDescription>
-          Visualize as conexões entre os conceitos importados do Obsidian.
-          {hasData ? ` ${data.nodes.length} nós e ${data.links.length} conexões.` : ''}
+          Visualize connections between concepts imported from Obsidian.
+          {hasData ? ` ${data.nodes.length} nodes and ${data.links.length} connections.` : ''}
         </CardDescription>
       </CardHeader>
       
@@ -108,10 +108,10 @@ export default function ObsidianNetwork() {
         {hasData ? (
           <div className="space-y-6">
             <div className="border rounded-md p-4">
-              <h3 className="text-lg font-semibold mb-2">Resumo</h3>
+              <h3 className="text-lg font-semibold mb-2">Summary</h3>
               <p className="text-sm text-muted-foreground">
-                Foram encontrados <span className="font-medium">{data.nodes.length}</span> nós e{' '}
-                <span className="font-medium">{data.links.length}</span> conexões na sua base de conhecimento.
+                We found <span className="font-medium">{data.nodes.length}</span> nodes and{' '}
+                <span className="font-medium">{data.links.length}</span> connections in your knowledge base.
               </p>
               
               {/* Listagem de grupos */}

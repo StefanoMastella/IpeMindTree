@@ -157,7 +157,7 @@ export default function ObsidianUploader() {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle className="text-xl font-bold">Importar Arquivos Obsidian</CardTitle>
+        <CardTitle className="text-xl font-bold">Import Obsidian Files</CardTitle>
       </CardHeader>
       
       <CardContent>
@@ -224,7 +224,7 @@ export default function ObsidianUploader() {
             }}
             disabled={files.length === 0 || isUploading}
           >
-            Limpar
+            Clear
           </Button>
           
           <Button
@@ -235,12 +235,12 @@ export default function ObsidianUploader() {
             {isUploading ? (
               <>
                 <span className="animate-spin rounded-full h-4 w-4 border-2 border-primary-foreground border-t-transparent"></span>
-                <span>Processando...</span>
+                <span>Processing...</span>
               </>
             ) : (
               <>
                 <Upload className="h-4 w-4" />
-                <span>Importar</span>
+                <span>Import</span>
               </>
             )}
           </Button>
