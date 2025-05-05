@@ -2,7 +2,6 @@ import { Telegraf, session, Markup, Context } from 'telegraf';
 import { ragService } from '../services/rag-service';
 import { message } from 'telegraf/filters';
 import { storage } from '../storage';
-import { Update, CallbackQuery } from 'telegraf/typings/core/types/typegram';
 
 // Interface for user session data
 interface SessionData {
