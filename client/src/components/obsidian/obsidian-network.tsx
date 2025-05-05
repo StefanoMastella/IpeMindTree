@@ -36,7 +36,7 @@ export default function ObsidianNetwork() {
     }
   });
   
-  // Atualiza as dimensões do gráfico quando a janela é redimensionada
+  // Update graph dimensions when window is resized
   useEffect(() => {
     const handleResize = () => {
       const container = document.getElementById('graph-container');
@@ -78,7 +78,7 @@ export default function ObsidianNetwork() {
   
   const hasData = data && data.nodes && data.nodes.length > 0;
   
-  // Função para obter uma cor baseada no grupo do nó
+  // Function to get a color based on the node group
   const getGroupColor = (group: string) => {
     const colorMap: Record<string, string> = {
       uncategorized: '#6c757d',
@@ -114,9 +114,9 @@ export default function ObsidianNetwork() {
                 <span className="font-medium">{data.links.length}</span> connections in your knowledge base.
               </p>
               
-              {/* Listagem de grupos */}
+              {/* Group listing */}
               <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Grupos de conceitos:</h4>
+                <h4 className="text-sm font-medium mb-2">Concept groups:</h4>
                 <div className="flex flex-wrap gap-2">
                   {[...new Set(data.nodes.map(node => node.group))].map(group => (
                     <div 
@@ -125,7 +125,7 @@ export default function ObsidianNetwork() {
                       style={{ backgroundColor: `${getGroupColor(group)}20`, color: getGroupColor(group) }}
                     >
                       <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getGroupColor(group) }}></div>
-                      {group || 'sem grupo'}
+                      {group || 'no group'}
                       <span className="text-foreground opacity-70">
                         ({data.nodes.filter(node => node.group === group).length})
                       </span>
@@ -135,13 +135,13 @@ export default function ObsidianNetwork() {
               </div>
             </div>
             
-            {/* Lista de nós principais */}
+            {/* Main nodes list */}
             <div className="border rounded-md p-4">
-              <h3 className="text-lg font-semibold mb-2">Nós principais</h3>
+              <h3 className="text-lg font-semibold mb-2">Main Nodes</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {data.nodes
                   .sort((a, b) => {
-                    // Ordena por número de conexões (aqueles que têm mais links são mais importantes)
+                    // Sort by number of connections (nodes with more links are more important)
                     const aConnections = data.links.filter(
                       link => link.source === a.id || link.target === a.id
                     ).length;
@@ -150,9 +150,9 @@ export default function ObsidianNetwork() {
                     ).length;
                     return bConnections - aConnections;
                   })
-                  .slice(0, 9) // Pega apenas os 9 principais nós
+                  .slice(0, 9) // Get only the top 9 nodes
                   .map(node => {
-                    // Calcula número de conexões
+                    // Calculate number of connections
                     const connections = data.links.filter(
                       link => link.source === node.id || link.target === node.id
                     ).length;
@@ -171,7 +171,7 @@ export default function ObsidianNetwork() {
                         </div>
                         
                         <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{connections} conexões</span>
+                          <span className="text-xs text-muted-foreground">{connections} connections</span>
                           
                           {node.tags && node.tags.length > 0 && (
                             <div className="flex-1 flex flex-wrap gap-1">
@@ -198,14 +198,14 @@ export default function ObsidianNetwork() {
             </div>
             
             <p className="text-xs text-center text-muted-foreground">
-              Nota: Uma visualização de grafo interativa estará disponível em breve. No momento, 
-              estamos apresentando um resumo dos dados importados do Obsidian.
+              Note: An interactive graph visualization will be available soon. Currently, 
+              we are presenting a summary of the data imported from Obsidian.
             </p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-96">
             <p className="text-muted-foreground">
-              Nenhum dado disponível. Importe arquivos do Obsidian para visualizar a rede.
+              No data available. Import Obsidian files to visualize the network.
             </p>
           </div>
         )}
