@@ -245,23 +245,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const id = parseInt(req.params.id);
       if (isNaN(id)) {
-        return res.status(400).json({ message: "ID de ideia inválido" });
+        return res.status(400).json({ message: "Invalid idea ID" });
       }
       
-      // Busca a ideia para garantir que existe
+      // Find the idea to ensure it exists
       const idea = await storage.getIdea(id);
       if (!idea) {
-        return res.status(404).json({ message: "Ideia não encontrada" });
+        return res.status(404).json({ message: "Idea not found" });
       }
       
-      // Exclui a ideia
+      // Delete the idea
       await storage.deleteIdea(id);
       
-      res.status(200).json({ message: `Ideia ${id} excluída com sucesso` });
+      res.status(200).json({ message: `Idea ${id} successfully deleted` });
     } catch (err) {
-      console.error("Erro ao excluir ideia:", err);
+      console.error("Error deleting idea:", err);
       res.status(500).json({ 
-        message: "Falha ao excluir ideia", 
+        message: "Failed to delete idea", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
@@ -297,7 +297,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Chat API - Permite conversar com a IA sobre as ideias
+  // Chat API - Allows conversing with AI about ideas
   app.post("/api/chat", async (req, res) => {
     try {
       const { question } = req.body;
@@ -306,7 +306,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Invalid question format. Please provide a text question." });
       }
       
-      // Chamar o serviço LLM com a pergunta do usuário
+      // Call the LLM service with the user's question
       const response = await callGeminiAPI(question);
       
       res.json({
@@ -322,12 +322,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Telegram API - Endpoints para integração com o bot do Telegram
+  // Telegram API - Endpoints for Telegram bot integration
   
-  // Endpoint para consulta RAG do bot do Telegram
+  // Endpoint for Telegram bot RAG query
   app.post("/api/telegram/query", async (req, res) => {
     try {
-      // Verificação básica de autenticação (melhorar em produção)
+      // Basic authentication check (improve in production)
       const apiKey = req.headers['x-api-key'];
       if (apiKey !== process.env.TELEGRAM_API_KEY) {
         return res.status(401).json({ success: false, error: "Unauthorized" });
@@ -342,7 +342,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Consultar o serviço RAG
+      // Query the RAG service
       const response = await ragService.queryRag(query);
       
       res.json({ 
@@ -359,10 +359,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Endpoint para listar ideias recentes com resumos
+  // Endpoint to list recent ideas with summaries
   app.get("/api/telegram/recent-ideas", async (req, res) => {
     try {
-      // Verificação básica de autenticação (melhorar em produção)
+      // Basic authentication check (improve in production)
       const apiKey = req.headers['x-api-key'];
       if (apiKey !== process.env.TELEGRAM_API_KEY) {
         return res.status(401).json({ success: false, error: "Unauthorized" });
@@ -370,7 +370,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const limit = req.query.limit ? parseInt(req.query.limit as string) : 5;
       
-      // Obter ideias recentes com resumos gerados pela IA
+      // Get recent ideas with AI-generated summaries
       const recentIdeas = await ragService.getRecentIdeasWithSummaries(limit);
       
       res.json({ 

@@ -347,8 +347,11 @@ export class TelegramBot {
    * Starts the Telegram bot
    */
   public start() {
-    // Start the bot in polling mode
-    this.bot.launch();
+    // Start the bot in polling mode with proper configuration to avoid conflicts
+    this.bot.launch({
+      allowedUpdates: ['message', 'callback_query'], // Only listen for these update types
+      dropPendingUpdates: true // Important: Drop pending updates to avoid conflicts
+    });
     console.log('Telegram bot started successfully!');
     
     // Configure graceful shutdown

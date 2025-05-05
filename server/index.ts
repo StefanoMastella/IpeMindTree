@@ -81,11 +81,16 @@ app.use((req, res, next) => {
     log(`serving on port ${port}`);
     
     // Initialize the Telegram bot after the server is running
-    try {
-      initializeTelegramBot();
-      log('Telegram bot initialized');
-    } catch (error) {
-      console.error('Error initializing Telegram bot:', error);
+    // Only initialize in production or when explicitly enabled
+    if (process.env.NODE_ENV === 'production' || process.env.ENABLE_TELEGRAM_BOT === 'true') {
+      try {
+        initializeTelegramBot();
+        log('Telegram bot initialized');
+      } catch (error) {
+        console.error('Error initializing Telegram bot:', error);
+      }
+    } else {
+      log('Telegram bot initialization skipped in development mode');
     }
   });
 })();
