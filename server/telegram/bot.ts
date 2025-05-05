@@ -153,7 +153,7 @@ export class TelegramBot {
    * Configure commands and message handlers
    */
   private setupCommands() {
-    // Comando de início
+    // Start command
     this.bot.start((ctx) => {
       ctx.reply(
         `Hello, ${ctx.from?.first_name || 'visitor'}! 👋\n\nWelcome to the Ipê Mind Tree Bot!\n\n` +
@@ -162,7 +162,7 @@ export class TelegramBot {
       );
     });
     
-    // Comando de ajuda
+    // Help command
     this.bot.command('help', (ctx) => {
       ctx.reply(
         'Available commands:\n\n' +
@@ -176,9 +176,9 @@ export class TelegramBot {
       );
     });
     
-    // Comando para criar uma nova ideia
+    // Command to create a new idea
     this.bot.command('newidea', (ctx) => {
-      // Inicializar a sessão de criação de ideia
+      // Initialize idea creation session
       ctx.session = {
         ideaCreation: {
           step: 'title',
@@ -208,25 +208,25 @@ export class TelegramBot {
       ctx.session = {};
       
       // Confirmar o cancelamento
-      ctx.editMessageText('Criação de ideia cancelada. Você pode começar novamente quando quiser com /newidea.');
+      ctx.editMessageText('Idea creation canceled. You can start again anytime with /newidea.');
     });
     
     // Callback para confirmar a criação de ideia
     this.bot.action('confirm_idea', async (ctx) => {
       if (!ctx.session?.ideaCreation?.data) {
-        return ctx.reply('Ocorreu um erro. Por favor, tente novamente com /newidea.');
+        return ctx.reply('An error occurred. Please try again with /newidea.');
       }
       
       const { title, description, tags, author } = ctx.session.ideaCreation.data;
       
       if (!title || !description || !author) {
-        return ctx.reply('Informações incompletas. Por favor, tente novamente com /newidea.');
+        return ctx.reply('Incomplete information. Please try again with /newidea.');
       }
       
       try {
         // Editar a mensagem para indicar processamento
         await ctx.editMessageText(
-          'Compartilhando sua ideia... Por favor, aguarde. ⏳'
+          'Sharing your idea... Please wait. ⏳'
         );
         
         // Criar a ideia no sistema
@@ -246,15 +246,15 @@ export class TelegramBot {
         
         // Enviar confirmação
         await ctx.reply(
-          `✅ *Ideia compartilhada com sucesso!*\n\n` +
-          `Sua ideia "${title}" foi adicionada ao Ipê Mind Tree com o ID #${idea.id}.\n\n` +
-          `Obrigado por contribuir para a nossa comunidade de conhecimento! 🌳`,
+          `✅ *Idea shared successfully!*\n\n` +
+          `Your idea "${title}" has been added to Ipê Mind Tree with ID #${idea.id}.\n\n` +
+          `Thank you for contributing to our knowledge community! 🌳`,
           { parse_mode: 'Markdown' }
         );
       } catch (error) {
-        console.error('Erro ao criar ideia:', error);
+        console.error('Error creating idea:', error);
         await ctx.reply(
-          'Desculpe, ocorreu um erro ao compartilhar sua ideia. Por favor, tente novamente mais tarde.'
+          'Sorry, there was an error sharing your idea. Please try again later.'
         );
       }
     });
@@ -274,29 +274,29 @@ export class TelegramBot {
     
     // Comando para listar ideias recentes
     this.bot.command('ideas', async (ctx) => {
-      ctx.reply('Buscando as ideias mais recentes... ⏳');
+      ctx.reply('Searching for recent ideas... ⏳');
       
       try {
         const recentIdeas = await ragService.getRecentIdeasWithSummaries(5);
         
         if (recentIdeas.length === 0) {
-          return ctx.reply('Não há ideias cadastradas no sistema ainda.');
+          return ctx.reply('There are no ideas registered in the system yet.');
         }
         
-        let message = 'Ideias recentes na Ipê Mind Tree:\n\n';
+        let message = 'Recent ideas in Ipê Mind Tree:\n\n';
         
         recentIdeas.forEach((idea, index) => {
           message += `${index + 1}. *${idea.title}*\n`;
           message += `   ${idea.summary}\n`;
-          message += `   Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : 'Nenhuma'}\n\n`;
+          message += `   Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : 'None'}\n\n`;
         });
         
-        message += 'Para saber mais sobre uma ideia específica, pergunte sobre ela pelo título ou número.';
+        message += 'To learn more about a specific idea, ask about it by title or number.';
         
         ctx.replyWithMarkdown(message);
       } catch (error) {
-        console.error('Erro ao buscar ideias recentes:', error);
-        ctx.reply('Desculpe, não consegui recuperar as ideias mais recentes. Por favor, tente novamente mais tarde.');
+        console.error('Error fetching recent ideas:', error);
+        ctx.reply('Sorry, I couldn\'t retrieve the most recent ideas. Please try again later.');
       }
     });
     
@@ -315,24 +315,24 @@ export class TelegramBot {
       
       // Se não estamos criando uma ideia, tratar como consulta RAG
       // Indicar que está processando
-      const processingMessage = await ctx.reply('Processando sua pergunta... ⏳');
+      const processingMessage = await ctx.reply('Processing your question... ⏳');
       
       try {
         const response = await ragService.queryRag(userText);
         
-        // Deletar mensagem de "processando"
+        // Delete "processing" message
         await ctx.telegram.deleteMessage(ctx.chat.id, processingMessage.message_id);
         
-        // Enviar resposta
+        // Send response
         await ctx.reply(response);
       } catch (error) {
-        console.error('Erro ao processar consulta RAG:', error);
+        console.error('Error processing RAG query:', error);
         
-        // Deletar mensagem de "processando"
+        // Delete "processing" message
         await ctx.telegram.deleteMessage(ctx.chat.id, processingMessage.message_id);
         
-        // Enviar mensagem de erro
-        await ctx.reply('Desculpe, encontrei um problema ao processar sua pergunta. Por favor, tente novamente mais tarde.');
+        // Send error message
+        await ctx.reply('Sorry, I encountered a problem processing your question. Please try again later.');
       }
     });
     
