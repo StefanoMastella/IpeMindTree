@@ -186,7 +186,7 @@ export class TelegramBot {
         }
       };
       
-      // Botão para cancelar o processo
+      // Button to cancel the process
       const keyboard = Markup.inlineKeyboard([
         Markup.button.callback('Cancel', 'cancel_idea_creation')
       ]);
@@ -202,16 +202,16 @@ export class TelegramBot {
       );
     });
     
-    // Callback para cancelar a criação de ideia
+    // Callback to cancel idea creation
     this.bot.action('cancel_idea_creation', (ctx) => {
-      // Limpar a sessão
+      // Clear the session
       ctx.session = {};
       
-      // Confirmar o cancelamento
+      // Confirm cancellation
       ctx.editMessageText('Idea creation canceled. You can start again anytime with /newidea.');
     });
     
-    // Callback para confirmar a criação de ideia
+    // Callback to confirm idea creation
     this.bot.action('confirm_idea', async (ctx) => {
       if (!ctx.session?.ideaCreation?.data) {
         return ctx.reply('An error occurred. Please try again with /newidea.');
@@ -224,27 +224,27 @@ export class TelegramBot {
       }
       
       try {
-        // Editar a mensagem para indicar processamento
+        // Edit message to indicate processing
         await ctx.editMessageText(
           'Sharing your idea... Please wait. ⏳'
         );
         
-        // Criar a ideia no sistema
+        // Create the idea in the system
         const ideaData = {
           title,
           description,
           tags: tags || [],
-          links: [],  // Campo obrigatório conforme schema
+          links: [],  // Required field according to schema
           author
         };
         
-        // Chamar a API para criar a ideia
+        // Call API to create the idea
         const idea = await storage.createIdea(ideaData);
         
-        // Limpar a sessão
+        // Clear the session
         ctx.session = {};
         
-        // Enviar confirmação
+        // Send confirmation
         await ctx.reply(
           `✅ *Idea shared successfully!*\n\n` +
           `Your idea "${title}" has been added to Ipê Mind Tree with ID #${idea.id}.\n\n` +
@@ -259,7 +259,7 @@ export class TelegramBot {
       }
     });
     
-    // Comando sobre
+    // About command
     this.bot.command('about', (ctx) => {
       ctx.reply(
         'Ipê Mind Tree 🌳\n\n' +
@@ -272,7 +272,7 @@ export class TelegramBot {
       );
     });
     
-    // Comando para listar ideias recentes
+    // Command to list recent ideas
     this.bot.command('ideas', async (ctx) => {
       ctx.reply('Searching for recent ideas... ⏳');
       
@@ -300,21 +300,21 @@ export class TelegramBot {
       }
     });
     
-    // Manipulador para mensagens de texto (criação de ideias ou consultas RAG)
+    // Handler for text messages (idea creation or RAG queries)
     this.bot.on(message('text'), async (ctx) => {
       const userText = ctx.message.text;
       
-      // Ignorar comandos
+      // Ignore commands
       if (userText.startsWith('/')) return;
       
-      // Verificar se estamos no processo de criação de ideia
+      // Check if we're in the idea creation process
       if (ctx.session?.ideaCreation) {
         await this.handleIdeaCreationStep(ctx as BotContext, userText);
         return;
       }
       
-      // Se não estamos criando uma ideia, tratar como consulta RAG
-      // Indicar que está processando
+      // If we're not creating an idea, treat as RAG query
+      // Indicate processing
       const processingMessage = await ctx.reply('Processing your question... ⏳');
       
       try {
@@ -336,7 +336,7 @@ export class TelegramBot {
       }
     });
     
-    // Manipulador de erros
+    // Error handler
     this.bot.catch((err, ctx) => {
       console.error('Error in Telegram bot:', err);
       ctx.reply('An error occurred while processing your request. Please try again later.');
@@ -344,22 +344,22 @@ export class TelegramBot {
   }
   
   /**
-   * Inicia o bot do Telegram
+   * Starts the Telegram bot
    */
   public start() {
-    // Iniciar o bot no modo polling
+    // Start the bot in polling mode
     this.bot.launch();
     console.log('Telegram bot started successfully!');
     
-    // Configurar encerramento gracioso
+    // Configure graceful shutdown
     process.once('SIGINT', () => this.bot.stop('SIGINT'));
     process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
   }
 }
 
 /**
- * Função para inicializar o bot do Telegram
- * Verifica se o token está disponível nas variáveis de ambiente
+ * Function to initialize the Telegram bot
+ * Checks if the token is available in environment variables
  */
 export function initializeTelegramBot() {
   const token = process.env.TELEGRAM_BOT_TOKEN;
