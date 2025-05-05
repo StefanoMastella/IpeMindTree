@@ -41,7 +41,7 @@ export default function ObsidianUploader() {
         
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.message || 'Erro ao fazer upload dos arquivos');
+          throw new Error(errorData.message || 'Error uploading files');
         }
         
         return await response.json();
@@ -56,8 +56,8 @@ export default function ObsidianUploader() {
     onSuccess: () => {
       setFiles([]);
       toast({
-        title: 'Upload concluído',
-        description: 'Os arquivos do Obsidian foram importados com sucesso.',
+        title: 'Upload complete',
+        description: 'Obsidian files were successfully imported.',
         variant: 'default',
       });
       // Invalidar queries para atualizar os dados
@@ -66,7 +66,7 @@ export default function ObsidianUploader() {
     },
     onError: (error: Error) => {
       toast({
-        title: 'Erro no upload',
+        title: 'Upload error',
         description: error.message,
         variant: 'destructive',
       });
@@ -106,8 +106,8 @@ export default function ObsidianUploader() {
   const handleUpload = () => {
     if (files.length === 0) {
       toast({
-        title: 'Nenhum arquivo selecionado',
-        description: 'Por favor, selecione pelo menos um arquivo markdown para fazer upload.',
+        title: 'No files selected',
+        description: 'Please select at least one markdown file to upload.',
         variant: 'destructive',
       });
       return;
@@ -127,7 +127,7 @@ export default function ObsidianUploader() {
     
     return (
       <div className="mt-4 space-y-2">
-        <div className="text-sm font-medium">Arquivos selecionados:</div>
+        <div className="text-sm font-medium">Selected files:</div>
         <div className="max-h-60 overflow-y-auto space-y-2">
           {files.map((file, index) => (
             <div key={index} className="flex items-center justify-between bg-muted/50 rounded-md p-2">
@@ -185,10 +185,10 @@ export default function ObsidianUploader() {
           
           <div className="space-y-2">
             <h3 className="text-lg font-medium">
-              Arraste e solte arquivos aqui ou clique para selecionar
+              Drag and drop files here or click to select
             </h3>
             <p className="text-sm text-muted-foreground">
-              Suporta arquivos .md, .markdown, .txt, ou um arquivo .zip contendo documentos do Obsidian
+              Supports .md, .markdown, .txt files, or a .zip file containing Obsidian documents
             </p>
           </div>
         </div>
@@ -198,7 +198,7 @@ export default function ObsidianUploader() {
         {isUploading && (
           <div className="mt-4 space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Processando arquivos...</span>
+              <span>Processing files...</span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
@@ -210,7 +210,7 @@ export default function ObsidianUploader() {
         <div className="text-sm text-muted-foreground">
           {files.length > 0 ? (
             <span>
-              {files.length} {files.length === 1 ? 'arquivo selecionado' : 'arquivos selecionados'}
+              {files.length} {files.length === 1 ? 'file selected' : 'files selected'}
             </span>
           ) : null}
         </div>

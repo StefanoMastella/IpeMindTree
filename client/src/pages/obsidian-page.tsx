@@ -21,16 +21,16 @@ export default function ObsidianPage() {
         <div className="bg-muted/50 border rounded-lg p-4 flex items-start space-x-3">
           <Info className="h-5 w-5 text-primary mt-0.5" />
           <div className="space-y-1">
-            <h3 className="font-medium">Sobre a integração com Obsidian</h3>
+            <h3 className="font-medium">About Obsidian Integration</h3>
             <p className="text-sm text-muted-foreground">
-              O Obsidian é uma poderosa ferramenta para gerenciar sua base de conhecimento pessoal através de notas 
-              interligadas. Ao importar seus arquivos markdown do Obsidian, o Ipê Mind Tree poderá:
+              Obsidian is a powerful tool for managing your personal knowledge base through interconnected notes. 
+              By importing your Obsidian markdown files, Ipê Mind Tree can:
             </p>
             <ul className="text-sm text-muted-foreground space-y-1 list-disc list-inside ml-4 mt-2">
-              <li>Analisar a rede de conhecimento e identificar padrões</li>
-              <li>Enriquecer o contexto das consultas de IA para gerar respostas mais relevantes</li>
-              <li>Criar sugestões de conexões entre suas notas do Obsidian e ideias do Ipê Mind Tree</li>
-              <li>Facilitar a descoberta de insights através da visualização da rede de conhecimento</li>
+              <li>Analyze the knowledge network and identify patterns</li>
+              <li>Enrich the context of AI queries to generate more relevant responses</li>
+              <li>Create suggested connections between your Obsidian notes and Ipê Mind Tree ideas</li>
+              <li>Facilitate insight discovery through knowledge network visualization</li>
             </ul>
           </div>
         </div>
@@ -39,11 +39,11 @@ export default function ObsidianPage() {
           <TabsList className="grid grid-cols-3 w-full max-w-md">
             <TabsTrigger value="upload" className="flex items-center gap-2">
               <Upload className="h-4 w-4" />
-              <span>Importar</span>
+              <span>Import</span>
             </TabsTrigger>
             <TabsTrigger value="network" className="flex items-center gap-2">
               <NetworkIcon className="h-4 w-4" />
-              <span>Visualizar</span>
+              <span>Visualize</span>
             </TabsTrigger>
             <TabsTrigger value="logs" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
