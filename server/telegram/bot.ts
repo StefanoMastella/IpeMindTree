@@ -38,15 +38,20 @@ export class TelegramBot {
    * Configure middleware and session state
    */
   private setupMiddleware() {
-    // Inicializa o middleware de sessão com tipo correto
+    // Initialize session middleware with correct type
     this.bot.use(session<SessionData>());
     
-    // Log de mensagens recebidas
+    // Log received messages
     this.bot.use(async (ctx, next) => {
       const start = Date.now();
-      await next();
-      const ms = Date.now() - start;
-      console.log('Telegram bot - %s - %sms', ctx.updateType, ms);
+      console.log('Telegram bot received update:', ctx.updateType);
+      try {
+        await next();
+        const ms = Date.now() - start;
+        console.log('Telegram bot processed %s in %sms', ctx.updateType, ms);
+      } catch (error) {
+        console.error('Error in Telegram middleware:', error);
+      }
     });
   }
   
@@ -64,10 +69,10 @@ export class TelegramBot {
     
     switch (ideaCreation.step) {
       case 'title':
-        // Salvar o título
+        // Save the title
         ideaCreation.data.title = text;
         
-        // Avançar para a descrição
+        // Move to description
         ideaCreation.step = 'description';
         
         await ctx.reply(
@@ -81,10 +86,10 @@ export class TelegramBot {
         break;
         
       case 'description':
-        // Salvar a descrição
+        // Save the description
         ideaCreation.data.description = text;
         
-        // Avançar para as tags
+        // Move to tags
         ideaCreation.step = 'tags';
         
         await ctx.reply(
@@ -346,16 +351,29 @@ export class TelegramBot {
    * Starts the Telegram bot
    */
   public start() {
-    // Start the bot in polling mode with proper configuration to avoid conflicts
-    this.bot.launch({
-      allowedUpdates: ['message', 'callback_query'], // Only listen for these update types
-      dropPendingUpdates: true // Important: Drop pending updates to avoid conflicts
-    });
-    console.log('Telegram bot started successfully!');
-    
-    // Configure graceful shutdown
-    process.once('SIGINT', () => this.bot.stop('SIGINT'));
-    process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    try {
+      console.log('Starting Telegram bot...');
+      
+      // Start the bot in polling mode with proper configuration to avoid conflicts
+      this.bot.launch({
+        allowedUpdates: ['message', 'callback_query'], // Only listen for these update types
+        dropPendingUpdates: true // Important: Drop pending updates to avoid conflicts
+      })
+      .then(() => {
+        console.log('Telegram bot started successfully!');
+        console.log('Bot information:', this.bot.botInfo?.username ? 
+          `@${this.bot.botInfo.username}` : 'Username not available yet');
+      })
+      .catch(error => {
+        console.error('Failed to launch Telegram bot:', error);
+      });
+      
+      // Configure graceful shutdown
+      process.once('SIGINT', () => this.bot.stop('SIGINT'));
+      process.once('SIGTERM', () => this.bot.stop('SIGTERM'));
+    } catch (error) {
+      console.error('Exception during Telegram bot startup:', error);
+    }
   }
 }
 
@@ -371,10 +389,26 @@ export function initializeTelegramBot() {
     return;
   }
   
-  try {
-    const telegramBot = new TelegramBot(token);
-    telegramBot.start();
-  } catch (error) {
-    console.error('Error initializing Telegram bot:', error);
-  }
+  // First, check if token is valid by making a direct API call
+  console.log('Validating Telegram token...');
+  
+  // Simple direct bot instance just for token validation
+  const bot = new Telegraf(token);
+  
+  // Get bot information to validate the token
+  bot.telegram.getMe()
+    .then(botInfo => {
+      console.log(`Token is valid! Bot username: @${botInfo.username}`);
+      
+      // If token is valid, initialize the actual bot
+      try {
+        const telegramBot = new TelegramBot(token);
+        telegramBot.start();
+      } catch (error) {
+        console.error('Error initializing Telegram bot:', error);
+      }
+    })
+    .catch(error => {
+      console.error('Invalid Telegram token or API connection error:', error.message);
+    });
 }
