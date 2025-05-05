@@ -72,8 +72,8 @@ export class TelegramBot {
         ideaCreation.step = 'description';
         
         await ctx.reply(
-          '📝 Ótimo título! Agora, por favor, forneça uma *descrição detalhada* da sua ideia.\n\n' +
-          'Tente explicar o problema que sua ideia resolve, como funciona ou seria implementada, e qual o impacto esperado.',
+          '📝 Great title! Now, please provide a *detailed description* of your idea.\n\n' +
+          'Try to explain the problem your idea solves, how it works or would be implemented, and what impact you expect it to have.',
           { 
             parse_mode: 'Markdown',
             ...cancelButton
@@ -89,8 +89,8 @@ export class TelegramBot {
         ideaCreation.step = 'tags';
         
         await ctx.reply(
-          '🏷️ Excelente! Agora, adicione algumas *tags* para categorizar sua ideia.\n\n' +
-          'Digite as tags separadas por vírgula. Por exemplo: "educação, sustentabilidade, tecnologia"',
+          '🏷️ Excellent! Now, add some *tags* to categorize your idea.\n\n' +
+          'Type the tags separated by commas. For example: "education, sustainability, technology"',
           { 
             parse_mode: 'Markdown',
             ...cancelButton
@@ -110,8 +110,8 @@ export class TelegramBot {
         ideaCreation.step = 'author';
         
         await ctx.reply(
-          '👤 Quase lá! Por favor, informe seu *nome* para creditá-lo como autor da ideia.\n\n' +
-          'Você pode usar seu nome completo ou apenas o primeiro nome.',
+          '👤 Almost there! Please provide your *name* to credit you as the author of the idea.\n\n' +
+          'You can use your full name or just your first name.',
           { 
             parse_mode: 'Markdown',
             ...cancelButton
@@ -128,17 +128,17 @@ export class TelegramBot {
         
         // Preparar mensagem de resumo
         const summary = 
-          `*Resumo da sua ideia:*\n\n` +
-          `*Título:* ${ideaCreation.data.title}\n\n` +
-          `*Descrição:* ${ideaCreation.data.description}\n\n` +
-          `*Tags:* ${ideaCreation.data.tags?.join(', ') || 'Nenhuma'}\n\n` +
-          `*Autor:* ${ideaCreation.data.author}\n\n` +
-          `Deseja compartilhar esta ideia no Ipê Mind Tree?`;
+          `*Summary of your idea:*\n\n` +
+          `*Title:* ${ideaCreation.data.title}\n\n` +
+          `*Description:* ${ideaCreation.data.description}\n\n` +
+          `*Tags:* ${ideaCreation.data.tags?.join(', ') || 'None'}\n\n` +
+          `*Author:* ${ideaCreation.data.author}\n\n` +
+          `Would you like to share this idea on Ipê Mind Tree?`;
         
         // Botões de confirmação
         const confirmButtons = Markup.inlineKeyboard([
-          Markup.button.callback('✅ Sim, compartilhar', 'confirm_idea'),
-          Markup.button.callback('❌ Não, cancelar', 'cancel_idea_creation')
+          Markup.button.callback('✅ Yes, share', 'confirm_idea'),
+          Markup.button.callback('❌ No, cancel', 'cancel_idea_creation')
         ]);
         
         await ctx.reply(summary, { 
@@ -156,9 +156,9 @@ export class TelegramBot {
     // Comando de início
     this.bot.start((ctx) => {
       ctx.reply(
-        `Olá, ${ctx.from?.first_name || 'visitante'}! 👋\n\nBem-vindo ao Ipê Mind Tree Bot!\n\n` +
-        'Aqui você pode consultar e explorar as ideias compartilhadas na nossa comunidade.\n\n' +
-        'Use /help para ver os comandos disponíveis.'
+        `Hello, ${ctx.from?.first_name || 'visitor'}! 👋\n\nWelcome to the Ipê Mind Tree Bot!\n\n` +
+        'Here you can query and explore ideas shared in our community.\n\n' +
+        'Use /help to see available commands.'
       );
     });
     
@@ -188,13 +188,13 @@ export class TelegramBot {
       
       // Botão para cancelar o processo
       const keyboard = Markup.inlineKeyboard([
-        Markup.button.callback('Cancelar', 'cancel_idea_creation')
+        Markup.button.callback('Cancel', 'cancel_idea_creation')
       ]);
       
       ctx.reply(
-        '🌟 Vamos compartilhar uma nova ideia no Ipê Mind Tree! 🌟\n\n' +
-        'Primeiro, qual é o *título* da sua ideia? Tente ser conciso e claro.\n\n' +
-        'Por exemplo: "Oficina de Reciclagem Criativa" ou "Aplicativo de Compartilhamento de Livros"',
+        '🌟 Let\'s share a new idea on Ipê Mind Tree! 🌟\n\n' +
+        'First, what is the *title* of your idea? Try to be concise and clear.\n\n' +
+        'For example: "Creative Recycling Workshop" or "Book Sharing Application"',
         { 
           parse_mode: 'Markdown',
           ...keyboard
