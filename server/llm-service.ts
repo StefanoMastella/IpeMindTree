@@ -1,9 +1,9 @@
-// Este arquivo agora apenas re-exporta a funcionalidade do serviço RAG modularizado
+// This file now only re-exports the functionality of the modularized RAG service
 import { ragService } from './services/rag-service';
 
 /**
- * Função para chamar a API Gemini para responder perguntas
- * Inclui o contexto da aplicação e das ideias armazenadas
+ * Function to call the Gemini API to answer questions
+ * Includes the application context and stored ideas
  */
 export async function callGeminiAPI(userQuestion: string): Promise<string> {
   return ragService.queryRag(userQuestion);

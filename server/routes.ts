@@ -79,27 +79,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new idea
   app.post("/api/ideas", async (req, res) => {
     try {
-      console.log("Recebendo dados para criação de ideia:", req.body);
+      console.log("Receiving data for idea creation:", req.body);
       
-      // Garantir que campos opcionais estejam presentes para validação
+      // Ensure optional fields are present for validation
       const formattedData = {
         ...req.body,
         tags: req.body.tags || [],
         links: req.body.links || [],
-        imageId: req.body.imageId,  // O schema Zod cuidará da conversão para número
+        imageId: req.body.imageId,  // Zod schema will handle the conversion to number
       };
       
-      // Logs adicionais para debug da imagem
+      // Additional logs for image debugging
       if (req.body.imageId) {
-        console.log(`Recebeu imageId: ${req.body.imageId} tipo: ${typeof req.body.imageId}`);
-        console.log(`Dados formatados: ${JSON.stringify(formattedData)}`);
+        console.log(`Received imageId: ${req.body.imageId} type: ${typeof req.body.imageId}`);
+        console.log(`Formatted data: ${JSON.stringify(formattedData)}`);
       }
       
-      console.log("Dados formatados para validação:", formattedData);
+      console.log("Formatted data for validation:", formattedData);
       
       const parseResult = insertIdeaSchema.safeParse(formattedData);
       if (!parseResult.success) {
-        console.log("Erro na validação:", parseResult.error.errors);
+        console.log("Validation error:", parseResult.error.errors);
         return res.status(400).json({ message: "Invalid idea data", errors: parseResult.error.errors });
       }
       
@@ -116,17 +116,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // ideaData.tags = await generateTags(ideaData.title, ideaData.description);
       }
       
-      // Cria a ideia no banco
+      // Create the idea in the database
       const idea = await storage.createIdea(ideaData);
       
-      // Se um ID de imagem foi fornecido, anexá-lo à ideia
+      // If an image ID was provided, attach it to the idea
       if (ideaData.imageId) {
         try {
-          console.log(`Vinculando imagem ${ideaData.imageId} à ideia ${idea.id}`);
-          await storage.linkImageToIdea(idea.id, ideaData.imageId, true); // true = é a imagem principal
+          console.log(`Linking image ${ideaData.imageId} to idea ${idea.id}`);
+          await storage.linkImageToIdea(idea.id, ideaData.imageId, true); // true = is the main image
         } catch (error) {
-          console.error("Erro ao vincular imagem à ideia:", error);
-          // Não falhar todo o processo se a vinculação da imagem falhar
+          console.error("Error linking image to idea:", error);
+          // Don't fail the whole process if linking the image fails
         }
       }
       
@@ -232,7 +232,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       const images = await storage.getImagesByIdeaId(ideaId);
-      console.log(`Imagens encontradas para a ideia ${ideaId}:`, images);
+      console.log(`Images found for idea ${ideaId}:`, images);
       res.json(images);
     } catch (err) {
       console.error("Error getting images:", err);
