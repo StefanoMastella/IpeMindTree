@@ -709,7 +709,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Importar arquivos do Obsidian a partir de conteúdo fornecido
+  // Import Obsidian files from provided content
   app.post("/api/obsidian/import-files", async (req, res) => {
     try {
       const { files, username } = req.body;
@@ -726,7 +726,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Validação básica dos arquivos
+      // Basic validation of files
       const validFiles = files.filter(file => 
         file && 
         typeof file.name === 'string' && 
@@ -740,7 +740,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Inicia o processo de importação
+      // Start the import process
       const result = await obsidianService.importFromFiles(validFiles, username);
       
       if (result) {
@@ -762,7 +762,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Obter logs de importação
+  // Get import logs
   app.get("/api/obsidian/import-logs", async (req, res) => {
     try {
       const logs = await obsidianService.getImportLogs();
@@ -776,24 +776,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Upload de arquivos do Obsidian
+  // Upload Obsidian files
   app.post("/api/obsidian/upload", upload.array('files'), async (req, res) => {
     try {
-      // Verificar se existem arquivos enviados
+      // Check if files were uploaded
       if (!req.files || !Array.isArray(req.files) || req.files.length === 0) {
         return res.status(400).json({ message: "No files uploaded" });
       }
       
-      // Processar os arquivos recebidos
+      // Process the received files
       const files = req.files.map((file: any) => ({
         name: file.originalname,
         content: file.buffer.toString('utf-8')
       }));
       
-      // Nome do usuário para o log de importação
-      const username = "usuário"; // Em uma versão com autenticação, usar o nome do usuário atual
+      // Username for import log
+      const username = "user"; // In a version with authentication, use the current user's name
       
-      // Importar os arquivos
+      // Import the files
       const success = await obsidianService.importFromFiles(files, username);
       
       if (success) {

@@ -3,7 +3,7 @@ import { getFullContext } from "../../client/src/lib/llm-context";
 import { Idea } from "@shared/schema";
 import fetch from "node-fetch";
 
-// URL da API Gemini
+// Gemini API URL
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
 export class RagService {
@@ -16,50 +16,50 @@ export class RagService {
   }
   
   /**
-   * Atualiza o contexto do Obsidian se necessário
-   * O contexto é atualizado no máximo uma vez a cada hora para evitar sobrecarga
+   * Updates the Obsidian context if necessary
+   * The context is updated at most once per hour to avoid overload
    */
   private async updateObsidianContextIfNeeded() {
     const now = new Date();
-    const oneHour = 60 * 60 * 1000; // 1 hora em milissegundos
+    const oneHour = 60 * 60 * 1000; // 1 hour in milliseconds
     
     if (now.getTime() - this.lastContextUpdate.getTime() > oneHour) {
       try {
-        // Importa dinamicamente para evitar dependência circular
+        // Import dynamically to avoid circular dependency
         const { obsidianService } = await import('./obsidian-service');
         this.obsidianContext = await obsidianService.getObsidianContext();
         this.lastContextUpdate = now;
-        console.log('Contexto do Obsidian atualizado com sucesso');
+        console.log('Obsidian context updated successfully');
       } catch (error) {
-        console.error('Erro ao atualizar contexto do Obsidian:', error);
-        // Se houver erro, mantenha o contexto vazio
+        console.error('Error updating Obsidian context:', error);
+        // If there's an error, keep the context empty
         this.obsidianContext = '';
       }
     }
   }
 
   /**
-   * Obtém o contexto atual das ideias armazenadas
-   * Formata todas as ideias para que sejam facilmente compreendidas pelo modelo LLM
+   * Gets the current context of stored ideas
+   * Formats all ideas so they can be easily understood by the LLM model
    */
   async getIdeasContext(): Promise<string> {
     try {
       const ideas = await storage.getAllIdeas();
       
       if (!ideas || ideas.length === 0) {
-        return "Não há ideias cadastradas no sistema ainda.";
+        return "There are no ideas registered in the system yet.";
       }
       
-      let context = "Ideias armazenadas na Ipê Mind Tree:\n\n";
+      let context = "Ideas stored in Ipê Mind Tree:\n\n";
       
       ideas.forEach((idea: Idea, index: number) => {
-        context += `Ideia #${idea.id}: "${idea.title}"\n`;
-        context += `Descrição: ${idea.description}\n`;
+        context += `Idea #${idea.id}: "${idea.title}"\n`;
+        context += `Description: ${idea.description}\n`;
         context += `Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : idea.tags}\n`;
-        context += `Autor: ${idea.author}\n`;
-        context += `Data: ${new Date(idea.createdAt).toLocaleDateString("pt-BR")}\n`;
+        context += `Author: ${idea.author}\n`;
+        context += `Date: ${new Date(idea.createdAt).toLocaleDateString("en-US")}\n`;
         
-        // Adiciona uma linha em branco entre as ideias, exceto a última
+        // Add a blank line between ideas, except for the last one
         if (index < ideas.length - 1) {
           context += "\n";
         }
@@ -67,25 +67,25 @@ export class RagService {
       
       return context;
     } catch (error) {
-      console.error("Erro ao obter contexto das ideias:", error);
-      return "Não foi possível obter o contexto atual das ideias.";
+      console.error("Error getting ideas context:", error);
+      return "Could not get the current context of ideas.";
     }
   }
 
   /**
-   * Método principal para consultar o RAG com uma pergunta do usuário
-   * Inclui o contexto da aplicação, das ideias armazenadas e do Obsidian
+   * Main method to query the RAG with a user question
+   * Includes the application context, stored ideas, and Obsidian context
    */
   async queryRag(userQuestion: string): Promise<string> {
     try {
-      // Atualizar o contexto do Obsidian se necessário
+      // Update Obsidian context if needed
       await this.updateObsidianContextIfNeeded();
       
-      // Obter o contexto base da aplicação e o contexto atual das ideias
+      // Get the base application context and current ideas context
       const baseContext = getFullContext();
       const ideasContext = await this.getIdeasContext();
       
-      // Criar o prompt completo para o modelo
+      // Create the complete prompt for the model
       const fullPrompt = `
 ${baseContext}
 
@@ -93,15 +93,15 @@ ${ideasContext}
 
 ${this.obsidianContext}
 
-Pergunta do usuário: ${userQuestion}
+User question: ${userQuestion}
 
-Responda de forma concisa e útil. Se a pergunta envolver ideias específicas ou documentos do Obsidian, mencione-os pelo nome/número.
-Use o conhecimento do Obsidian quando relevante para enriquecer suas respostas.
-Se a pergunta não estiver relacionada às ideias, ao Obsidian ou à Ipê Mind Tree, explique gentilmente que você está 
-focado em ajudar com questões relacionadas às ideias e ao projeto Ipê Mind Tree.
+Answer concisely and helpfully. If the question involves specific ideas or Obsidian documents, mention them by name/number.
+Use Obsidian knowledge when relevant to enrich your answers.
+If the question is not related to ideas, Obsidian, or Ipê Mind Tree, gently explain that you are
+focused on helping with questions related to ideas and the Ipê Mind Tree project.
 `;
       
-      console.log("Chamando Gemini API...");
+      console.log("Calling Gemini API...");
       
       const response = await fetch(`${API_URL}?key=${this.apiKey}`, {
         method: 'POST',
@@ -129,35 +129,35 @@ focado em ajudar com questões relacionadas às ideias e ao projeto Ipê Mind Tr
       
       const data = await response.json();
       
-      // Extrair o texto gerado da resposta
+      // Extract the generated text from the response
       return data.candidates[0].content.parts[0].text;
     } catch (error) {
-      console.error("Erro ao chamar API Gemini:", error);
-      return "Desculpe, não consegui processar sua pergunta no momento. Por favor, tente novamente mais tarde.";
+      console.error("Error calling Gemini API:", error);
+      return "Sorry, I couldn't process your question at the moment. Please try again later.";
     }
   }
 
   /**
-   * Obter um resumo de uma ideia específica
+   * Get a summary of a specific idea
    */
   async getIdeaSummary(ideaId: number): Promise<string> {
     try {
       const idea = await storage.getIdea(ideaId);
       
       if (!idea) {
-        return "Ideia não encontrada.";
+        return "Idea not found.";
       }
       
       const prompt = `
-Resuma a seguinte ideia de forma concisa:
+Summarize the following idea concisely:
 
-Ideia #${idea.id}: "${idea.title}"
-Descrição: ${idea.description}
+Idea #${idea.id}: "${idea.title}"
+Description: ${idea.description}
 Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : idea.tags}
-Autor: ${idea.author}
-Data: ${new Date(idea.createdAt).toLocaleDateString("pt-BR")}
+Author: ${idea.author}
+Date: ${new Date(idea.createdAt).toLocaleDateString("en-US")}
 
-Forneça um resumo curto e atraente desta ideia em 2-3 frases.
+Provide a short and engaging summary of this idea in 2-3 sentences.
 `;
       
       const response = await fetch(`${API_URL}?key=${this.apiKey}`, {
@@ -188,24 +188,24 @@ Forneça um resumo curto e atraente desta ideia em 2-3 frases.
       
       return data.candidates[0].content.parts[0].text;
     } catch (error) {
-      console.error("Erro ao gerar resumo da ideia:", error);
-      return "Não foi possível gerar um resumo para esta ideia.";
+      console.error("Error generating idea summary:", error);
+      return "Could not generate a summary for this idea.";
     }
   }
 
   /**
-   * Listar ideias recentes com resumos gerados por IA
+   * List recent ideas with AI-generated summaries
    */
   async getRecentIdeasWithSummaries(limit: number = 5): Promise<any[]> {
     try {
       const ideas = await storage.getAllIdeas();
       
-      // Ordenar por data de criação (mais recentes primeiro) e limitar
+      // Sort by creation date (newest first) and limit
       const recentIdeas = [...ideas]
         .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
         .slice(0, limit);
       
-      // Para cada ideia, gerar um resumo curto
+      // For each idea, generate a short summary
       const ideasWithSummaries = await Promise.all(
         recentIdeas.map(async (idea) => {
           const summary = await this.getIdeaSummary(idea.id);
@@ -220,12 +220,12 @@ Forneça um resumo curto e atraente desta ideia em 2-3 frases.
       
       return ideasWithSummaries;
     } catch (error) {
-      console.error("Erro ao obter ideias recentes com resumos:", error);
+      console.error("Error getting recent ideas with summaries:", error);
       return [];
     }
   }
 }
 
-// Singleton para uso em toda a aplicação
+// Singleton for use throughout the application
 const API_KEY = process.env.GEMINI_API_KEY || "";
 export const ragService = new RagService(API_KEY);
