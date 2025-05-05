@@ -64,7 +64,7 @@ export class TelegramBot {
     if (!ideaCreation) return;
     
     const cancelButton = Markup.inlineKeyboard([
-      Markup.button.callback('Cancelar', 'cancel_idea_creation')
+      Markup.button.callback('Cancel', 'cancel_idea_creation')
     ]);
     
     switch (ideaCreation.step) {
@@ -103,14 +103,14 @@ export class TelegramBot {
         break;
         
       case 'tags':
-        // Processar e salvar as tags
+        // Process and save tags
         const tagsList = text.split(',')
           .map(tag => tag.trim())
           .filter(tag => tag.length > 0);
         
         ideaCreation.data.tags = tagsList;
         
-        // Avançar para o autor
+        // Move to author
         ideaCreation.step = 'author';
         
         await ctx.reply(
@@ -124,13 +124,13 @@ export class TelegramBot {
         break;
         
       case 'author':
-        // Salvar o autor
+        // Save the author
         ideaCreation.data.author = text;
         
-        // Avançar para confirmação
+        // Move to confirmation
         ideaCreation.step = 'confirm';
         
-        // Preparar mensagem de resumo
+        // Prepare summary message
         const summary = 
           `*Summary of your idea:*\n\n` +
           `*Title:* ${ideaCreation.data.title}\n\n` +
@@ -139,7 +139,7 @@ export class TelegramBot {
           `*Author:* ${ideaCreation.data.author}\n\n` +
           `Would you like to share this idea on Ipê Mind Tree?`;
         
-        // Botões de confirmação
+        // Confirmation buttons
         const confirmButtons = Markup.inlineKeyboard([
           Markup.button.callback('✅ Yes, share', 'confirm_idea'),
           Markup.button.callback('❌ No, cancel', 'cancel_idea_creation')
