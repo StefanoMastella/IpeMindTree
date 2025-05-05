@@ -12,9 +12,9 @@ export default function ObsidianPage() {
       
       <main className="flex-1 container py-6 space-y-8 max-w-7xl">
         <div className="space-y-2">
-          <h1 className="text-3xl font-bold tracking-tight">Integração com Obsidian</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Obsidian Integration</h1>
           <p className="text-muted-foreground">
-            Importe seu conhecimento do Obsidian para enriquecer o contexto da IA e descobrir novas conexões entre ideias.
+            Import your knowledge from Obsidian to enrich the AI context and discover new connections between ideas.
           </p>
         </div>
         
