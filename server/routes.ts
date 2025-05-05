@@ -386,20 +386,20 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Webhook para receber atualizações do Telegram (para uso futuro)
+  // Webhook to receive Telegram updates (for future use)
   app.post("/api/telegram/webhook", async (req, res) => {
     try {
-      // Verificação básica de autenticação (melhorar em produção)
+      // Basic authentication check (improve in production)
       const apiKey = req.headers['x-api-key'];
       if (apiKey !== process.env.TELEGRAM_API_KEY) {
         return res.status(401).json({ success: false, error: "Unauthorized" });
       }
       
-      // Processar a atualização do Telegram
+      // Process the Telegram update
       const update = req.body;
       console.log("Telegram webhook update:", JSON.stringify(update));
       
-      // Em uma implementação futura, processar aqui os diferentes tipos de atualizações
+      // In a future implementation, process different update types here
       
       res.sendStatus(200);
     } catch (err) {
@@ -411,84 +411,84 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Images API - Endpoints para gerenciar imagens
+  // Images API - Endpoints to manage images
   
-  // Upload de imagem sem vincular a uma ideia
+  // Upload image without linking to an idea
   app.post("/api/images", uploadImage.single('image'), async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+        return res.status(400).json({ message: "No image uploaded" });
       }
 
-      // Salvar a imagem no banco de dados
+      // Save the image to the database
       const image = await storage.createImage({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
         path: fileService.getFileUrl(req.file.filename),
-        uploadedBy: req.body.uploadedBy || 'Usuário'
+        uploadedBy: req.body.uploadedBy || 'User'
       });
 
-      // Retornar a imagem dentro de um objeto com propriedade 'image'
-      console.log("Imagem salva com sucesso:", image);
+      // Return the image inside an object with 'image' property
+      console.log("Image saved successfully:", image);
       res.status(201).json({ image });
     } catch (err) {
-      console.error("Erro ao fazer upload de imagem:", err);
+      console.error("Error uploading image:", err);
       res.status(500).json({ 
-        message: "Falha ao enviar imagem", 
+        message: "Failed to upload image", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
   
-  // Listar todas as imagens
+  // List all images
   app.get("/api/images", async (req, res) => {
     try {
-      // Usamos a instância de DB diretamente
+      // Using DB instance directly
       const images = await db.query.images.findMany();
       res.json(images);
     } catch (err) {
-      console.error("Erro ao listar imagens:", err);
+      console.error("Error listing images:", err);
       res.status(500).json({ 
-        message: "Falha ao listar imagens", 
+        message: "Failed to list images", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
   
-  // Upload de imagem para uma ideia
+  // Upload image for an idea
   app.post("/api/ideas/:id/images", uploadImage.single('image'), async (req, res) => {
     try {
       if (!req.file) {
-        return res.status(400).json({ message: "Nenhuma imagem enviada" });
+        return res.status(400).json({ message: "No image uploaded" });
       }
 
       const ideaId = parseInt(req.params.id);
       if (isNaN(ideaId)) {
-        return res.status(400).json({ message: "ID da ideia inválido" });
+        return res.status(400).json({ message: "Invalid idea ID" });
       }
 
-      // Verificar se a ideia existe
+      // Check if the idea exists
       const idea = await storage.getIdea(ideaId);
       if (!idea) {
-        return res.status(404).json({ message: "Ideia não encontrada" });
+        return res.status(404).json({ message: "Idea not found" });
       }
 
-      // Salvar a imagem no banco de dados
+      // Save the image to the database
       const image = await storage.createImage({
         filename: req.file.filename,
         originalName: req.file.originalname,
         mimeType: req.file.mimetype,
         size: req.file.size,
         path: fileService.getFileUrl(req.file.filename),
-        uploadedBy: req.body.uploadedBy || 'Usuário'
+        uploadedBy: req.body.uploadedBy || 'User'
       });
 
-      // Definir se a imagem será a principal
+      // Determine if this image will be the main image
       const isMainImage = req.body.isMainImage === 'true' || req.body.isMainImage === true;
       
-      // Vincular a imagem à ideia
+      // Link the image to the idea
       const ideaImage = await storage.linkImageToIdea(ideaId, image.id, isMainImage);
 
       res.status(201).json({
@@ -496,104 +496,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ideaImage
       });
     } catch (err) {
-      console.error("Erro ao fazer upload de imagem:", err);
+      console.error("Error uploading image:", err);
       res.status(500).json({ 
-        message: "Falha ao enviar imagem", 
+        message: "Failed to upload image", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
 
-  // Listar imagens de uma ideia
+  // List images for an idea
   app.get("/api/ideas/:id/images", async (req, res) => {
     try {
       const ideaId = parseInt(req.params.id);
       if (isNaN(ideaId)) {
-        return res.status(400).json({ message: "ID da ideia inválido" });
+        return res.status(400).json({ message: "Invalid idea ID" });
       }
 
-      // Verificar se a ideia existe
+      // Check if the idea exists
       const idea = await storage.getIdea(ideaId);
       if (!idea) {
-        return res.status(404).json({ message: "Ideia não encontrada" });
+        return res.status(404).json({ message: "Idea not found" });
       }
 
-      // Buscar as imagens vinculadas à ideia
+      // Get images linked to this idea
       const images = await storage.getImagesByIdeaId(ideaId);
 
       res.json(images);
     } catch (err) {
-      console.error("Erro ao buscar imagens:", err);
+      console.error("Error fetching images:", err);
       res.status(500).json({ 
-        message: "Falha ao buscar imagens", 
+        message: "Failed to fetch images", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
 
-  // Definir imagem principal para uma ideia
+  // Set main image for an idea
   app.put("/api/ideas/:ideaId/images/:imageId/main", async (req, res) => {
     try {
       const ideaId = parseInt(req.params.ideaId);
       const imageId = parseInt(req.params.imageId);
 
       if (isNaN(ideaId) || isNaN(imageId)) {
-        return res.status(400).json({ message: "IDs inválidos" });
+        return res.status(400).json({ message: "Invalid IDs" });
       }
 
-      // Definir esta imagem como principal
+      // Set this image as the main one
       await storage.setMainImage(ideaId, imageId);
 
       res.json({ success: true });
     } catch (err) {
-      console.error("Erro ao definir imagem principal:", err);
+      console.error("Error setting main image:", err);
       res.status(500).json({ 
-        message: "Falha ao definir imagem principal", 
+        message: "Failed to set main image", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
 
-  // Excluir uma imagem vinculada a uma ideia
+  // Delete an image linked to an idea
   app.delete("/api/ideas/:ideaId/images/:imageId", async (req, res) => {
     try {
       const ideaId = parseInt(req.params.ideaId);
       const imageId = parseInt(req.params.imageId);
 
       if (isNaN(ideaId) || isNaN(imageId)) {
-        return res.status(400).json({ message: "IDs inválidos" });
+        return res.status(400).json({ message: "Invalid IDs" });
       }
 
-      // Buscar a imagem
+      // Get the image
       const image = await storage.getImage(imageId);
       if (!image) {
-        return res.status(404).json({ message: "Imagem não encontrada" });
+        return res.status(404).json({ message: "Image not found" });
       }
 
-      // Desvincular a imagem da ideia
+      // Unlink the image from the idea
       await storage.unlinkImageFromIdea(ideaId, imageId);
 
-      // Verificar se a imagem está vinculada a outras ideias
-      // Se não estiver, excluir o arquivo físico também
+      // Check if the image is linked to other ideas
+      // If not, delete the physical file too
       const imagePath = image.path;
       await storage.deleteImage(imageId);
       
-      // Excluir o arquivo físico
+      // Delete the physical file
       await fileService.deleteFile(imagePath.replace('/uploads/', ''));
 
       res.json({ success: true });
     } catch (err) {
-      console.error("Erro ao excluir imagem:", err);
+      console.error("Error deleting image:", err);
       res.status(500).json({ 
-        message: "Falha ao excluir imagem", 
+        message: "Failed to delete image", 
         error: err instanceof Error ? err.message : String(err)
       });
     }
   });
 
-  // Obsidian API - Endpoints para gerenciar mapas mentais do Obsidian
+  // Obsidian API - Endpoints to manage Obsidian mind maps
   
-  // Obter todos os nós do Obsidian
+  // Get all Obsidian nodes
   app.get("/api/obsidian/nodes", async (req, res) => {
     try {
       const nodes = await obsidianService.getAllNodes();
@@ -607,7 +607,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Obter um nó específico do Obsidian
+  // Get a specific Obsidian node
   app.get("/api/obsidian/nodes/:id", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -630,7 +630,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Obter links de um nó específico do Obsidian
+  // Get links for a specific Obsidian node
   app.get("/api/obsidian/nodes/:id/links", async (req, res) => {
     try {
       const id = parseInt(req.params.id);
@@ -654,7 +654,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Obter dados de rede para visualização
+  // Get network data for visualization
   app.get("/api/obsidian/network", async (req, res) => {
     try {
       const networkData = await obsidianService.getNetworkData();
@@ -668,7 +668,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   
-  // Iniciar importação do Obsidian a partir de uma URL
+  // Start Obsidian import from a URL
   app.post("/api/obsidian/import-url", async (req, res) => {
     try {
       const { url, username } = req.body;
@@ -685,14 +685,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Inicia o processo de importação (que pode ser demorado)
-      // Retorna imediatamente, enquanto o processo continua em background
+      // Start the import process (which may take some time)
+      // Return immediately, while the process continues in the background
       res.status(202).json({ 
         message: "Import process started", 
         url 
       });
       
-      // Executa o processo de importação em background
+      // Execute the import process in the background
       obsidianService.importFromUrl(url, username)
         .then((success: boolean) => {
           console.log(`Obsidian import from URL ${success ? 'completed successfully' : 'failed'}`);
