@@ -4,6 +4,17 @@ import { subpromptService } from "./subprompt-service";
 import { Idea } from "@shared/schema";
 import fetch from "node-fetch";
 
+// Interface para a resposta da API Gemini
+interface GeminiResponse {
+  candidates: {
+    content: {
+      parts: {
+        text: string;
+      }[];
+    };
+  }[];
+}
+
 // Gemini API URL
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 
@@ -134,10 +145,13 @@ focused on helping with questions related to ideas and the Ipê Mind Tree projec
         throw new Error(`API responded with status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as GeminiResponse;
       
       // Extract the generated text from the response
-      return data.candidates[0].content.parts[0].text;
+      if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+      return "I couldn't generate a proper response. Please try again with a different question.";
     } catch (error) {
       console.error("Error calling Gemini API:", error);
       return "Sorry, I couldn't process your question at the moment. Please try again later.";
@@ -191,9 +205,12 @@ Provide a short and engaging summary of this idea in 2-3 sentences.
         throw new Error(`API responded with status: ${response.status}`);
       }
       
-      const data = await response.json();
+      const data = await response.json() as GeminiResponse;
       
-      return data.candidates[0].content.parts[0].text;
+      if (data?.candidates?.[0]?.content?.parts?.[0]?.text) {
+        return data.candidates[0].content.parts[0].text;
+      }
+      return "Could not generate a summary for this idea.";
     } catch (error) {
       console.error("Error generating idea summary:", error);
       return "Could not generate a summary for this idea.";

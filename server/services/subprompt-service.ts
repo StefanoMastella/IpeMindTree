@@ -211,6 +211,11 @@ export class SubpromptService {
    * Seleciona o subprompt mais relevante para uma query de usuário
    */
   async selectSubprompt(userQuery: string): Promise<string> {
+    if (!userQuery) {
+      console.log("Empty user query provided to selectSubprompt");
+      return "";
+    }
+    
     try {
       // Atualiza o cache se necessário
       await this.updateCacheIfNeeded();
