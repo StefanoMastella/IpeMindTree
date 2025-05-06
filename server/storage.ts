@@ -16,6 +16,8 @@ import {
   type InsertImage,
   type IdeaImage,
   type InsertIdeaImage,
+  type Subprompt,
+  type InsertSubprompt,
   users,
   ideas,
   comments,
@@ -24,7 +26,8 @@ import {
   obsidianLinks,
   importLogs,
   images,
-  ideaImages
+  ideaImages,
+  subprompts
 } from "@shared/schema";
 
 import { db } from "./db";

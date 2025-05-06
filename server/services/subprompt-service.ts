@@ -237,10 +237,10 @@ export class SubpromptService {
       });
       
       // Ordena por similaridade (maior primeiro)
-      similarities.sort((a, b) => b.similarity - a.similarity);
+      similarities.sort((a, b) => (b.similarity || 0) - (a.similarity || 0));
       
       // Verifica se a melhor correspondência tem uma similaridade significativa
-      if (similarities[0] && similarities[0].similarity > 0.5) {
+      if (similarities[0] && similarities[0].similarity && similarities[0].similarity > 0.5) {
         console.log(`Selected subprompt: ${similarities[0].subprompt.name} (similarity: ${similarities[0].similarity.toFixed(2)})`);
         return similarities[0].subprompt.content;
       }
@@ -364,7 +364,9 @@ export class SubpromptService {
         const name = lines[0].trim() + " Sphere";
         
         // Extrai a descrição (começa com *   **Description:** e termina com *)
-        const descriptionMatch = section.match(/\*\s+\*\*Description:\*\*\s+(.*?)\*\s+\*\*Keywords:/s);
+        // Usando abordagem alternativa sem flag /s (dotAll)
+        const descPattern = /\*\s+\*\*Description:\*\*\s+([\s\S]*?)\*\s+\*\*Keywords:/;
+        const descriptionMatch = section.match(descPattern);
         const description = descriptionMatch ? descriptionMatch[1].trim() : "";
         
         // Extrai as palavras-chave (começa com *   **Keywords:** e termina com o final da linha)
