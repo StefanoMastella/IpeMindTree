@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageSquareText, Braces, LogIn, LogOut, Database } from "lucide-react";
+import { Brain, MessageSquareText, Braces, LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
@@ -44,10 +44,6 @@ export default function Header() {
           <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
             <Braces className="h-4 w-4 mr-1" />
             Obsidian
-          </Link>
-          <Link href="/notion" className={`${location === "/notion" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
-            <Database className="h-4 w-4 mr-1" />
-            Notion
           </Link>
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
             About
@@ -105,10 +101,6 @@ export default function Header() {
           <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
             <Braces className="h-4 w-4 mr-1" />
             Obsidian
-          </Link>
-          <Link href="/notion" className={`${location === "/notion" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
-            <Database className="h-4 w-4 mr-1" />
-            Notion
           </Link>
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
             About
