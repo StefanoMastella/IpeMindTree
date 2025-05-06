@@ -12,7 +12,7 @@ import { obsidianService } from "./services/obsidian-service";
 import { notionService } from "./services/notion-service";
 import { subpromptService } from "./services/subprompt-service";
 import { log } from "./vite";
-import { setupAuthRoutes, requireAuth } from "./auth";
+import { setupAuthRoutes, requireAuth, requireAdmin } from "./auth";
 import fileService, { uploadImage } from "./services/file-service";
 import subpromptRoutes from "./routes/subprompt-routes";
 import { db } from "./db";

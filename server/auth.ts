@@ -54,6 +54,24 @@ const requireAuth = (req: Request, res: Response, next: NextFunction) => {
   next();
 };
 
+// Middleware to verify admin authentication
+const requireAdmin = async (req: Request, res: Response, next: NextFunction) => {
+  if (!req.session.userId) {
+    return res.status(401).json({ message: 'Unauthorized. Please login.' });
+  }
+  
+  try {
+    const user = await storage.getUser(req.session.userId);
+    if (!user || user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Forbidden. Admin access required.' });
+    }
+    next();
+  } catch (error) {
+    console.error('Error verifying admin status:', error);
+    return res.status(500).json({ message: 'Error verifying admin status.' });
+  }
+};
+
 // Middleware to attach user data to authenticated requests
 const attachUser = async (req: Request, res: Response, next: NextFunction) => {
   if (req.session.userId) {
@@ -152,4 +170,4 @@ export function setupAuthRoutes(app: Express) {
   });
 }
 
-export { requireAuth };
+export { requireAuth, requireAdmin };
