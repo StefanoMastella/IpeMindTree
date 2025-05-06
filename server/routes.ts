@@ -890,7 +890,25 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
   // Rotas da API Subprompt
-  app.use("/api/subprompts", subpromptRoutes);
+  // Protege as rotas de subprompt com autenticação de admin
+  app.use("/api/subprompts", requireAdmin, subpromptRoutes);
+  
+  // Rota pública para selecionar subprompt (não requer autenticação)
+  app.post("/api/subprompt-select", async (req, res) => {
+    try {
+      const { query } = req.body;
+      
+      if (!query || typeof query !== 'string') {
+        return res.status(400).json({ message: "Invalid query format" });
+      }
+      
+      const selectedContent = await subpromptService.selectSubprompt(query);
+      res.json({ content: selectedContent });
+    } catch (error) {
+      console.error("Error selecting subprompt:", error);
+      res.status(500).json({ message: "Failed to select subprompt" });
+    }
+  });
 
   const httpServer = createServer(app);
   return httpServer;
