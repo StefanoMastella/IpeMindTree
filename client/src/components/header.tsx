@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageSquareText, Braces, LogIn, LogOut } from "lucide-react";
+import { Brain, MessageSquareText, Braces, LogIn, LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
@@ -53,6 +53,12 @@ export default function Header() {
               <div className="hidden sm:block">
                 <span className="text-foreground font-medium">Olá, {user.username}</span>
               </div>
+              {user.role === 'ADMIN' && (
+                <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
+                  <Settings className="h-4 w-4 mr-1" />
+                  Admin
+                </Link>
+              )}
               <Button 
                 variant="outline" 
                 onClick={handleLogout} 
@@ -106,15 +112,23 @@ export default function Header() {
             About
           </Link>
 {user ? (
-            <Button 
-              variant="outline" 
-              onClick={handleLogout} 
-              disabled={logoutMutation.isPending}
-              className="flex items-center space-x-1 w-full justify-center"
-            >
-              <LogOut className="h-4 w-4 mr-1" />
-              <span>Sair</span>
-            </Button>
+            <>
+              {user.role === 'ADMIN' && (
+                <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
+                  <Settings className="h-4 w-4 mr-1" />
+                  Admin
+                </Link>
+              )}
+              <Button 
+                variant="outline" 
+                onClick={handleLogout} 
+                disabled={logoutMutation.isPending}
+                className="flex items-center space-x-1 w-full justify-center"
+              >
+                <LogOut className="h-4 w-4 mr-1" />
+                <span>Sair</span>
+              </Button>
+            </>
           ) : (
             <Link href="/auth" className="no-underline w-full">
               <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
