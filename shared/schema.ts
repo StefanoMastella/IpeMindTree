@@ -179,7 +179,7 @@ export const subprompts = pgTable("subprompts", {
   name: text("name").notNull().unique(),
   description: text("description").notNull(),
   content: text("content").notNull(),
-  keywords: text("keywords").array(),
+  keywords: text("keywords").array(),  // Array de palavras-chave para correspondência
   embedding: jsonb("embedding"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),

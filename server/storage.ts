@@ -83,6 +83,13 @@ export interface IStorage {
   // Bulk import methods
   bulkCreateObsidianNodes(nodes: InsertObsidianNode[]): Promise<ObsidianNode[]>;
   bulkCreateObsidianLinks(links: InsertObsidianLink[]): Promise<ObsidianLink[]>;
+  
+  // Subprompt methods
+  getAllSubprompts(): Promise<Subprompt[]>;
+  getSubprompt(id: number): Promise<Subprompt | undefined>;
+  createSubprompt(subprompt: InsertSubprompt): Promise<Subprompt>;
+  updateSubprompt(id: number, subprompt: Partial<InsertSubprompt>): Promise<Subprompt>;
+  deleteSubprompt(id: number): Promise<void>;
 }
 
 // Implementação de armazenamento em banco de dados
@@ -615,6 +622,60 @@ export class DatabaseStorage implements IStorage {
     if (links.length === 0) return [];
     const createdLinks = await db.insert(obsidianLinks).values(links).returning();
     return createdLinks;
+  }
+  
+  // Subprompt methods
+  async getAllSubprompts(): Promise<Subprompt[]> {
+    try {
+      return await db.select().from(subprompts).orderBy(subprompts.name);
+    } catch (error) {
+      console.error("Error getting all subprompts:", error);
+      return [];
+    }
+  }
+  
+  async getSubprompt(id: number): Promise<Subprompt | undefined> {
+    try {
+      const [subprompt] = await db.select().from(subprompts).where(eq(subprompts.id, id));
+      return subprompt;
+    } catch (error) {
+      console.error(`Error getting subprompt with ID ${id}:`, error);
+      return undefined;
+    }
+  }
+  
+  async createSubprompt(insertSubprompt: InsertSubprompt): Promise<Subprompt> {
+    try {
+      const [subprompt] = await db.insert(subprompts).values(insertSubprompt).returning();
+      return subprompt;
+    } catch (error) {
+      console.error("Error creating subprompt:", error);
+      throw error;
+    }
+  }
+  
+  async updateSubprompt(id: number, data: Partial<InsertSubprompt>): Promise<Subprompt> {
+    try {
+      const [updatedSubprompt] = await db
+        .update(subprompts)
+        .set({ ...data, updatedAt: new Date() })
+        .where(eq(subprompts.id, id))
+        .returning();
+      
+      return updatedSubprompt;
+    } catch (error) {
+      console.error(`Error updating subprompt with ID ${id}:`, error);
+      throw error;
+    }
+  }
+  
+  async deleteSubprompt(id: number): Promise<void> {
+    try {
+      await db.delete(subprompts).where(eq(subprompts.id, id));
+    } catch (error) {
+      console.error(`Error deleting subprompt with ID ${id}:`, error);
+      throw error;
+    }
   }
   
   // Método para inicialização de dados (usado apenas para desenvolvimento)
