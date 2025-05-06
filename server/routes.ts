@@ -10,9 +10,11 @@ import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
 import { obsidianService } from "./services/obsidian-service";
 import { notionService } from "./services/notion-service";
+import { subpromptService } from "./services/subprompt-service";
 import { log } from "./vite";
 import { setupAuthRoutes, requireAuth } from "./auth";
 import fileService, { uploadImage } from "./services/file-service";
+import subpromptRoutes from "./routes/subprompt-routes";
 import { db } from "./db";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -887,6 +889,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       });
     }
   });
+  // Rotas da API Subprompt
+  app.use("/api/subprompts", subpromptRoutes);
 
   const httpServer = createServer(app);
   return httpServer;

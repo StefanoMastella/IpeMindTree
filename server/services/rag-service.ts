@@ -1,5 +1,6 @@
 import { storage } from "../storage";
-import { getFullContext } from "../../client/src/lib/llm-context";
+import { getFullContext, getMainPrompt } from "../../client/src/lib/llm-context";
+import { subpromptService } from "./subprompt-service";
 import { Idea } from "@shared/schema";
 import fetch from "node-fetch";
 
@@ -74,20 +75,26 @@ export class RagService {
 
   /**
    * Main method to query the RAG with a user question
-   * Includes the application context, stored ideas, and Obsidian context
+   * Includes the application context, stored ideas, Obsidian context, and relevant subprompt
    */
   async queryRag(userQuestion: string): Promise<string> {
     try {
       // Update Obsidian context if needed
       await this.updateObsidianContextIfNeeded();
       
+      // Select the most relevant subprompt for the user's question
+      console.log("Selecting relevant subprompt for query...");
+      const selectedSubprompt = await subpromptService.selectSubprompt(userQuestion);
+      
       // Get the base application context and current ideas context
-      const baseContext = getFullContext();
+      const baseMainPrompt = getMainPrompt();
       const ideasContext = await this.getIdeasContext();
       
       // Create the complete prompt for the model
       const fullPrompt = `
-${baseContext}
+${baseMainPrompt}
+
+${selectedSubprompt ? `\n--- Applied Subprompt ---\n${selectedSubprompt}\n` : ''}
 
 ${ideasContext}
 
@@ -101,7 +108,7 @@ If the question is not related to ideas, Obsidian, or Ipê Mind Tree, gently exp
 focused on helping with questions related to ideas and the Ipê Mind Tree project.
 `;
       
-      console.log("Calling Gemini API...");
+      console.log("Calling Gemini API with" + (selectedSubprompt ? " selected subprompt..." : "out subprompt..."));
       
       const response = await fetch(`${API_URL}?key=${this.apiKey}`, {
         method: 'POST',

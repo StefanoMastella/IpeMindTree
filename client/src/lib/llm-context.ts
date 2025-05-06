@@ -16,7 +16,9 @@ export function getMainPrompt(): string {
   return mainPrompt;
 }
 
-// Function to get the full context (main prompt + subprompt)
-export function getFullContext(subpromptText: string): string {
-  return `${mainPrompt}\n${subpromptText}`;
+// Function to get the full context (main prompt + optional subprompt)
+export function getFullContext(subpromptText?: string): string {
+  return subpromptText 
+    ? `${mainPrompt}\n${subpromptText}`
+    : mainPrompt;
 }
