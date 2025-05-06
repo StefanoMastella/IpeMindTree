@@ -172,3 +172,26 @@ export const insertImportLogSchema = createInsertSchema(importLogs).omit({
   importedAt: true,
 });
 export type InsertImportLog = z.infer<typeof insertImportLogSchema>;
+
+// Tabela para armazenar subprompts do LLM
+export const subprompts = pgTable("subprompts", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull().unique(),
+  description: text("description").notNull(),
+  content: text("content").notNull(),
+  keywords: text("keywords").array(),
+  embedding: jsonb("embedding"),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  sphere: text("sphere").notNull(),
+  active: boolean("active").default(true).notNull(),
+});
+
+export type Subprompt = typeof subprompts.$inferSelect;
+export const insertSubpromptSchema = createInsertSchema(subprompts).omit({
+  id: true,
+  embedding: true,
+  createdAt: true,
+  updatedAt: true,
+});
+export type InsertSubprompt = z.infer<typeof insertSubpromptSchema>;
