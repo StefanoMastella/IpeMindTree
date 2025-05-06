@@ -45,6 +45,8 @@ export class NotionService {
     this.checkInitialization();
 
     try {
+      if (!this.notion) throw new Error('Notion client is not initialized');
+      
       const response = await this.notion.databases.query({
         database_id: databaseId,
         sorts: [{ timestamp: 'created_time', direction: 'descending' }],
@@ -101,17 +103,17 @@ export class NotionService {
 
       // Create an import log
       await storage.createImportLog({
-        source: `Notion (${databaseId})`,
+        importSource: `Notion (${databaseId})`,
         importedBy,
         nodesCount: imported,
         linksCount: 0,
-        timestamp: new Date(),
+        success: true
       });
 
       return { imported, skipped };
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error importing projects from Notion:', error);
-      throw new Error(`Failed to import projects from Notion: ${error.message}`);
+      throw new Error(`Failed to import projects from Notion: ${error.message || String(error)}`);
     }
   }
 
@@ -161,12 +163,12 @@ export class NotionService {
 
     // Title property
     if (prop.title && Array.isArray(prop.title)) {
-      return prop.title.map(t => t.plain_text).join('');
+      return prop.title.map((t: any) => t.plain_text).join('');
     }
     
     // Rich text property
     if (prop.rich_text && Array.isArray(prop.rich_text)) {
-      return prop.rich_text.map(t => t.plain_text).join('');
+      return prop.rich_text.map((t: any) => t.plain_text).join('');
     }
     
     // Text content in a simple property
@@ -185,7 +187,7 @@ export class NotionService {
       return null;
     }
     
-    return prop.multi_select.map(item => item.name);
+    return prop.multi_select.map((item: any) => item.name);
   }
 
   /**
@@ -210,7 +212,7 @@ export class NotionService {
       .filter(block => block.type === 'paragraph' && block.paragraph && block.paragraph.rich_text)
       .map(block => {
         return block.paragraph.rich_text
-          .map(text => text.plain_text)
+          .map((text: any) => text.plain_text)
           .join('');
       })
       .join('\n\n');
