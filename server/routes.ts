@@ -138,7 +138,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const otherIdeas = allIdeas.filter(otherIdea => otherIdea.id !== idea.id);
       const relatedIdeas = otherIdeas.filter(otherIdea => {
         // Count shared tags
-        const sharedTags = idea.tags.filter(tag => otherIdea.tags.includes(tag)).length;
+        const sharedTags = Array.isArray(idea.tags) ? idea.tags.filter((tag: string) => otherIdea.tags.includes(tag)).length : 0;
         // Consider related if they share at least one tag
         return sharedTags > 0;
       });

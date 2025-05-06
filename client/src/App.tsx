@@ -10,6 +10,7 @@ import Chat from "@/pages/chat";
 import Explore from "@/pages/explore";
 import About from "@/pages/about";
 import ObsidianPage from "@/pages/obsidian-page";
+import NotionPage from "@/pages/notion-page";
 import AuthPage from "@/pages/auth-page";
 import { useState } from "react";
 import { IdeaDetailProvider } from "./lib/types";
@@ -24,6 +25,7 @@ function Router() {
       <Route path="/explore" component={Explore} />
       <Route path="/about" component={About} />
       <Route path="/obsidian" component={ObsidianPage} />
+      <Route path="/notion" component={NotionPage} />
       <Route path="/auth" component={AuthPage} />
       <Route component={NotFound} />
     </Switch>
