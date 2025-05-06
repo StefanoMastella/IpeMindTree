@@ -53,7 +53,7 @@ export default function Header() {
               <div className="hidden sm:block">
                 <span className="text-foreground font-medium">Olá, {user.username}</span>
               </div>
-              {user.role === 'ADMIN' && (
+              {user?.role === 'ADMIN' && (
                 <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
                   <Settings className="h-4 w-4 mr-1" />
                   Admin
@@ -113,7 +113,7 @@ export default function Header() {
           </Link>
 {user ? (
             <>
-              {user.role === 'ADMIN' && (
+              {user?.role === 'ADMIN' && (
                 <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
                   <Settings className="h-4 w-4 mr-1" />
                   Admin

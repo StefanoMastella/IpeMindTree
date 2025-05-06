@@ -693,8 +693,8 @@ export class DatabaseStorage implements IStorage {
     console.log("Seeding initial data to database...");
     
     // Criar usuários
-    await this.createUser({ username: "maria", password: "password123" });
-    await this.createUser({ username: "joao", password: "password123" });
+    await this.createUser({ username: "maria", password: "password123", role: "ADMIN" });
+    await this.createUser({ username: "joao", password: "password123", role: "USER" });
     
     // Criar ideias iniciais
     const seedIdeas = [

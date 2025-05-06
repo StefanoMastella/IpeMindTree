@@ -12,6 +12,7 @@ import About from "@/pages/about";
 import ObsidianPage from "@/pages/obsidian-page";
 import AuthPage from "@/pages/auth-page";
 import SubpromptAdmin from "@/pages/subprompt-admin";
+import { AdminRoute } from "./lib/admin-route";
 import { useState } from "react";
 import { IdeaDetailProvider } from "./lib/types";
 import { AuthProvider } from "./hooks/use-auth";
@@ -26,7 +27,7 @@ function Router() {
       <Route path="/about" component={About} />
       <Route path="/obsidian" component={ObsidianPage} />
       <Route path="/auth" component={AuthPage} />
-      <Route path="/admin/subprompts" component={SubpromptAdmin} />
+      <AdminRoute path="/admin/subprompts" component={SubpromptAdmin} />
       <Route component={NotFound} />
     </Switch>
   );
