@@ -7,7 +7,7 @@ import { InsertIdea } from '@shared/schema';
  * Responsible for fetching and processing project data from Notion
  */
 export class NotionService {
-  private notion: Client;
+  private notion: Client | null;
   private isInitialized = false;
 
   constructor() {
@@ -51,9 +51,9 @@ export class NotionService {
       });
 
       return response.results;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error fetching projects from Notion:', error);
-      throw new Error(`Failed to fetch projects from Notion: ${error.message}`);
+      throw new Error(`Failed to fetch projects from Notion: ${error.message || String(error)}`);
     }
   }
 

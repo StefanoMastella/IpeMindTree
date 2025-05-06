@@ -9,6 +9,7 @@ import { suggestConnections, generateTags } from "../client/src/lib/gemini";
 import { callGeminiAPI } from "./llm-service";
 import { ragService } from "./services/rag-service";
 import { obsidianService } from "./services/obsidian-service";
+import { notionService } from "./services/notion-service";
 import { log } from "./vite";
 import { setupAuthRoutes, requireAuth } from "./auth";
 import fileService, { uploadImage } from "./services/file-service";
@@ -809,6 +810,80 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ 
         message: "Failed to process uploaded files",
         error: err instanceof Error ? err.message : String(err)
+      });
+    }
+  });
+
+  // Notion API - Endpoints to import projects from Notion
+  
+  // Initialize Notion API with the provided token
+  app.post("/api/notion/initialize", async (req, res) => {
+    try {
+      const { apiKey } = req.body;
+      
+      if (!apiKey || typeof apiKey !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid API key. Please provide a valid Notion API key." 
+        });
+      }
+      
+      // Initialize the Notion service
+      notionService.initialize(apiKey);
+      
+      res.json({ 
+        success: true, 
+        message: "Notion API initialized successfully"
+      });
+    } catch (err) {
+      console.error("Error initializing Notion API:", err);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to initialize Notion API",
+        error: err instanceof Error ? err.message : String(err) 
+      });
+    }
+  });
+  
+  // Import projects from a Notion database
+  app.post("/api/notion/import", async (req, res) => {
+    try {
+      const { databaseId, username } = req.body;
+      
+      if (!databaseId || typeof databaseId !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid database ID. Please provide a valid Notion database ID." 
+        });
+      }
+      
+      if (!username || typeof username !== 'string') {
+        return res.status(400).json({ 
+          success: false, 
+          message: "Invalid username. Please provide a username for the import log." 
+        });
+      }
+      
+      // Execute import in the background
+      res.json({ 
+        success: true, 
+        message: "Import started. The process will continue in the background." 
+      });
+      
+      // Start the import process (which may take some time)
+      notionService.importProjectsFromNotion(databaseId, username)
+        .then(result => {
+          console.log(`Notion import completed: ${result.imported} imported, ${result.skipped} skipped`);
+        })
+        .catch(error => {
+          console.error("Error during Notion import:", error);
+        });
+    } catch (err) {
+      console.error("Error importing from Notion:", err);
+      res.status(500).json({ 
+        success: false, 
+        message: "Failed to import from Notion",
+        error: err instanceof Error ? err.message : String(err) 
       });
     }
   });
