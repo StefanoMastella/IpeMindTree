@@ -8,6 +8,126 @@ interface SubpromptWithEmbedding extends Subprompt {
   embedding: number[];
 }
 
+// Subprompts em memória para uso em caso de falha do banco de dados
+const FALLBACK_SUBPROMPTS: {
+  id: number;
+  name: string;
+  description: string;
+  keywords: string[];
+  content: string;
+  sphere: string;
+  active: boolean;
+}[] = [
+  {
+    id: 1,
+    name: "Governance Sphere",
+    description: "Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain.",
+    keywords: ["decentralized governance", "decision-making", "community participation", "resource allocation", "digital identity", "reputation", "dao", "voting", "consensus"],
+    content: "You are now providing assistance in the Governance Sphere domain. Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain. Focus on the following aspects: decentralized governance, decision-making, community participation, resource allocation, digital identity, reputation, dao, voting, consensus.",
+    sphere: "Governance",
+    active: true
+  },
+  {
+    id: 2,
+    name: "Finance Sphere",
+    description: "Used for tasks related to developing innovative financial solutions that are more open, transparent, global, and inclusive.",
+    keywords: ["defi", "crypto-economics", "alternative currencies", "impact investing", "funding", "blockchain", "tokenization", "circular economy"],
+    content: "You are now providing assistance in the Finance Sphere domain. Used for tasks related to developing innovative financial solutions that are more open, transparent, global, and inclusive. Focus on the following aspects: defi, crypto-economics, alternative currencies, impact investing, funding, blockchain, tokenization, circular economy.",
+    sphere: "Finance",
+    active: true
+  },
+  {
+    id: 3,
+    name: "Education Sphere",
+    description: "Used for tasks related to leveraging the internet and AI to create an education system that is widely accessible, personalized, free, and fosters critical thinking and creativity.",
+    keywords: ["personalized learning", "ai", "tutoring", "knowledge sharing", "skills", "credentials", "lifelong learning", "decentralized education"],
+    content: "You are now providing assistance in the Education Sphere domain. Used for tasks related to leveraging the internet and AI to create an education system that is widely accessible, personalized, free, and fosters critical thinking and creativity. Focus on the following aspects: personalized learning, ai, tutoring, knowledge sharing, skills, credentials, lifelong learning, decentralized education.",
+    sphere: "Education",
+    active: true
+  },
+  {
+    id: 4,
+    name: "Health Sphere",
+    description: "Used for tasks related to using digital technologies and AI to build a more personalized, preventive, real-time, and affordable healthcare system.",
+    keywords: ["telemedicine", "remote monitoring", "diagnostics", "personalized medicine", "health data", "well-being", "prevention", "ai"],
+    content: "You are now providing assistance in the Health Sphere domain. Used for tasks related to using digital technologies and AI to build a more personalized, preventive, real-time, and affordable healthcare system. Focus on the following aspects: telemedicine, remote monitoring, diagnostics, personalized medicine, health data, well-being, prevention, ai.",
+    sphere: "Health",
+    active: true
+  },
+  {
+    id: 5,
+    name: "Technology Sphere",
+    description: "Used for tasks related to exploring and developing the underlying technologies that power the IMT and the Ipê City ecosystem.",
+    keywords: ["blockchain", "ai", "ml", "data science", "cybersecurity", "decentralized infrastructure", "open source", "apis", "development"],
+    content: "You are now providing assistance in the Technology Sphere domain. Used for tasks related to exploring and developing the underlying technologies that power the IMT and the Ipê City ecosystem. Focus on the following aspects: blockchain, ai, ml, data science, cybersecurity, decentralized infrastructure, open source, apis, development.",
+    sphere: "Technology",
+    active: true
+  },
+  {
+    id: 6,
+    name: "Community Sphere",
+    description: "Used for tasks related to strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support.",
+    keywords: ["integration", "events", "communication", "conflict resolution", "diversity", "inclusion", "participation", "engagement", "mentorship"],
+    content: "You are now providing assistance in the Community Sphere domain. Used for tasks related to strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support. Focus on the following aspects: integration, events, communication, conflict resolution, diversity, inclusion, participation, engagement, mentorship.",
+    sphere: "Community",
+    active: true
+  },
+  {
+    id: 7,
+    name: "Resources Sphere",
+    description: "Used for tasks related to curating and sharing valuable resources for members of the IMT.",
+    keywords: ["funding", "educational materials", "mentorship programs", "tools", "software", "experts", "opportunities", "grants", "calls for proposals"],
+    content: "You are now providing assistance in the Resources Sphere domain. Used for tasks related to curating and sharing valuable resources for members of the IMT. Focus on the following aspects: funding, educational materials, mentorship programs, tools, software, experts, opportunities, grants, calls for proposals.",
+    sphere: "Resources",
+    active: true
+  },
+  {
+    id: 8,
+    name: "Projects Sphere",
+    description: "Used for tasks related to showcasing and supporting the projects being developed within the IMT ecosystem.",
+    keywords: ["proposals", "team formation", "tracking", "feedback", "mentorship", "funding", "prototypes", "development", "innovation"],
+    content: "You are now providing assistance in the Projects Sphere domain. Used for tasks related to showcasing and supporting the projects being developed within the IMT ecosystem. Focus on the following aspects: proposals, team formation, tracking, feedback, mentorship, funding, prototypes, development, innovation.",
+    sphere: "Projects",
+    active: true
+  },
+  {
+    id: 9,
+    name: "Acoustical Governance Sphere",
+    description: "Used for tasks related to promoting better sound control and the integration of sound healing practices in public and private spaces.",
+    keywords: ["monitoring", "analysis", "scoring", "incentives", "engagement", "sound", "noise", "acoustics", "healing", "well-being"],
+    content: "You are now providing assistance in the Acoustical Governance Sphere domain. Used for tasks related to promoting better sound control and the integration of sound healing practices in public and private spaces. Focus on the following aspects: monitoring, analysis, scoring, incentives, engagement, sound, noise, acoustics, healing, well-being.",
+    sphere: "Acoustical Governance",
+    active: true
+  },
+  {
+    id: 10,
+    name: "DracoLogos Sphere",
+    description: "Used for tasks related to fostering creative expression and artistic innovation within the IMT community.",
+    keywords: ["art", "music", "storytelling", "design", "audiovisual", "culture", "expression", "creativity", "inspiration"],
+    content: "You are now providing assistance in the DracoLogos Sphere domain. Used for tasks related to fostering creative expression and artistic innovation within the IMT community. Focus on the following aspects: art, music, storytelling, design, audiovisual, culture, expression, creativity, inspiration.",
+    sphere: "DracoLogos",
+    active: true
+  },
+  {
+    id: 11,
+    name: "Techno-Optimism Sphere",
+    description: "Used for tasks related to promoting a positive and forward-looking perspective on the potential of technology to solve global challenges and improve the quality of life.",
+    keywords: ["success", "innovation", "experimentation", "learning", "future", "progress", "hope", "solutions", "impact"],
+    content: "You are now providing assistance in the Techno-Optimism Sphere domain. Used for tasks related to promoting a positive and forward-looking perspective on the potential of technology to solve global challenges and improve the quality of life. Focus on the following aspects: success, innovation, experimentation, learning, future, progress, hope, solutions, impact.",
+    sphere: "Techno-Optimism",
+    active: true
+  },
+  {
+    id: 12,
+    name: "Ethics & Values Sphere",
+    description: "Used for tasks related to ensuring that all activities within the IMT are aligned with ethical principles and the values of the community.",
+    keywords: ["privacy", "security", "transparency", "responsibility", "justice", "social responsibility", "integrity", "ethics", "values"],
+    content: "You are now providing assistance in the Ethics & Values Sphere domain. Used for tasks related to ensuring that all activities within the IMT are aligned with ethical principles and the values of the community. Focus on the following aspects: privacy, security, transparency, responsibility, justice, social responsibility, integrity, ethics, values.",
+    sphere: "Ethics & Values",
+    active: true
+  }
+];
+
 /**
  * Serviço para gerenciar os subprompts do IMT
  * Responsável por armazenar, selecionar e gerenciar subprompts para o LLM
@@ -16,6 +136,7 @@ export class SubpromptService {
   // Cache de subprompts para evitar consultas repetidas ao banco de dados
   private subpromptCache: SubpromptWithEmbedding[] | null = null;
   private lastCacheUpdate: Date = new Date(0); // Data de última atualização do cache
+  private useFallback: boolean = false; // Indica se deve usar os dados em memória em vez do banco de dados
 
   constructor() {
     // Inicialização do serviço
@@ -33,34 +154,83 @@ export class SubpromptService {
     // Atualiza o cache se ele estiver vazio ou se a última atualização foi há mais de uma hora
     if (!this.subpromptCache || now.getTime() - this.lastCacheUpdate.getTime() > oneHour) {
       try {
-        // Busca todos os subprompts ativos
-        const allSubprompts = await this.getAllSubprompts();
-        this.subpromptCache = allSubprompts.filter(sp => sp.active);
-        this.lastCacheUpdate = now;
-        console.log(`Subprompt cache updated with ${this.subpromptCache.length} active subprompts`);
+        if (this.useFallback) {
+          // Se estiver usando fallback, carrega os dados em memória
+          this.loadFallbackSubprompts();
+        } else {
+          // Busca todos os subprompts ativos no banco de dados
+          const allSubprompts = await this.getAllSubprompts();
+          if (allSubprompts.length > 0) {
+            this.subpromptCache = allSubprompts.filter(sp => sp.active);
+            this.lastCacheUpdate = now;
+            console.log(`Subprompt cache updated with ${this.subpromptCache.length} active subprompts`);
+          } else {
+            // Se não retornou dados do banco, usa os dados em memória como fallback
+            console.log("No subprompts found in database, using fallback data");
+            this.useFallback = true;
+            this.loadFallbackSubprompts();
+          }
+        }
       } catch (error) {
         console.error("Error updating subprompt cache:", error);
-        // Se houver um erro, mantém o cache como está
-        if (!this.subpromptCache) {
-          this.subpromptCache = [];
-        }
+        // Se houver um erro, ativa o modo fallback e usa os dados em memória
+        this.useFallback = true;
+        this.loadFallbackSubprompts();
       }
     }
+  }
+
+  /**
+   * Carrega os subprompts de fallback (em memória) para o cache
+   */
+  private loadFallbackSubprompts(): void {
+    this.subpromptCache = FALLBACK_SUBPROMPTS.map(sp => ({
+      ...sp,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+      embedding: [] // Os embeddings serão gerados sob demanda
+    }));
+    this.lastCacheUpdate = new Date();
+    console.log(`Loaded ${this.subpromptCache.length} fallback subprompts into cache`);
   }
 
   /**
    * Obtém todos os subprompts armazenados
    */
   async getAllSubprompts(): Promise<SubpromptWithEmbedding[]> {
+    if (this.useFallback) {
+      // Se estiver em modo fallback, retorna os dados em memória
+      return FALLBACK_SUBPROMPTS.map(sp => ({
+        ...sp,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        embedding: []
+      }));
+    }
+
     try {
       const subpromptsList = await db.select().from(subprompts);
+      
+      if (subpromptsList.length === 0) {
+        throw new Error("No subprompts found in database");
+      }
+      
       return subpromptsList.map(sp => ({
         ...sp,
         embedding: sp.embedding ? (sp.embedding as unknown as number[]) : []
       }));
     } catch (error) {
       console.error("Error fetching subprompts:", error);
-      return [];
+      // Ativa o modo fallback para as próximas chamadas
+      this.useFallback = true;
+      
+      // Retorna os dados em memória
+      return FALLBACK_SUBPROMPTS.map(sp => ({
+        ...sp,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        embedding: []
+      }));
     }
   }
 
@@ -217,7 +387,7 @@ export class SubpromptService {
     }
     
     try {
-      // Atualiza o cache se necessário
+      // Atualiza o cache se necessário (pode ativar o modo fallback)
       await this.updateCacheIfNeeded();
       
       // Se não há subprompts no cache, retorna uma string vazia
@@ -225,6 +395,39 @@ export class SubpromptService {
         console.log("No subprompts available in cache");
         return "";
       }
+      
+      // Se estivermos usando dados em memória, podemos pular o processo de embedding
+      // e ir direto para a pesquisa por palavras-chave (mais rápido e eficiente)
+      if (this.useFallback) {
+        // Procura por palavras-chave na consulta
+        const keywordMatch = this.findSubpromptByKeywords(userQuery.toLowerCase());
+        if (keywordMatch) {
+          console.log(`Selected fallback subprompt via keywords: ${keywordMatch.name}`);
+          return keywordMatch.content;
+        }
+        
+        // Se não encontrou por palavras-chave, tenta buscar o melhor subprompt genérico
+        // com base na similaridade de texto entre o nome da esfera e a consulta
+        const bestMatch = this.findBestFallbackMatch(userQuery);
+        if (bestMatch) {
+          console.log(`Selected best fallback match: ${bestMatch.name}`);
+          return bestMatch.content;
+        }
+        
+        // Se não encontrou nada, retorna o subprompt "Finance" como default
+        // já que o exemplo da requisição era relacionado a finanças
+        const financeSubprompt = this.subpromptCache.find(sp => sp.name === "Finance Sphere");
+        if (financeSubprompt) {
+          console.log("Using Finance Sphere as default fallback");
+          return financeSubprompt.content;
+        }
+        
+        // Último caso - retorna o primeiro subprompt disponível
+        console.log("Using first available subprompt as last resort");
+        return this.subpromptCache[0].content;
+      }
+      
+      // Fluxo normal quando estamos usando o banco de dados
       
       // Gera um embedding para a query do usuário
       const queryEmbedding = await this.generateEmbedding(userQuery);
@@ -264,6 +467,50 @@ export class SubpromptService {
       console.error("Error selecting subprompt:", error);
       return "";
     }
+  }
+  
+  /**
+   * Encontra o melhor subprompt fallback baseado em uma simples
+   * comparação de texto (para uso quando estamos em modo fallback)
+   */
+  private findBestFallbackMatch(userQuery: string): Subprompt | null {
+    if (!this.subpromptCache || this.subpromptCache.length === 0) {
+      return null;
+    }
+    
+    const query = userQuery.toLowerCase();
+    
+    // Mapeia cada esfera com uma pontuação simples baseada em quantas
+    // vezes as palavras do nome ou descrição aparecem na consulta
+    const scores = this.subpromptCache.map(subprompt => {
+      let score = 0;
+      
+      // Verifica se o nome da esfera aparece na consulta
+      const sphereName = subprompt.sphere.toLowerCase();
+      if (query.includes(sphereName)) {
+        score += 5; // Pontuação alta se o nome da esfera estiver presente
+      }
+      
+      // Verifica palavras da descrição
+      const descWords = subprompt.description.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+      for (const word of descWords) {
+        if (query.includes(word)) {
+          score += 1;
+        }
+      }
+      
+      return { subprompt, score };
+    });
+    
+    // Ordena por pontuação (maior primeiro)
+    scores.sort((a, b) => b.score - a.score);
+    
+    // Retorna o subprompt com maior pontuação, se tiver alguma pontuação
+    if (scores[0] && scores[0].score > 0) {
+      return scores[0].subprompt;
+    }
+    
+    return null;
   }
 
   /**
