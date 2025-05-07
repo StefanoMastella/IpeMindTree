@@ -97,15 +97,25 @@ export class RagService {
       console.log("Selecting relevant subprompt for query...");
       const selectedSubprompt = await subpromptService.selectSubprompt(userQuestion);
       
+      // Get the name of the selected sphere (or empty string if none was selected)
+      const selectedSphereName = selectedSubprompt 
+        ? selectedSubprompt.match(/You are now providing assistance in the (.+?) domain\./)?.[1] || ""
+        : "";
+        
       // Get the base application context and current ideas context
       const baseMainPrompt = getMainPrompt();
       const ideasContext = await this.getIdeasContext();
       
-      // Create the complete prompt for the model
+      // Create the complete prompt for the model with more explicit instructions
       const fullPrompt = `
 ${baseMainPrompt}
 
-${selectedSubprompt ? `\n--- Applied Subprompt ---\n${selectedSubprompt}\n` : ''}
+${selectedSubprompt ? `## IMPORTANT: You are currently operating in the ${selectedSphereName} mode.
+${selectedSubprompt}
+
+You MUST acknowledge your current sphere at the beginning of your response with: "I'm activating the ${selectedSphereName} perspective." This should be the first line of your response.
+Always apply the perspective and focus areas from this sphere when responding.
+` : ''}
 
 ${ideasContext}
 
