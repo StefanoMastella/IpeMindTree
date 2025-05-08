@@ -2,12 +2,17 @@ import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Brain, MessageSquareText, Braces, LogIn, LogOut, Settings } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
+// Temporarily create a mock auth for development
+const mockAuth = {
+  user: null as any,
+  logoutMutation: { mutate: () => {}, isPending: false }
+};
 
 export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [location] = useLocation();
-  const { user, logoutMutation } = useAuth();
+  // Use mock auth for now
+  const { user, logoutMutation } = mockAuth;
   
   const toggleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);

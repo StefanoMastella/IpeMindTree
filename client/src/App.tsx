@@ -7,7 +7,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import { IdeaDetailProvider } from "./lib/types";
-import { AuthProvider } from "./lib/auth-context";
 
 function Router() {
   return (
@@ -26,14 +25,12 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <TooltipProvider>
-          <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
-            <Toaster />
-            <Router />
-          </IdeaDetailProvider>
-        </TooltipProvider>
-      </AuthProvider>
+      <TooltipProvider>
+        <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
+          <Toaster />
+          <Router />
+        </IdeaDetailProvider>
+      </TooltipProvider>
     </QueryClientProvider>
   );
 }
