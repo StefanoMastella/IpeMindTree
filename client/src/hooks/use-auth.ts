@@ -1,42 +1,40 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth as useAuthContext } from "../lib/auth-context";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 
+interface User {
+  id: number;
+  username: string;
+  role?: string;
+}
+
+// Simple auth hook with mocked functionality for development
 export function useAuth() {
-  const auth = useAuthContext();
   const queryClient = useQueryClient();
+  
+  // Mocked user state
+  const user: User | null = null;
 
-  // Login mutation
+  // Login mutation (mocked)
   const loginMutation = useMutation({
     mutationFn: (credentials: { username: string; password: string }) => 
-      auth.login(credentials.username, credentials.password),
+      Promise.resolve(true),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     }
   });
 
-  // Logout mutation
+  // Logout mutation (mocked)
   const logoutMutation = useMutation({
-    mutationFn: () => auth.logout(),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
-    }
-  });
-
-  // Register mutation
-  const registerMutation = useMutation({
-    mutationFn: (userData: { username: string; email: string; password: string }) => 
-      auth.register(userData.username, userData.email, userData.password),
+    mutationFn: () => Promise.resolve(),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/auth/me'] });
     }
   });
 
   return {
-    user: auth.user,
-    isAuthenticated: auth.isAuthenticated,
-    isLoading: auth.isLoading,
+    user,
+    isAuthenticated: !!user,
+    isLoading: false,
     loginMutation,
-    logoutMutation,
-    registerMutation
+    logoutMutation
   };
 }
