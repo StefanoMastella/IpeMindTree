@@ -120,9 +120,12 @@ export default function AuthPage() {
 function LoginForm() {
   const auth = useAuth();
   // Use a default fallback for loginMutation if it's not available
+  const [isLoginPending, setIsLoginPending] = useState(false);
   const loginMutation = auth.loginMutation || {
     mutate: async (data: any) => {
+      setIsLoginPending(true);
       try {
+        console.log("Direct login API call");
         const res = await fetch('/api/auth/login', {
           method: 'POST',
           headers: {
@@ -130,16 +133,30 @@ function LoginForm() {
           },
           body: JSON.stringify(data)
         });
-        if (!res.ok) throw new Error('Login failed');
+        
+        if (!res.ok) {
+          const errorData = await res.json();
+          throw new Error(errorData.message || 'Login failed');
+        }
+        
         const user = await res.json();
-        window.location.reload();
+        console.log("Login successful, user:", user);
+        
+        // Refresh the page to update auth state
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 500);
+        
         return user;
       } catch (error) {
         console.error('Login error:', error);
+        alert('Login failed: ' + (error instanceof Error ? error.message : 'Unknown error'));
         throw error;
+      } finally {
+        setIsLoginPending(false);
       }
     },
-    isPending: false
+    isPending: isLoginPending
   };
   
   const form = useForm<LoginFormValues>({
@@ -150,8 +167,15 @@ function LoginForm() {
     }
   });
 
-  function onSubmit(values: LoginFormValues) {
-    loginMutation.mutate(values);
+  async function onSubmit(values: LoginFormValues) {
+    console.log("Login form submitted with values:", values);
+    try {
+      await loginMutation.mutate(values);
+      console.log("Login success, redirecting");
+      window.location.href = "/"; // Force redirect to home page on successful login
+    } catch (error) {
+      console.error("Login error:", error);
+    }
   }
 
   return (
@@ -251,10 +275,20 @@ function RegisterForm() {
     }
   });
 
-  function onSubmit(values: RegisterFormValues) {
+  async function onSubmit(values: RegisterFormValues) {
+    console.log("Register form submitted with values:", { ...values, password: "***" });
     // Omit password confirmation before sending
     const { passwordConfirm, ...registerData } = values;
-    registerMutation.mutate(registerData);
+    
+    try {
+      await registerMutation.mutate(registerData);
+      console.log("Registration success, redirecting");
+      setTimeout(() => {
+        window.location.href = "/"; // Force redirect to home page on successful registration
+      }, 500);
+    } catch (error) {
+      console.error("Registration error:", error);
+    }
   }
 
   return (
