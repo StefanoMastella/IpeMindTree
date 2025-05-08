@@ -1,0 +1,10 @@
+{
+  "name": "import-ideas",
+  "version": "1.0.0",
+  "description": "Import ideas to the database",
+  "main": "import-ideas.js",
+  "type": "module",
+  "scripts": {
+    "start": "node import-ideas.js"
+  }
+}
