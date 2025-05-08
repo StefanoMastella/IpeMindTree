@@ -114,7 +114,7 @@ export default function Header() {
             <Link href="/auth" className="no-underline">
               <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
                 <LogIn className="h-4 w-4 mr-1" />
-                <span>Entrar</span>
+                <span>Login</span>
               </Button>
             </Link>
           )}
@@ -181,7 +181,7 @@ export default function Header() {
             <Link href="/auth" className="no-underline w-full">
               <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
                 <LogIn className="h-4 w-4 mr-1" />
-                <span>Entrar</span>
+                <span>Login</span>
               </Button>
             </Link>
           )}
