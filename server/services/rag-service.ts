@@ -261,5 +261,5 @@ Provide a short and engaging summary of this idea in 2-3 sentences.
 }
 
 // Singleton for use throughout the application
-const API_KEY = process.env.GEMINI_API_KEY || "";
+const API_KEY = process.env.OPENAI_API_KEY || process.env.GEMINI_API_KEY || "";
 export const ragService = new RagService(API_KEY);
