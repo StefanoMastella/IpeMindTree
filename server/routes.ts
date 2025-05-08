@@ -4,10 +4,14 @@ import { storage } from "./storage";
 import { pool } from "./db";
 import { setupAuthRoutes } from "./auth";
 import { callGeminiAPI } from "./llm-service";
+import { registerDatabaseRoutes } from "./routes/database-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
   setupAuthRoutes(app);
+  
+  // Set up database viewer routes
+  registerDatabaseRoutes(app);
   
   // API routes
   // Prefix all routes with /api

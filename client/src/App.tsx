@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Switch, Route } from "wouter";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { ThemeProvider } from "next-themes";
 import NotFound from "@/pages/not-found";
 import Home from "@/pages/home";
 import About from "@/pages/about";
@@ -13,6 +14,7 @@ import Explore from "@/pages/explore";
 import IdeaDetail from "@/pages/idea-detail";
 import ObsidianPage from "@/pages/obsidian-page";
 import SubpromptAdmin from "@/pages/subprompt-admin";
+import DatabaseViewer from "@/pages/database-viewer";
 import { IdeaDetailProvider } from "./lib/types";
 import { ProtectedRoute } from "./lib/protected-route";
 import { AdminRoute } from "./lib/admin-route";
@@ -28,13 +30,16 @@ function Router() {
       <Route path="/explore" component={Explore}/>
       <Route path="/idea/:id" component={IdeaDetail}/>
       <Route path="/obsidian" component={ObsidianPage}/>
-      <Route path="/admin/subprompts">
-        {() => (
-          <AdminRoute>
-            <SubpromptAdmin />
-          </AdminRoute>
-        )}
-      </Route>
+      <Route path="/admin/subprompts" component={() => (
+        <AdminRoute>
+          <SubpromptAdmin />
+        </AdminRoute>
+      )}/>
+      <Route path="/admin/database" component={() => (
+        <AdminRoute>
+          <DatabaseViewer />
+        </AdminRoute>
+      )}/>
       {/* Fallback to 404 */}
       <Route component={NotFound} />
     </Switch>
@@ -44,16 +49,23 @@ function Router() {
 function App() {
   // Set up state for selected idea
   const [selectedIdea, setSelectedIdea] = useState<number | null>(null);
+  
+  // Force dark theme on application load
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+  }, []);
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
-          <Toaster />
-          <Router />
-        </IdeaDetailProvider>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false}>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <IdeaDetailProvider value={{ selectedIdea, setSelectedIdea }}>
+            <Toaster />
+            <Router />
+          </IdeaDetailProvider>
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ThemeProvider>
   );
 }
 
