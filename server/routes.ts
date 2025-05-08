@@ -152,6 +152,35 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Chat API endpoint
+  app.post("/api/chat", async (req: Request, res: Response) => {
+    try {
+      const { message } = req.body;
+      
+      if (!message) {
+        return res.status(400).json({ error: "Message is required" });
+      }
+      
+      console.log("Received chat message:", message);
+      
+      const response = await callGeminiAPI(message);
+      console.log("Generated chat response");
+      
+      res.json({ 
+        id: Date.now().toString(),
+        content: response, 
+        role: "assistant",
+        timestamp: new Date()
+      });
+    } catch (error) {
+      console.error("Error in chat API:", error);
+      res.status(500).json({ 
+        error: "Failed to generate response",
+        details: error instanceof Error ? error.message : String(error)
+      });
+    }
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;
