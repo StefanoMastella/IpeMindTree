@@ -1,7 +1,24 @@
 import { useState } from "react";
 import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
-import { Brain, MessageSquareText, Braces, LogIn, LogOut, Settings } from "lucide-react";
+import { 
+  Brain, 
+  MessageSquareText, 
+  Braces, 
+  LogIn, 
+  LogOut, 
+  Settings, 
+  Database, 
+  ChevronDown 
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/hooks/use-auth";
 
 export default function Header() {
@@ -54,10 +71,34 @@ export default function Header() {
                 <span className="text-foreground font-medium">Olá, {user.username}</span>
               </div>
               {user?.role === 'ADMIN' && (
-                <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
-                  <Settings className="h-4 w-4 mr-1" />
-                  Admin
-                </Link>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      className={`${location.startsWith("/admin") ? "text-primary" : "text-foreground hover:text-primary"} font-medium flex items-center p-2`}
+                    >
+                      <Settings className="h-4 w-4 mr-1" />
+                      Admin
+                      <ChevronDown className="h-4 w-4 ml-1" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                    <DropdownMenuLabel>Administração</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href="/admin/subprompts" className="no-underline">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Settings className="h-4 w-4 mr-2" />
+                        Subprompts
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/admin/database" className="no-underline">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Database className="h-4 w-4 mr-2" />
+                        Banco de Dados
+                      </DropdownMenuItem>
+                    </Link>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               )}
               <Button 
                 variant="outline" 
@@ -114,10 +155,17 @@ export default function Header() {
 {user ? (
             <>
               {user?.role === 'ADMIN' && (
-                <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
-                  <Settings className="h-4 w-4 mr-1" />
-                  Admin
-                </Link>
+                <>
+                  <div className="font-medium text-muted-foreground py-1 text-sm">Menu Admin</div>
+                  <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center ml-2`}>
+                    <Settings className="h-4 w-4 mr-1" />
+                    Subprompts
+                  </Link>
+                  <Link href="/admin/database" className={`${location === "/admin/database" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center ml-2`}>
+                    <Database className="h-4 w-4 mr-1" />
+                    Banco de Dados
+                  </Link>
+                </>
               )}
               <Button 
                 variant="outline" 
