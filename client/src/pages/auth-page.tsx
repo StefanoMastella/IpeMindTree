@@ -43,7 +43,7 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 type RegisterFormValues = z.infer<typeof registerSchema>;
 
 export default function AuthPage() {
-  const { user, loginMutation, registerMutation } = useAuth();
+  const { user } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
 
   // If user is already authenticated, redirect to home page
@@ -118,7 +118,29 @@ export default function AuthPage() {
 }
 
 function LoginForm() {
-  const { loginMutation } = useAuth();
+  const auth = useAuth();
+  // Use a default fallback for loginMutation if it's not available
+  const loginMutation = auth.loginMutation || {
+    mutate: async (data: any) => {
+      try {
+        const res = await fetch('/api/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Login failed');
+        const user = await res.json();
+        window.location.reload();
+        return user;
+      } catch (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+    },
+    isPending: false
+  };
   
   const form = useForm<LoginFormValues>({
     resolver: zodResolver(loginSchema),
@@ -196,7 +218,29 @@ function LoginForm() {
 }
 
 function RegisterForm() {
-  const { registerMutation } = useAuth();
+  const auth = useAuth();
+  // Use a default fallback for registerMutation if it's not available
+  const registerMutation = auth.registerMutation || {
+    mutate: async (data: any) => {
+      try {
+        const res = await fetch('/api/auth/register', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!res.ok) throw new Error('Registration failed');
+        const user = await res.json();
+        window.location.reload();
+        return user;
+      } catch (error) {
+        console.error('Registration error:', error);
+        throw error;
+      }
+    },
+    isPending: false
+  };
   
   const form = useForm<RegisterFormValues>({
     resolver: zodResolver(registerSchema),
