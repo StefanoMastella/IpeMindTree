@@ -42,8 +42,8 @@ export class DatabaseStorage implements IStorage {
   async createUser(insertUser: InsertUser): Promise<User> {
     try {
       const result = await pool.query(
-        "INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING *",
-        [insertUser.username, insertUser.password, insertUser.email || null]
+        "INSERT INTO users (username, password) VALUES ($1, $2) RETURNING *",
+        [insertUser.username, insertUser.password]
       );
       return result.rows[0];
     } catch (error) {

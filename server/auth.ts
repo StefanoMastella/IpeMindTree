@@ -102,7 +102,7 @@ export function setupAuthRoutes(app: Express) {
       // Check if user already exists
       const existingUser = await storage.getUserByUsername(userData.username);
       if (existingUser) {
-        return res.status(400).json({ message: 'Nome de usuário já está em uso.' });
+        return res.status(400).json({ message: 'Username is already taken.' });
       }
       
       // Create user with encrypted password

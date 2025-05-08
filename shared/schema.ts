@@ -7,7 +7,6 @@ export const users = pgTable("users", {
   id: serial("id").primaryKey(),
   username: text("username").notNull().unique(),
   password: text("password").notNull(),
-  email: text("email").unique(),
   created_at: timestamp("created_at").defaultNow(),
   settings: jsonb("settings")
 });
@@ -112,8 +111,7 @@ export const import_logs = pgTable("import_logs", {
 // Export insert schemas and types
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
-  password: true,
-  email: true
+  password: true
 });
 
 export const insertIdeaSchema = createInsertSchema(ideas).pick({
