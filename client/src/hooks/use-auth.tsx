@@ -52,7 +52,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     },
   });
 
-  // Mutation para login
+  // Login mutation
   const loginMutation = useMutation({
     mutationFn: async (credentials: LoginData) => {
       const res = await apiRequest("POST", "/api/auth/login", credentials);
@@ -61,21 +61,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/auth/me"], user);
       toast({
-        title: "Login bem-sucedido",
-        description: `Bem-vindo, ${user.username}!`,
+        title: "Login successful",
+        description: `Welcome, ${user.username}!`,
         variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Falha no login",
-        description: error.message || "Credenciais inválidas",
+        title: "Login failed",
+        description: error.message || "Invalid credentials",
         variant: "destructive",
       });
     },
   });
 
-  // Mutation para cadastro
+  // Registration mutation
   const registerMutation = useMutation({
     mutationFn: async (credentials: RegisterData) => {
       const res = await apiRequest("POST", "/api/auth/register", credentials);
@@ -84,21 +84,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: (user: User) => {
       queryClient.setQueryData(["/api/auth/me"], user);
       toast({
-        title: "Cadastro bem-sucedido",
-        description: `Bem-vindo, ${user.username}! Sua conta foi criada.`,
+        title: "Registration successful",
+        description: `Welcome, ${user.username}! Your account has been created.`,
         variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Falha no cadastro",
-        description: error.message || "Não foi possível criar sua conta",
+        title: "Registration failed",
+        description: error.message || "Could not create your account",
         variant: "destructive",
       });
     },
   });
 
-  // Mutation para logout
+  // Logout mutation
   const logoutMutation = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", "/api/auth/logout");
@@ -106,14 +106,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     onSuccess: () => {
       queryClient.setQueryData(["/api/auth/me"], null);
       toast({
-        title: "Logout realizado",
-        description: "Você saiu da sua conta com sucesso.",
+        title: "Logout successful",
+        description: "You have successfully logged out.",
         variant: "default",
       });
     },
     onError: (error: Error) => {
       toast({
-        title: "Falha no logout",
+        title: "Logout failed",
         description: error.message,
         variant: "destructive",
       });
@@ -139,7 +139,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth deve ser usado dentro de um AuthProvider");
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
