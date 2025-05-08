@@ -1,18 +1,10 @@
 import express, { type Request, Response, NextFunction } from "express";
-import path from "path";
-import fs from "fs";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
-import { storage } from "./storage";
-import { initializeTelegramBot } from "./telegram/bot";
-import { subpromptService } from "./services/subprompt-service";
 
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-
-// Configuration to serve static files from the uploads folder
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 app.use((req, res, next) => {
   const start = Date.now();
@@ -45,31 +37,6 @@ app.use((req, res, next) => {
 });
 
 (async () => {
-  // Initialize the database with sample data
-  try {
-    await (storage as any).seedInitialData();
-  } catch (error) {
-    console.error("Error seeding database:", error);
-  }
-  
-  // Initialize subprompts from the IMT Grimory file
-  try {
-    const subpromptsPath = path.join(process.cwd(), 'attached_assets', 'IMT Grimory of Subprompts.md');
-    if (fs.existsSync(subpromptsPath)) {
-      const document = fs.readFileSync(subpromptsPath, 'utf-8');
-      const created = await subpromptService.seedSubpromptsFromDocument(document);
-      if (created > 0) {
-        console.log(`Successfully initialized ${created} subprompts from IMT Grimory document`);
-      } else {
-        console.log('No new subprompts created from document, possibly already initialized');
-      }
-    } else {
-      console.error('IMT Grimory of Subprompts.md file not found in attached_assets folder');
-    }
-  } catch (error) {
-    console.error("Error initializing subprompts:", error);
-  }
-  
   const server = await registerRoutes(app);
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
@@ -99,16 +66,5 @@ app.use((req, res, next) => {
     reusePort: true,
   }, () => {
     log(`serving on port ${port}`);
-    
-    // Log environment variables for debugging
-    log(`NODE_ENV: ${process.env.NODE_ENV}`);
-    
-    // Always initialize the Telegram bot
-    try {
-      initializeTelegramBot();
-      log('Telegram bot initialized');
-    } catch (error) {
-      console.error('Error initializing Telegram bot:', error);
-    }
   });
 })();
