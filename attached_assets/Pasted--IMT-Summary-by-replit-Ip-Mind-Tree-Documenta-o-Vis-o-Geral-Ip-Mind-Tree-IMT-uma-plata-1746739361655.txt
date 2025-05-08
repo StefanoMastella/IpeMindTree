@@ -1,0 +1,158 @@
+### IMT Summary by replit
+Ipê Mind Tree - Documentação
+
+Visão Geral
+
+Ipê Mind Tree (IMT) é uma plataforma colaborativa de conhecimento impulsionada por IA que transforma a geração de ideias em uma experiência dinâmica e envolvente. Esta plataforma atua como um "cérebro comunitário" que facilita a conexão entre ideias, promove a inteligência coletiva e oferece uma experiência interativa enriquecida por tecnologias de IA.
+
+Arquitetura do Sistema
+
+Frontend
+
+- **Framework**: React com TypeScript
+- **Estilização**: Tailwind CSS com componentes Shadcn UI
+- **Roteamento**: Wouter para navegação entre páginas
+- **Gerenciamento de Estado**: TanStack Query para fetch de dados
+
+Backend
+
+- **Server**: Express.js com TypeScript
+- **Banco de Dados**: PostgreSQL com Drizzle ORM
+- **Integração com IA**: API Gemini do Google
+- **Autenticação**: Sistema de autenticação baseado em sessões com Passport.js
+
+Integrações Externas
+
+- **Telegram**: Bot integrado para acesso ao IMT via Telegram (@IpeMindTree_bot)
+- **Obsidian**: Importação de arquivos .md e .canvas para criar redes de conhecimento
+- **Notion**: Importação de informações de projetos
+
+Componentes Principais
+
+Sistema de Subprompts
+
+O IMT utiliza um sistema de "subprompts" que divide o conhecimento em 12 esferas/domínios:
+
+1. **Governance Sphere**: Governança descentralizada e sistemas de decisão
+2. **Finance Sphere**: Soluções financeiras inovadoras (DeFi, tokenização)
+3. **Education Sphere**: Educação personalizada e acessível
+4. **Health Sphere**: Saúde digital e medicina preventiva
+5. **Technology Sphere**: Infraestrutura tecnológica
+6. **Community Sphere**: Fortalecimento da comunidade e colaboração
+7. **Resources Sphere**: Compartilhamento de recursos valiosos
+8. **Projects Sphere**: Desenvolvimento de projetos no ecossistema
+9. **Acoustical Governance Sphere**: Controle sonoro e práticas de cura pelo som
+10. **DracoLogos Sphere**: Expressão criativa e inovação artística
+11. **Techno-Optimism Sphere**: Perspectiva positiva sobre tecnologia
+12. **Ethics & Values Sphere**: Alinhamento com princípios éticos
+
+Cada esfera possui palavras-chave associadas que o sistema utiliza para identificar quando ativar determinado contexto em resposta às consultas dos usuários.
+
+Mecanismo de Fallback
+
+O sistema possui um mecanismo de fallback que utiliza dados em memória quando o banco de dados não está disponível. Isso garante que a funcionalidade de subprompts continue funcionando mesmo em caso de problemas de conexão.
+
+Serviço RAG (Retrieval-Augmented Generation)
+
+O IMT utiliza um sistema RAG que:
+
+- Combina o prompt principal com o subprompt mais relevante
+- Incorpora contexto atual das ideias armazenadas
+- Integra conhecimento do Obsidian quando relevante
+- Gera respostas personalizadas usando a API Gemini
+
+Páginas e Interfaces
+
+Home Page
+
+- Exibe uma visão geral da plataforma
+- Apresenta ideias populares e recentes
+- Fornece navegação para outras seções
+
+Chat Page
+
+- Interface de conversa com o IMT-AI
+- Painel lateral com informações sobre o IMT
+- Sugestões de perguntas e tópicos
+- Ativação automática de esferas baseada no contexto da pergunta
+
+Idea Explorer
+
+- Visualização em rede de ideias conectadas
+- Ferramenta de busca e filtro para ideias
+- Visualização detalhada de ideias individuais
+
+Idea Creation
+
+- Modal para criação de novas ideias
+- Suporte para upload de imagens
+- Geração automática de tags e conexões
+
+Página de Autenticação
+
+- Login e registro de usuários
+- Proteção de rotas para conteúdo restrito
+- Funções específicas para administradores
+
+Painel de Administração
+
+- Gerenciamento de subprompts
+- Importação de dados do Obsidian/Notion
+- Monitoramento de uso e estatísticas
+
+Fluxos de Funcionamento
+
+Fluxo do Chat com IA
+
+1. Usuário envia uma pergunta ao IMT-AI
+2. O sistema seleciona o subprompt mais relevante baseado em similaridade ou palavras-chave
+3. O contexto completo é montado (prompt principal + subprompt + ideias + contexto Obsidian)
+4. A API Gemini gera uma resposta contextualizada
+5. A resposta é exibida ao usuário com indicação da esfera ativada
+
+Fluxo de Criação de Ideias
+
+1. Usuário acessa o modal de criação de ideias
+2. Usuário preenche título, descrição e opcionalmente adiciona imagens
+3. O sistema gera tags automaticamente (ou usa as fornecidas pelo usuário)
+4. O sistema sugere conexões com ideias existentes
+5. A ideia é salva e adicionada à rede de conhecimento
+
+Fluxo de Integração Telegram
+
+1. Usuário inicia conversa com o bot @IpeMindTree_bot
+2. Comandos permitem consultar o IMT-AI ou listar ideias recentes
+3. O sistema processa as consultas usando o mesmo mecanismo RAG
+4. Respostas são formatadas e enviadas de volta ao Telegram
+
+Fluxo de Importação Obsidian/Notion
+
+1. Administrador acessa a funcionalidade de importação
+2. Uploads dos arquivos Obsidian (.md, .canvas) ou integração com Notion
+3. O sistema analisa os arquivos e extrai nós e conexões
+4. O conhecimento é integrado à base existente
+5. Logs de importação são gerados para rastreamento
+
+Segurança e Privacidade
+
+- Autenticação baseada em sessões
+- Controle de acesso baseado em funções (usuário/admin)
+- Sanitização de entradas para prevenir injeções
+- Criptografia de senhas com bcrypt
+- Proteção de rotas sensíveis da API
+
+Tecnologias de IA
+
+- API Gemini para geração de respostas contextualizadas
+- Embeddings simples para comparação de similaridade textual
+- Sistema de seleção baseado em palavras-chave como fallback
+- Visualização e navegação em rede de ideias
+
+Considerações Técnicas
+
+- Sistema desenhado para resiliência, com fallbacks para falhas do banco de dados
+- Arquitetura modular permitindo ampliação das funcionalidades
+- Implementação serverless usando PostgreSQL Neon
+- Integrações externas via APIs (Telegram, potencialmente outros serviços)
+
+Esta documentação fornece uma visão abrangente do Ipê Mind Tree, sua arquitetura, componentes principais e funcionalidades. O sistema foi projetado para facilitar a colaboração e a geração de ideias em comunidade, com forte ênfase na interação assistida por IA.
