@@ -12,45 +12,51 @@ export interface IStorage {
   getIdea(id: number): Promise<Idea | undefined>;
 }
 
-export class MemStorage implements IStorage {
-  private users: Map<number, User>;
-  currentId: number;
-
-  constructor() {
-    this.users = new Map();
-    this.currentId = 1;
-  }
-
+export class DatabaseStorage implements IStorage {
   async getUser(id: number): Promise<User | undefined> {
-    return this.users.get(id);
+    try {
+      const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error getting user by ID:", error);
+      return undefined;
+    }
   }
 
   async getUserByUsername(username: string): Promise<User | undefined> {
-    return Array.from(this.users.values()).find(
-      (user) => user.username === username,
-    );
+    try {
+      const result = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error getting user by username:", error);
+      return undefined;
+    }
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = this.currentId++;
-    const user: User = { ...insertUser, id };
-    this.users.set(id, user);
-    return user;
+    try {
+      const result = await pool.query(
+        "INSERT INTO users (username, password, email) VALUES ($1, $2, $3) RETURNING *",
+        [insertUser.username, insertUser.password, insertUser.email || null]
+      );
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw new Error("Failed to create user");
+    }
   }
   
   // Fetch all ideas from the database
   async getAllIdeas(): Promise<Idea[]> {
     try {
       const result = await pool.query("SELECT * FROM ideas ORDER BY created_at DESC");
-      return result.rows.map(row => ({
-        id: row.id,
-        title: row.title,
-        description: row.content || "",
-        author: "User",
-        createdAt: row.created_at,
-        tags: [],
-        connections: []
-      }));
+      return result.rows;
     } catch (error) {
       console.error("Error fetching ideas:", error);
       return [];
@@ -66,15 +72,7 @@ export class MemStorage implements IStorage {
         return undefined;
       }
       
-      return {
-        id: result.rows[0].id,
-        title: result.rows[0].title,
-        description: result.rows[0].content || "",
-        author: "User",
-        createdAt: result.rows[0].created_at,
-        tags: [],
-        connections: []
-      };
+      return result.rows[0];
     } catch (error) {
       console.error("Error fetching idea:", error);
       return undefined;
@@ -82,4 +80,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use DatabaseStorage instead of MemStorage
+export const storage = new DatabaseStorage();
