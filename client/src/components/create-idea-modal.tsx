@@ -6,6 +6,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { X, Mic, MessageSquare, LinkIcon, ImageIcon, Upload } from "lucide-react";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useAuth } from "@/hooks/use-auth";
 import { generateTags } from "@/lib/llm";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ImageUploader } from "@/components/ui/image-uploader";
@@ -17,6 +18,7 @@ interface CreateIdeaModalProps {
 
 export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProps) {
   const { toast } = useToast();
+  const { user } = useAuth();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [tags, setTags] = useState<string[]>([]);
@@ -126,7 +128,7 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
         title: title.trim(),
         description: description.trim(),
         tags: ideaTags,
-        author: "Current User" // Em um app real, seria o usuário logado
+        author: user?.username || "Anonymous" // Use logged in username if available
       };
       
       // Adicionar campos opcionais apenas se possuem valor

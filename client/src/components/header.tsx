@@ -68,7 +68,7 @@ export default function Header() {
 {user ? (
             <div className="flex items-center space-x-4">
               <div className="hidden sm:block">
-                <span className="text-foreground font-medium">Olá, {user.username}</span>
+                <span className="text-foreground font-medium">Hello, {user.username}</span>
               </div>
               {user?.role === 'ADMIN' && (
                 <DropdownMenu>
@@ -83,7 +83,7 @@ export default function Header() {
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end">
-                    <DropdownMenuLabel>Administração</DropdownMenuLabel>
+                    <DropdownMenuLabel>Administration</DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <Link href="/admin/subprompts" className="no-underline">
                       <DropdownMenuItem className="cursor-pointer">
@@ -107,7 +107,7 @@ export default function Header() {
                 className="flex items-center space-x-1"
               >
                 <LogOut className="h-4 w-4 mr-1" />
-                <span>Sair</span>
+                <span>Logout</span>
               </Button>
             </div>
           ) : (
@@ -174,7 +174,7 @@ export default function Header() {
                 className="flex items-center space-x-1 w-full justify-center"
               >
                 <LogOut className="h-4 w-4 mr-1" />
-                <span>Sair</span>
+                <span>Logout</span>
               </Button>
             </>
           ) : (
