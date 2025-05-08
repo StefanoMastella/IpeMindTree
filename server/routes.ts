@@ -49,7 +49,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { title, description, tags } = req.body;
       
       // Use the current user's ID if available, otherwise null
-      const userId = req.session.userId || null;
+      const userId = req.session && (req.session as any).userId || null;
       const username = req.user ? req.user.username : "Anonymous";
       
       const result = await pool.query(
@@ -111,7 +111,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const ideaId = parseInt(req.params.id);
       const result = await pool.query(
-        "SELECT * FROM comments WHERE idea_id = $1 ORDER BY created_at DESC",
+        `SELECT comments.*, users.username 
+         FROM comments 
+         LEFT JOIN users ON comments.user_id = users.id 
+         WHERE comments.idea_id = $1 
+         ORDER BY comments.created_at DESC`,
         [ideaId]
       );
       
@@ -119,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: row.id,
         ideaId: row.idea_id,
         content: row.content,
-        author: "User",
+        author: row.username || "Anonymous",
         createdAt: row.created_at
       }));
       
@@ -134,18 +138,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/ideas/:id/comments", async (req: Request, res: Response) => {
     try {
       const ideaId = parseInt(req.params.id);
-      const { content, author } = req.body;
+      const { content } = req.body;
+      
+      // Use the current user's ID if available, otherwise null
+      const userId = req.session && (req.session as any).userId || null;
+      const username = req.user ? req.user.username : "Anonymous";
       
       const result = await pool.query(
-        "INSERT INTO comments (idea_id, content, created_at) VALUES ($1, $2, CURRENT_TIMESTAMP) RETURNING *",
-        [ideaId, content]
+        "INSERT INTO comments (idea_id, content, user_id, created_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP) RETURNING *",
+        [ideaId, content, userId]
       );
       
       res.status(201).json({
         id: result.rows[0].id,
         ideaId: result.rows[0].idea_id,
         content: result.rows[0].content,
-        author: author || "Anonymous",
+        author: username,
         createdAt: result.rows[0].created_at
       });
     } catch (error) {
