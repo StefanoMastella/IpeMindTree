@@ -17,25 +17,25 @@ import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
-// Schema para validação do formulário de login
+// Schema for login form validation
 const loginSchema = z.object({
   username: z.string()
-    .min(3, "O nome de usuário deve ter pelo menos 3 caracteres")
-    .max(50, "O nome de usuário não pode ter mais de 50 caracteres"),
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username cannot be more than 50 characters"),
   password: z.string()
-    .min(6, "A senha deve ter pelo menos 6 caracteres")
+    .min(6, "Password must be at least 6 characters")
 });
 
-// Schema para validação do formulário de registro
+// Schema for registration form validation
 const registerSchema = z.object({
   username: z.string()
-    .min(3, "O nome de usuário deve ter pelo menos 3 caracteres")
-    .max(50, "O nome de usuário não pode ter mais de 50 caracteres"),
+    .min(3, "Username must be at least 3 characters")
+    .max(50, "Username cannot be more than 50 characters"),
   password: z.string()
-    .min(6, "A senha deve ter pelo menos 6 caracteres"),
+    .min(6, "Password must be at least 6 characters"),
   passwordConfirm: z.string()
 }).refine((data) => data.password === data.passwordConfirm, {
-  message: "As senhas não coincidem",
+  message: "Passwords do not match",
   path: ["passwordConfirm"],
 });
 
@@ -46,7 +46,7 @@ export default function AuthPage() {
   const { user, loginMutation, registerMutation } = useAuth();
   const [activeTab, setActiveTab] = useState<string>("login");
 
-  // Se o usuário já estiver autenticado, redirecionar para a página inicial
+  // If user is already authenticated, redirect to home page
   if (user) {
     return <Redirect to="/" />;
   }
@@ -54,14 +54,14 @@ export default function AuthPage() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4 md:p-8">
       <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-8">
-        {/* Seção do Hero */}
+        {/* Hero Section */}
         <div className="order-2 lg:order-1 flex flex-col justify-center">
           <div className="space-y-6">
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-teal-500">
               Ipê Mind Tree
             </h1>
             <p className="text-xl md:text-2xl text-muted-foreground">
-              Transforme ideias em uma rede de conhecimento interligado. Faça parte da nossa comunidade de mentes criativas!
+              Transform ideas into a network of interconnected knowledge. Join our community of creative minds!
             </p>
             <div className="space-y-4 text-lg text-muted-foreground">
               <div className="flex items-start gap-4">
@@ -69,8 +69,8 @@ export default function AuthPage() {
                   <span className="text-primary text-lg">🌱</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Plante suas ideias</h3>
-                  <p>Compartilhe conhecimento com a comunidade</p>
+                  <h3 className="font-medium">Plant your ideas</h3>
+                  <p>Share knowledge with the community</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -78,8 +78,8 @@ export default function AuthPage() {
                   <span className="text-primary text-lg">🔗</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Conecte conceitos</h3>
-                  <p>Descubra relações entre ideias com ajuda da IA</p>
+                  <h3 className="font-medium">Connect concepts</h3>
+                  <p>Discover relationships between ideas with AI help</p>
                 </div>
               </div>
               <div className="flex items-start gap-4">
@@ -87,20 +87,20 @@ export default function AuthPage() {
                   <span className="text-primary text-lg">🌳</span>
                 </div>
                 <div>
-                  <h3 className="font-medium">Cultive a árvore do conhecimento</h3>
-                  <p>Veja o conhecimento coletivo crescer organicamente</p>
+                  <h3 className="font-medium">Cultivate the knowledge tree</h3>
+                  <p>Watch collective knowledge grow organically</p>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Seção de autenticação */}
+        {/* Authentication Section */}
         <div className="order-1 lg:order-2 flex flex-col justify-center">
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full max-w-xl mx-auto">
             <TabsList className="grid w-full grid-cols-2 mb-6">
               <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="register">Cadastro</TabsTrigger>
+              <TabsTrigger value="register">Register</TabsTrigger>
             </TabsList>
             
             <TabsContent value="login">
@@ -137,7 +137,7 @@ function LoginForm() {
       <CardHeader>
         <CardTitle>Login</CardTitle>
         <CardDescription>
-          Entre com sua conta para acessar todas as funcionalidades
+          Sign in to access all features
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -148,9 +148,9 @@ function LoginForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome de usuário</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Digite seu nome de usuário" autoComplete="username" {...field} />
+                    <Input placeholder="Enter your username" autoComplete="username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -162,11 +162,11 @@ function LoginForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
-                      placeholder="Digite sua senha" 
+                      placeholder="Enter your password" 
                       autoComplete="current-password"
                       {...field} 
                     />
@@ -183,10 +183,10 @@ function LoginForm() {
             >
               {loginMutation.isPending ? (
                 <>
-                  <span className="mr-2">Entrando...</span>
+                  <span className="mr-2">Signing in...</span>
                   <span className="animate-spin">⏳</span>
                 </>
-              ) : "Entrar"}
+              ) : "Sign in"}
             </Button>
           </form>
         </Form>
@@ -208,7 +208,7 @@ function RegisterForm() {
   });
 
   function onSubmit(values: RegisterFormValues) {
-    // Omitir a confirmação de senha antes de enviar
+    // Omit password confirmation before sending
     const { passwordConfirm, ...registerData } = values;
     registerMutation.mutate(registerData);
   }
@@ -216,9 +216,9 @@ function RegisterForm() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Cadastro</CardTitle>
+        <CardTitle>Register</CardTitle>
         <CardDescription>
-          Crie sua conta para participar da comunidade Ipê Mind Tree
+          Create your account to join the Ipê Mind Tree community
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -229,9 +229,9 @@ function RegisterForm() {
               name="username"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Nome de usuário</FormLabel>
+                  <FormLabel>Username</FormLabel>
                   <FormControl>
-                    <Input placeholder="Escolha um nome de usuário" autoComplete="username" {...field} />
+                    <Input placeholder="Choose a username" autoComplete="username" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -243,11 +243,11 @@ function RegisterForm() {
               name="password"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Senha</FormLabel>
+                  <FormLabel>Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
-                      placeholder="Crie uma senha forte" 
+                      placeholder="Create a strong password" 
                       autoComplete="new-password"
                       {...field} 
                     />
@@ -262,11 +262,11 @@ function RegisterForm() {
               name="passwordConfirm"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Confirme sua senha</FormLabel>
+                  <FormLabel>Confirm Password</FormLabel>
                   <FormControl>
                     <Input 
                       type="password" 
-                      placeholder="Digite a senha novamente" 
+                      placeholder="Enter password again" 
                       autoComplete="new-password"
                       {...field} 
                     />
@@ -283,10 +283,10 @@ function RegisterForm() {
             >
               {registerMutation.isPending ? (
                 <>
-                  <span className="mr-2">Criando conta...</span>
+                  <span className="mr-2">Creating account...</span>
                   <span className="animate-spin">⏳</span>
                 </>
-              ) : "Criar conta"}
+              ) : "Create Account"}
             </Button>
           </form>
         </Form>
