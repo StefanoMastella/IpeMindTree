@@ -40,7 +40,7 @@ export default function ChatInterface() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ question: message })
+        body: JSON.stringify({ message: message })
       });
       
       if (!response.ok) {
@@ -51,10 +51,10 @@ export default function ChatInterface() {
       
       // Add assistant response
       const assistantMessage: ChatMessage = {
-        id: nanoid(),
-        content: data.answer,
+        id: data.id || nanoid(),
+        content: data.content,
         role: "assistant",
-        timestamp: new Date()
+        timestamp: new Date(data.timestamp) || new Date()
       };
       
       setLocalMessages(prev => [...prev, assistantMessage]);
