@@ -19,16 +19,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all ideas
   app.get("/api/ideas", async (req: Request, res: Response) => {
     try {
-      const result = await pool.query("SELECT * FROM ideas ORDER BY created_at DESC");
+      const result = await pool.query(`
+        SELECT ideas.*, users.username 
+        FROM ideas 
+        LEFT JOIN users ON ideas.user_id = users.id 
+        ORDER BY ideas.created_at DESC
+      `);
+      
       const ideas = result.rows.map(row => ({
         id: row.id,
         title: row.title,
         description: row.content || "",
-        author: "User",
+        author: row.username || "Anonymous",
         createdAt: row.created_at,
         tags: [],
         connections: []
       }));
+      
       res.json(ideas);
     } catch (error) {
       console.error("Error fetching ideas:", error);
@@ -39,18 +46,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create a new idea
   app.post("/api/ideas", async (req: Request, res: Response) => {
     try {
-      const { title, description, tags, author } = req.body;
+      const { title, description, tags } = req.body;
+      
+      // Use the current user's ID if available, otherwise null
+      const userId = req.session.userId || null;
+      const username = req.user ? req.user.username : "Anonymous";
       
       const result = await pool.query(
-        "INSERT INTO ideas (title, content, created_at, updated_at) VALUES ($1, $2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *",
-        [title, description]
+        "INSERT INTO ideas (title, content, user_id, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *",
+        [title, description, userId]
       );
       
       res.status(201).json({
         id: result.rows[0].id,
         title: result.rows[0].title,
         description: result.rows[0].content,
-        author: author || "Anonymous",
+        author: username, 
         createdAt: result.rows[0].created_at,
         tags: tags || []
       });
@@ -64,7 +75,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/ideas/:id", async (req: Request, res: Response) => {
     try {
       const ideaId = parseInt(req.params.id);
-      const result = await pool.query("SELECT * FROM ideas WHERE id = $1", [ideaId]);
+      
+      // Join with users table to get the username
+      const result = await pool.query(
+        `SELECT ideas.*, users.username 
+         FROM ideas 
+         LEFT JOIN users ON ideas.user_id = users.id 
+         WHERE ideas.id = $1`,
+        [ideaId]
+      );
       
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "Idea not found" });
@@ -74,7 +93,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         id: result.rows[0].id,
         title: result.rows[0].title,
         description: result.rows[0].content || "",
-        author: "User",
+        author: result.rows[0].username || "Anonymous",
         createdAt: result.rows[0].created_at,
         tags: [],
         connections: []
