@@ -163,14 +163,14 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
       queryClient.invalidateQueries({ queryKey: ["/api/ideas"] });
       
       toast({
-        title: "Ideia Compartilhada com Sucesso",
-        description: "Sua ideia foi adicionada à Ipê Mind Tree!",
+        title: "Idea Successfully Shared",
+        description: "Your idea has been added to Ipê Mind Tree!",
       });
     } catch (error) {
       console.error("Failed to submit idea:", error);
       toast({
-        title: "Falha ao Compartilhar Ideia",
-        description: "Houve um erro ao compartilhar sua ideia. Por favor, tente novamente.",
+        title: "Failed to Share Idea",
+        description: "There was an error sharing your idea. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -196,8 +196,8 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
         setLinkInput("");
       } catch (e) {
         toast({
-          title: "URL inválida",
-          description: "Por favor, insira uma URL válida (ex: https://example.com)",
+          title: "Invalid URL",
+          description: "Please enter a valid URL (e.g.: https://example.com)",
           variant: "destructive",
         });
       }
@@ -231,8 +231,8 @@ export default function CreateIdeaModal({ isOpen, onClose }: CreateIdeaModalProp
       console.log(`Salvou no localStorage: ${imageId.toString()}`);
       
       toast({
-        title: "Imagem adicionada",
-        description: "A imagem foi carregada com sucesso e será associada à sua ideia.",
+        title: "Image Added",
+        description: "The image was successfully uploaded and will be associated with your idea.",
       });
       
       // Voltar para a aba principal

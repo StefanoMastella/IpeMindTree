@@ -94,7 +94,7 @@ export default function Header() {
                     <Link href="/admin/database" className="no-underline">
                       <DropdownMenuItem className="cursor-pointer">
                         <Database className="h-4 w-4 mr-2" />
-                        Banco de Dados
+                        Database
                       </DropdownMenuItem>
                     </Link>
                   </DropdownMenuContent>
@@ -156,14 +156,14 @@ export default function Header() {
             <>
               {user?.role === 'ADMIN' && (
                 <>
-                  <div className="font-medium text-muted-foreground py-1 text-sm">Menu Admin</div>
+                  <div className="font-medium text-muted-foreground py-1 text-sm">Admin Menu</div>
                   <Link href="/admin/subprompts" className={`${location === "/admin/subprompts" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center ml-2`}>
                     <Settings className="h-4 w-4 mr-1" />
                     Subprompts
                   </Link>
                   <Link href="/admin/database" className={`${location === "/admin/database" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center ml-2`}>
                     <Database className="h-4 w-4 mr-1" />
-                    Banco de Dados
+                    Database
                   </Link>
                 </>
               )}
