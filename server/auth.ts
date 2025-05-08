@@ -120,8 +120,8 @@ export function setupAuthRoutes(app: Express) {
       const { password, ...safeUser } = newUser;
       res.status(201).json(safeUser);
     } catch (error) {
-      console.error('Erro no registro:', error);
-      res.status(500).json({ message: 'Erro ao registrar usuário.' });
+      console.error('Registration error:', error);
+      res.status(500).json({ message: 'Error registering user.' });
     }
   });
   
