@@ -1,8 +1,8 @@
 import { Express, Request, Response } from "express";
 import fetch from "node-fetch";
 
-// Gemini API URL - using gemini-2.5-flash-preview-0417 which was working before
-const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-0417:generateContent";
+// Gemini API URL - using gemini-1.5-flash which is a simpler model
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
 const API_KEY = process.env.GEMINI_API_KEY || "";
 
 /**
