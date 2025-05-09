@@ -1,13 +1,13 @@
-// Gemini 1.5 Pro API - Integração com a versão mais avançada da API Gemini
+// Gemini 2.5 Flash Preview API - Integração com a versão mais recente da API Gemini
 import { getFullContext, getPersonalityPrompt } from './llm-context';
 
 // Implementação direta usando fetch para comunicação com a API Gemini
 const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-preview-04-17:generateContent";
 
-// Função alternativa para chamada direta à API
+// Função para chamada direta à API Gemini 2.5 Flash Preview
 const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
-  console.log("Chamando Gemini Flash API 2.0...");
+  console.log("Chamando Gemini 2.5 Flash Preview API...");
   
   // Adicionar o contexto da Ipê Mind Tree ao prompt, se necessário
   const fullPrompt = useContext 
@@ -43,7 +43,7 @@ const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
     // Extrair o texto gerado da resposta
     return data.candidates[0].content.parts[0].text;
   } catch (error) {
-    console.error("Erro ao chamar Gemini Flash API:", error);
+    console.error("Erro ao chamar Gemini 2.5 Flash Preview API:", error);
     throw error;
   }
 };
@@ -69,7 +69,7 @@ export async function generateTags(title: string, description: string): Promise<
     
     return tags.slice(0, 5); // Limit to 5 tags
   } catch (error) {
-    console.error('Error generating tags with Gemini Flash:', error);
+    console.error('Error generating tags with Gemini 2.5 Flash Preview:', error);
     return fallbackGenerateTags(title, description);
   }
 }
@@ -144,7 +144,7 @@ export async function suggestConnections(
     
     return connectionIds;
   } catch (error) {
-    console.error('Error suggesting connections with Gemini Flash:', error);
+    console.error('Error suggesting connections with Gemini 2.5 Flash Preview:', error);
     return fallbackSuggestConnections(ideaId, tags, allIdeas);
   }
 }
@@ -171,13 +171,13 @@ function fallbackSuggestConnections(
   return relatedIdeas.slice(0, 3).map(idea => idea.id);
 }
 
-// Test function
+// Test function for Gemini 2.5 Flash Preview 04-17
 export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the Ipê Mind Tree is in 1-2 sentences."): Promise<string> {
   try {
-    // Chamando diretamente a API Flash 2.0
+    // Chamando diretamente a API Gemini 2.5 Flash Preview
     return await callGeminiFlashAPI(prompt);
   } catch (error) {
-    console.error('Error testing Gemini Flash API:', error);
+    console.error('Error testing Gemini 2.5 Flash Preview API:', error);
     throw error;
   }
 }
