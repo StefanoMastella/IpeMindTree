@@ -414,17 +414,10 @@ export class SubpromptService {
           return bestMatch.content;
         }
         
-        // Se não encontrou nada, retorna o subprompt "Finance" como default
-        // já que o exemplo da requisição era relacionado a finanças
-        const financeSubprompt = this.subpromptCache.find(sp => sp.name === "Finance Sphere");
-        if (financeSubprompt) {
-          console.log("Using Finance Sphere as default fallback");
-          return financeSubprompt.content;
-        }
-        
-        // Último caso - retorna o primeiro subprompt disponível
-        console.log("Using first available subprompt as last resort");
-        return this.subpromptCache[0].content;
+        // We'll no longer force Finance Sphere as default
+        // Instead, return empty string to use the main prompt without a subprompt
+        console.log("No matching subprompt found, using main prompt only");
+        return "";
       }
       
       // Fluxo normal quando estamos usando o banco de dados
