@@ -325,12 +325,12 @@ export default function ChatInterface() {
   }, []);
 
   return (
-    <div className="flex flex-col h-[70vh] border border-border rounded-lg shadow-lg bg-card">
-      <div className="p-4 border-b border-primary/20 bg-card text-foreground rounded-t-lg">
+    <div className="flex flex-col h-[85vh] border border-border rounded-lg shadow-lg bg-card">
+      <div className="p-3 border-b border-primary/20 bg-card text-foreground rounded-t-lg">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Bot className="h-6 w-6 text-primary" />
-            <h2 className="text-xl font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ipê Mind</h2>
+            <Bot className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">Ipê Mind</h2>
           </div>
           
           <div className="flex items-center space-x-2">
@@ -346,12 +346,9 @@ export default function ChatInterface() {
             </Button>
           </div>
         </div>
-        <p className="text-sm text-muted-foreground">
-          Chat with our AI and explore community ideas
-        </p>
       </div>
 
-      <div className="flex-grow p-4 overflow-y-auto h-[40vh]" ref={scrollAreaRef}>
+      <div className="flex-grow p-4 overflow-y-auto h-[65vh]" ref={scrollAreaRef}>
         <div className="space-y-4">
           {!isInitialized && (
             <div className="flex justify-center items-center h-full">

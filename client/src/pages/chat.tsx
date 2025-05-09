@@ -18,15 +18,6 @@ export default function Chat() {
       <main className="flex-grow container mx-auto px-4 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div className="mb-6">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-primary to-secondary-dark bg-clip-text text-transparent">
-                Ipê Mind Chat
-              </h1>
-              <p className="text-foreground/80 font-medium mt-2">
-                Chat with Ipê Mind AI and discover connections between ideas
-              </p>
-            </div>
-            
             <ChatInterface />
           </div>
           
