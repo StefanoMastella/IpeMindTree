@@ -1,18 +1,29 @@
-import { users, type User, type InsertUser, type Idea } from "@shared/schema";
+import { users, type User, type InsertUser, type Idea, type ObsidianNode, type ObsidianLink, type ImportLog } from "@shared/schema";
 import { pool } from "./db";
 
 // modify the interface with any CRUD methods
 // you might need
 
 export interface IStorage {
+  // User methods
   getUser(id: number): Promise<User | undefined>;
   getUserByUsername(username: string): Promise<User | undefined>;
   createUser(user: InsertUser): Promise<User>;
+  
+  // Idea methods
   getAllIdeas(): Promise<Idea[]>;
   getIdea(id: number): Promise<Idea | undefined>;
+  
+  // Obsidian methods
+  getAllObsidianNodes(): Promise<ObsidianNode[]>;
+  getObsidianNode(id: number): Promise<ObsidianNode | undefined>;
+  getObsidianNodeByPath(path: string): Promise<ObsidianNode | undefined>;
+  getObsidianLinks(nodeId: number): Promise<ObsidianLink[]>;
+  getImportLogs(): Promise<ImportLog[]>;
 }
 
 export class DatabaseStorage implements IStorage {
+  // User methods
   async getUser(id: number): Promise<User | undefined> {
     try {
       const result = await pool.query("SELECT * FROM users WHERE id = $1", [id]);
@@ -52,7 +63,7 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Fetch all ideas from the database
+  // Idea methods
   async getAllIdeas(): Promise<Idea[]> {
     try {
       const result = await pool.query("SELECT * FROM ideas ORDER BY created_at DESC");
@@ -63,7 +74,6 @@ export class DatabaseStorage implements IStorage {
     }
   }
   
-  // Get a specific idea by ID
   async getIdea(id: number): Promise<Idea | undefined> {
     try {
       const result = await pool.query("SELECT * FROM ideas WHERE id = $1", [id]);
@@ -76,6 +86,84 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error fetching idea:", error);
       return undefined;
+    }
+  }
+  
+  // Obsidian methods
+  async getAllObsidianNodes(): Promise<ObsidianNode[]> {
+    try {
+      const result = await pool.query(`
+        SELECT * FROM obsidian_nodes 
+        ORDER BY updated_at DESC
+      `);
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching obsidian nodes:", error);
+      return [];
+    }
+  }
+  
+  async getObsidianNode(id: number): Promise<ObsidianNode | undefined> {
+    try {
+      const result = await pool.query(`
+        SELECT * FROM obsidian_nodes 
+        WHERE id = $1
+      `, [id]);
+      
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error fetching obsidian node:", error);
+      return undefined;
+    }
+  }
+  
+  async getObsidianNodeByPath(path: string): Promise<ObsidianNode | undefined> {
+    try {
+      const result = await pool.query(`
+        SELECT * FROM obsidian_nodes 
+        WHERE path = $1
+      `, [path]);
+      
+      if (result.rows.length === 0) {
+        return undefined;
+      }
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error fetching obsidian node by path:", error);
+      return undefined;
+    }
+  }
+  
+  async getObsidianLinks(nodeId: number): Promise<ObsidianLink[]> {
+    try {
+      const result = await pool.query(`
+        SELECT * FROM obsidian_links 
+        WHERE source_id = $1 OR target_id = $1
+      `, [nodeId]);
+      
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching obsidian links:", error);
+      return [];
+    }
+  }
+  
+  async getImportLogs(): Promise<ImportLog[]> {
+    try {
+      const result = await pool.query(`
+        SELECT * FROM import_logs 
+        ORDER BY created_at DESC
+      `);
+      
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching import logs:", error);
+      return [];
     }
   }
 }
