@@ -1,4 +1,4 @@
-// Gemini 2.5 Flash Preview API - Integração com a versão mais recente da API Gemini
+// Gemini Pro API - Integração com a versão estável e robusta da API Gemini
 import { getFullContext, getMainPrompt } from './llm-context';
 
 // Implementation using fetch for communication with the Gemini API
@@ -12,8 +12,8 @@ You are knowledgeable, helpful, and thoughtful.
 Your responses should be concise and relevant to the Ipê Mind Tree ecosystem.`;
 }
 
-// Função para chamada direta à API Gemini 2.5 Flash Preview
-const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
+// Função para chamada direta à API Gemini Pro
+const callGeminiAPI = async (prompt: string, useContext = true) => {
   console.log("Calling Gemini API via proxy...");
   
   // Add the Ipê Mind Tree context to the prompt if needed

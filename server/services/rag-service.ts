@@ -15,8 +15,8 @@ interface GeminiResponse {
   }[];
 }
 
-// Gemini API URL - using Gemini 2.5 Flash Preview which is what worked before
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-preview-0417:generateContent";
+// Gemini API URL - using Gemini Pro which is the most stable and widely available model
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 
 export class RagService {
   private apiKey: string;
