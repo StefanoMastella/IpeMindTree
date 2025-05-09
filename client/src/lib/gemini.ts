@@ -1,10 +1,9 @@
-// Flash API 2.0 - Uma alternativa para integração com APIs de IA
+// Gemini 1.5 Pro API - Integração com a versão mais avançada da API Gemini
 import { getFullContext, getPersonalityPrompt } from './llm-context';
 
-// Abordagem alternativa em vez de usar o SDK do Google Generative AI
-// Esta implementação usa fetch diretamente para maior controle
+// Implementação direta usando fetch para comunicação com a API Gemini
 const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent";
 
 // Função alternativa para chamada direta à API
 const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
