@@ -1,4 +1,4 @@
-// Gemini Pro API - Integração com a versão estável e robusta da API Gemini
+// Gemini 2.5 Flash Preview API - Integração com a versão que funcionava anteriormente
 import { getFullContext, getMainPrompt } from './llm-context';
 
 // Implementation using fetch for communication with the Gemini API
@@ -12,7 +12,7 @@ You are knowledgeable, helpful, and thoughtful.
 Your responses should be concise and relevant to the Ipê Mind Tree ecosystem.`;
 }
 
-// Função para chamada direta à API Gemini Pro
+// Função para chamada direta à API Gemini 2.5 Flash Preview
 const callGeminiAPI = async (prompt: string, useContext = true) => {
   console.log("Calling Gemini API via proxy...");
   
@@ -63,7 +63,7 @@ export async function generateTags(title: string, description: string): Promise<
     Example response: community,education,technology
     `;
     
-    const text = await callGeminiFlashAPI(prompt);
+    const text = await callGeminiAPI(prompt);
     
     // Parse the comma-separated list
     const rawTags: string[] = text.split(',');
@@ -136,7 +136,7 @@ export async function suggestConnections(
     Example response: 5,2,9
     `;
     
-    const text = await callGeminiFlashAPI(prompt);
+    const text = await callGeminiAPI(prompt);
     
     // Parse the comma-separated IDs
     const connectionIds = text.split(',')
@@ -177,7 +177,7 @@ function fallbackSuggestConnections(
 export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the Ipê Mind Tree is in 1-2 sentences."): Promise<string> {
   try {
     // Chamando diretamente a API Gemini 2.5 Flash Preview
-    return await callGeminiFlashAPI(prompt);
+    return await callGeminiAPI(prompt);
   } catch (error) {
     console.error('Error testing Gemini 2.5 Flash Preview API:', error);
     throw error;
