@@ -5,13 +5,20 @@ import { getFullContext, getMainPrompt } from './llm-context';
 const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
 const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-preview-04-17:generateContent";
 
+// Define a personality prompt for the Ipê Mind Tree assistant
+const getPersonalityPrompt = () => {
+  return `You are the Ipê Mind Tree AI assistant, focused on helping users explore and connect ideas within the community. 
+You are knowledgeable, helpful, and thoughtful. 
+Your responses should be concise and relevant to the Ipê Mind Tree ecosystem.`;
+}
+
 // Função para chamada direta à API Gemini 2.5 Flash Preview
 const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
   console.log("Chamando Gemini 2.5 Flash Preview API...");
   
   // Adicionar o contexto da Ipê Mind Tree ao prompt, se necessário
   const fullPrompt = useContext 
-    ? `${getPersonalityPrompt()}\n\n${prompt}`
+    ? `${getMainPrompt()}\n\n${prompt}`
     : prompt;
   
   try {
@@ -65,7 +72,8 @@ export async function generateTags(title: string, description: string): Promise<
     const text = await callGeminiFlashAPI(prompt);
     
     // Parse the comma-separated list
-    const tags = text.split(',').map(tag => tag.trim().toLowerCase());
+    const rawTags: string[] = text.split(',');
+    const tags: string[] = rawTags.map(tag => tag.trim().toLowerCase());
     
     return tags.slice(0, 5); // Limit to 5 tags
   } catch (error) {
@@ -138,8 +146,8 @@ export async function suggestConnections(
     
     // Parse the comma-separated IDs
     const connectionIds = text.split(',')
-      .map(id => parseInt(id.trim()))
-      .filter(id => !isNaN(id) && allIdeas.some(idea => idea.id === id))
+      .map((id: string) => parseInt(id.trim()))
+      .filter((id: number) => !isNaN(id) && allIdeas.some(idea => idea.id === id))
       .slice(0, 3); // Limit to 3 connections
     
     return connectionIds;
