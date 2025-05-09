@@ -1,9 +1,9 @@
 // Gemini 2.5 Flash Preview API - Integração com a versão mais recente da API Gemini
 import { getFullContext, getMainPrompt } from './llm-context';
 
-// Implementação direta usando fetch para comunicação com a API Gemini
-const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-preview-04-17:generateContent";
+// Implementation using fetch for communication with the Gemini API
+// Will use the API key from backend for security
+const API_URL = "/api/gemini-proxy";
 
 // Define a personality prompt for the Ipê Mind Tree assistant
 const getPersonalityPrompt = () => {
@@ -22,7 +22,7 @@ const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
     : prompt;
   
   try {
-    const response = await fetch(`${API_URL}?key=${API_KEY}`, {
+    const response = await fetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
