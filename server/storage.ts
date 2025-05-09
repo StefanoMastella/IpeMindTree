@@ -248,7 +248,7 @@ export class DatabaseStorage implements IStorage {
         WHERE session_id = $2
       `, [title, sessionId]);
       
-      return result.rowCount > 0;
+      return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
       console.error("Error updating chat session title:", error);
       return false;
@@ -317,7 +317,7 @@ export class DatabaseStorage implements IStorage {
         WHERE session_id = $1
       `, [sessionId]);
       
-      return result.rowCount > 0;
+      return result.rowCount !== null && result.rowCount > 0;
     } catch (error) {
       console.error("Error deleting chat session:", error);
       return false;
