@@ -66,10 +66,8 @@ export class RagService {
       
       ideas.forEach((idea: Idea, index: number) => {
         context += `Idea #${idea.id}: "${idea.title}"\n`;
-        context += `Description: ${idea.description}\n`;
-        context += `Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : idea.tags}\n`;
-        context += `Author: ${idea.author}\n`;
-        context += `Date: ${new Date(idea.createdAt).toLocaleDateString("en-US")}\n`;
+        context += `Content: ${idea.content || "No content available"}\n`;
+        context += `Date: ${idea.created_at ? new Date(idea.created_at).toLocaleDateString("en-US") : "Unknown date"}\n`;
         
         // Add a blank line between ideas, except for the last one
         if (index < ideas.length - 1) {
@@ -183,10 +181,8 @@ focused on helping with questions related to ideas and the Ipê Mind Tree projec
 Summarize the following idea concisely:
 
 Idea #${idea.id}: "${idea.title}"
-Description: ${idea.description}
-Tags: ${Array.isArray(idea.tags) ? idea.tags.join(", ") : idea.tags}
-Author: ${idea.author}
-Date: ${new Date(idea.createdAt).toLocaleDateString("en-US")}
+Content: ${idea.content || "No content available"}
+Date: ${idea.created_at ? new Date(idea.created_at).toLocaleDateString("en-US") : "Unknown date"}
 
 Provide a short and engaging summary of this idea in 2-3 sentences.
 `;
@@ -236,7 +232,11 @@ Provide a short and engaging summary of this idea in 2-3 sentences.
       
       // Sort by creation date (newest first) and limit
       const recentIdeas = [...ideas]
-        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        .sort((a, b) => {
+          const dateA = a.created_at ? new Date(a.created_at).getTime() : 0;
+          const dateB = b.created_at ? new Date(b.created_at).getTime() : 0;
+          return dateB - dateA;
+        })
         .slice(0, limit);
       
       // For each idea, generate a short summary
@@ -246,8 +246,7 @@ Provide a short and engaging summary of this idea in 2-3 sentences.
           return {
             id: idea.id,
             title: idea.title,
-            summary,
-            tags: idea.tags
+            summary
           };
         })
       );
