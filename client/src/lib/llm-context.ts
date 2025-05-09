@@ -1,6 +1,7 @@
 // llm-context.ts
 
 // Main Prompt for the IMT AI
+// Prompt atualizado em 2024-05-09
 export const mainPrompt = `
 Main Prompt - Ipê Mind Tree AI (IMT-AI)
 

@@ -16,7 +16,7 @@ interface GeminiResponse {
 }
 
 // Gemini API URL - using gemini-1.5-flash which is a simpler model
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
 
 export class RagService {
   private apiKey: string;
@@ -111,6 +111,8 @@ export class RagService {
         
       // Get the base application context and current ideas context
       const baseMainPrompt = getMainPrompt();
+      // Registrando o prompt principal para debug
+      console.log('Usando prompt principal atualizado:', baseMainPrompt.substring(0, 100) + '...');
       const ideasContext = await this.getIdeasContext();
       
       // Create the complete prompt for the model with more explicit instructions
