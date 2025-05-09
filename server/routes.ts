@@ -7,6 +7,7 @@ import { callGeminiAPI } from "./llm-service";
 import { registerDatabaseRoutes } from "./routes/database-routes";
 import { registerChatRoutes } from "./routes/chat-routes";
 import { registerGeminiProxyRoutes } from "./routes/gemini-proxy-routes";
+import { registerOpenAIProxyRoutes } from "./routes/openai-proxy-routes";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -18,8 +19,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Set up chat routes
   registerChatRoutes(app);
   
-  // Set up Gemini proxy route
+  // Set up Gemini proxy route (for backward compatibility)
   registerGeminiProxyRoutes(app);
+  
+  // Set up OpenAI proxy route
+  registerOpenAIProxyRoutes(app);
   
   // API routes
   // Prefix all routes with /api
