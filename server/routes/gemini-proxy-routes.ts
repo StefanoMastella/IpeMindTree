@@ -1,8 +1,8 @@
 import { Express, Request, Response } from "express";
 import fetch from "node-fetch";
 
-// Gemini API URL - using Gemini 1.0 Pro which is stable and generally available
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-1.0-pro:generateContent";
+// Gemini API URL - using Gemini Pro which is the most stable and widely available model
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-pro:generateContent";
 const API_KEY = process.env.GEMINI_API_KEY || "";
 
 /**

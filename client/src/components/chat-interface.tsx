@@ -421,18 +421,6 @@ export default function ChatInterface() {
       </div>
 
       <div className="p-4 border-t border-border bg-card">
-        <div className="flex justify-end mb-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="text-xs border-primary/40 text-primary hover:text-primary-foreground hover:bg-primary/90"
-            onClick={startNewChat}
-            disabled={isLoading}
-          >
-            <RefreshCw className="h-3 w-3 mr-1" />
-            New Chat
-          </Button>
-        </div>
         
         <form onSubmit={handleSubmit} className="flex space-x-2">
           <Input
