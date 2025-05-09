@@ -1,5 +1,5 @@
 // Gemini 2.5 Flash Preview API - Integração com a versão mais recente da API Gemini
-import { getFullContext, getPersonalityPrompt } from './llm-context';
+import { getFullContext, getMainPrompt } from './llm-context';
 
 // Implementação direta usando fetch para comunicação com a API Gemini
 const API_KEY = "AIzaSyDxRa75OXd4V9pmk-2aWuIbz0t7_nm0ihY";
