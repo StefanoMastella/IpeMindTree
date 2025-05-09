@@ -1,9 +1,9 @@
-// Now using OpenAI API instead of Gemini (keeping filename for compatibility)
+// Gemini 2.5 Flash Preview API - Integração com a versão mais recente da API Gemini
 import { getFullContext, getMainPrompt } from './llm-context';
 
-// Implementation using fetch for communication with the OpenAI API
+// Implementation using fetch for communication with the Gemini API
 // Will use the API key from backend for security
-const API_URL = "/api/openai-proxy";
+const API_URL = "/api/gemini-proxy";
 
 // Define a personality prompt for the Ipê Mind Tree assistant
 const getPersonalityPrompt = () => {
