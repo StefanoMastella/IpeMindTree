@@ -14,9 +14,9 @@ Your responses should be concise and relevant to the Ipê Mind Tree ecosystem.`;
 
 // Função para chamada direta à API Gemini 2.5 Flash Preview
 const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
-  console.log("Chamando Gemini 2.5 Flash Preview API...");
+  console.log("Calling Gemini API via proxy...");
   
-  // Adicionar o contexto da Ipê Mind Tree ao prompt, se necessário
+  // Add the Ipê Mind Tree context to the prompt if needed
   const fullPrompt = useContext 
     ? `${getMainPrompt()}\n\n${prompt}`
     : prompt;
@@ -28,16 +28,10 @@ const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: fullPrompt }
-            ]
-          }
-        ],
-        generationConfig: {
+        prompt: fullPrompt,
+        options: {
           temperature: 0.9,
-          maxOutputTokens: 2048,
+          maxOutputTokens: 2048
         }
       })
     });
@@ -47,8 +41,8 @@ const callGeminiFlashAPI = async (prompt: string, useContext = true) => {
     }
     
     const data = await response.json();
-    // Extrair o texto gerado da resposta
-    return data.candidates[0].content.parts[0].text;
+    // Extract the text from the response
+    return data.text || "";
   } catch (error) {
     console.error("Erro ao chamar Gemini 2.5 Flash Preview API:", error);
     throw error;
