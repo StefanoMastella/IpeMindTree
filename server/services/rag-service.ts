@@ -87,6 +87,15 @@ export class RagService {
    * Includes the application context, stored ideas, Obsidian context, and relevant subprompt
    */
   async queryRag(userQuestion: string): Promise<string> {
+    return this.queryRagWithHistory(userQuestion, "");
+  }
+  
+  /**
+   * Query the RAG with a user question and conversation history
+   * @param userQuestion The current user question
+   * @param chatHistory Optional formatted chat history for context
+   */
+  async queryRagWithHistory(userQuestion: string, chatHistory: string = ""): Promise<string> {
     try {
       // Update Obsidian context if needed
       await this.updateObsidianContextIfNeeded();
@@ -119,10 +128,16 @@ ${ideasContext}
 
 ${this.obsidianContext}
 
+${chatHistory ? `## Previous conversation history:
+${chatHistory}
+
+` : ''}
+
 User question: ${userQuestion}
 
 Answer concisely and helpfully. If the question involves specific ideas or Obsidian documents, mention them by name/number.
 Use Obsidian knowledge when relevant to enrich your answers.
+If the question relates to the previous conversation, use that context to provide a more relevant answer.
 If the question is not related to ideas, Obsidian, or Ipê Mind Tree, gently explain that you are
 focused on helping with questions related to ideas and the Ipê Mind Tree project.
 `;
