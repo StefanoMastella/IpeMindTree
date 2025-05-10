@@ -24,7 +24,7 @@ interface ObsidianFile {
 interface ObsidianLink {
   source_id: string;
   target_id: string;
-  type: string;
+  strength?: number;
 }
 
 /**
@@ -232,7 +232,7 @@ export class ObsidianImporter {
               const link: ObsidianLink = {
                 source_id: `${file.path}#${canvasLink.fromNode}`,
                 target_id: `${file.path}#${canvasLink.toNode}`,
-                type: 'canvas-link'
+                strength: 2
               };
               
               // Adiciona o link ao mapa
@@ -253,7 +253,7 @@ export class ObsidianImporter {
               const link: ObsidianLink = {
                 source_id: `${file.path}#${canvasLink.sourceId}`,
                 target_id: `${file.path}#${canvasLink.targetId}`,
-                type: 'canvas2document-link'
+                strength: 2
               };
               
               // Adiciona o link ao mapa
@@ -281,7 +281,7 @@ export class ObsidianImporter {
             const link: ObsidianLink = {
               source_id: file.path,
               target_id: normalizedPath,
-              type: 'wiki-link'
+              strength: 1
             };
             
             // Adiciona o link ao mapa
