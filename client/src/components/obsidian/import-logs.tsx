@@ -74,16 +74,11 @@ export default function ImportLogs() {
                     </div>
                     <div className="flex space-x-2">
                       <span className="px-2 py-1 text-xs rounded-md bg-primary/20 text-primary">
-                        {log.file_count} arquivos
+                        Fonte: {log.source}
                       </span>
-                      <span className="px-2 py-1 text-xs rounded-md bg-green-500/20 text-green-500">
-                        {log.success_count} sucessos
+                      <span className={`px-2 py-1 text-xs rounded-md ${log.success ? 'bg-green-500/20 text-green-500' : 'bg-destructive/20 text-destructive'}`}>
+                        {log.success ? 'Sucesso' : 'Falha'}
                       </span>
-                      {log.error_count > 0 && (
-                        <span className="px-2 py-1 text-xs rounded-md bg-destructive/20 text-destructive">
-                          {log.error_count} falhas
-                        </span>
-                      )}
                     </div>
                   </div>
                   {log.details && (
