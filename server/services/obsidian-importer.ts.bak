@@ -236,9 +236,9 @@ export class ObsidianImporter {
               };
               
               // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(link.source_id) || [];
+              const sourceLinks = linksMap.get(link.sourceId) || [];
               sourceLinks.push(link);
-              linksMap.set(link.source_id, sourceLinks);
+              linksMap.set(link.sourceId, sourceLinks);
             });
           }
         } catch (error) {
@@ -257,9 +257,9 @@ export class ObsidianImporter {
               };
               
               // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(link.source_id) || [];
+              const sourceLinks = linksMap.get(link.sourceId) || [];
               sourceLinks.push(link);
-              linksMap.set(link.source_id, sourceLinks);
+              linksMap.set(link.sourceId, sourceLinks);
             });
           }
         } catch (error) {
