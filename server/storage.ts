@@ -241,7 +241,7 @@ export class DatabaseStorage implements IStorage {
       // Inserir novos nós em massa
       const insertQuery = `
         INSERT INTO obsidian_nodes (
-          title, content, path, type, tags, imported_by, metadata
+          title, content, path, source_type, tags, user_id, metadata
         ) VALUES 
         ${valueStrings.join(', ')}
         RETURNING *

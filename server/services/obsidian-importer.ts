@@ -390,8 +390,8 @@ export class ObsidianImporter {
    * @param importedBy Nome do usuário que está realizando a importação
    */
   async saveToDatabase(
-    nodes: InsertObsidianNode[], 
-    links: ObsidianLink[], 
+    nodes: any[], 
+    links: any[], 
     importSource: string,
     importedBy: string
   ): Promise<boolean> {
@@ -409,13 +409,13 @@ export class ObsidianImporter {
       });
       
       // Converte os links (path para ID) e importa para o banco de dados
-      const dbLinks: InsertObsidianLink[] = links
+      const dbLinks: any[] = links
         .filter(link => 
           pathToIdMap.has(link.sourceId) && 
           pathToIdMap.has(link.targetId))
         .map(link => ({
-          sourceId: pathToIdMap.get(link.sourceId)!,
-          targetId: pathToIdMap.get(link.targetId)!,
+          source_id: pathToIdMap.get(link.sourceId)!,
+          target_id: pathToIdMap.get(link.targetId)!,
           type: link.type,
           metadata: {}
         }));
@@ -425,12 +425,14 @@ export class ObsidianImporter {
       
       // Registra o log de importação
       await storage.createImportLog({
-        importSource,
-        nodesCount: createdNodes.length,
-        linksCount: createdLinks.length,
+        source: importSource,
+        details: {
+          nodesCount: createdNodes.length,
+          linksCount: createdLinks.length
+        },
         success: true,
-        metadata: { },
-        importedBy
+        type: 'obsidian',
+        user_id: importedBy
       });
       
       return true;
@@ -439,13 +441,16 @@ export class ObsidianImporter {
       
       // Registra o log de erro
       await storage.createImportLog({
-        importSource,
-        nodesCount: 0,
-        linksCount: 0,
+        source: importSource,
+        details: {
+          nodesCount: 0,
+          linksCount: 0,
+          error: error.message || 'Erro desconhecido durante importação',
+          stack: error.stack
+        },
         success: false,
-        error: error.message || 'Erro desconhecido durante importação',
-        metadata: { stack: error.stack },
-        importedBy
+        type: 'obsidian',
+        user_id: importedBy
       });
       
       return false;
