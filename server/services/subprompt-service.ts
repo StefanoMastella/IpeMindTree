@@ -38,20 +38,20 @@ const FALLBACK_SUBPROMPTS: {
   },
   {
     id: 3,
-    name: "Education Sphere",
+    name: "Education Branch",
     description: "Used for tasks related to leveraging the internet and AI to create an education system that is widely accessible, personalized, free, and fosters critical thinking and creativity.",
     keywords: ["personalized learning", "ai", "tutoring", "knowledge sharing", "skills", "credentials", "lifelong learning", "decentralized education"],
-    content: "You are now providing assistance in the Education Sphere domain. Used for tasks related to leveraging the internet and AI to create an education system that is widely accessible, personalized, free, and fosters critical thinking and creativity. Focus on the following aspects: personalized learning, ai, tutoring, knowledge sharing, skills, credentials, lifelong learning, decentralized education.",
-    sphere: "Education",
+    content: "You are now providing assistance in the Education Branch domain. Used for tasks related to leveraging the internet and AI to create an education system that is widely accessible, personalized, free, and fosters critical thinking and creativity. Focus on the following aspects: personalized learning, ai, tutoring, knowledge sharing, skills, credentials, lifelong learning, decentralized education.",
+    branch: "Education",
     active: true
   },
   {
     id: 4,
-    name: "Health Sphere",
+    name: "Health Branch",
     description: "Used for tasks related to using digital technologies and AI to build a more personalized, preventive, real-time, and affordable healthcare system.",
     keywords: ["telemedicine", "remote monitoring", "diagnostics", "personalized medicine", "health data", "well-being", "prevention", "ai"],
-    content: "You are now providing assistance in the Health Sphere domain. Used for tasks related to using digital technologies and AI to build a more personalized, preventive, real-time, and affordable healthcare system. Focus on the following aspects: telemedicine, remote monitoring, diagnostics, personalized medicine, health data, well-being, prevention, ai.",
-    sphere: "Health",
+    content: "You are now providing assistance in the Health Branch domain. Used for tasks related to using digital technologies and AI to build a more personalized, preventive, real-time, and affordable healthcare system. Focus on the following aspects: telemedicine, remote monitoring, diagnostics, personalized medicine, health data, well-being, prevention, ai.",
+    branch: "Health",
     active: true
   },
   {
