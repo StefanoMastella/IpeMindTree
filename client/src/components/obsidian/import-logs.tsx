@@ -6,12 +6,11 @@ import { ptBR } from 'date-fns/locale';
 
 interface ImportLog {
   id: number;
-  timestamp: string;
-  file_count: number;
-  success_count: number;
-  error_count: number;
+  source: string;
+  success: boolean;
   details: string;
   created_at: string;
+  user_id: number | null;
 }
 
 export default function ImportLogs() {
