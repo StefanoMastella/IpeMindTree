@@ -117,10 +117,10 @@ export class RagService {
       const fullPrompt = `
 ${baseMainPrompt}
 
-${selectedSubprompt ? `## IMPORTANT: You are currently operating in the ${selectedSphereName} mode.
+${selectedSubprompt ? `## IMPORTANT: You are currently operating in the ${selectedBranchName} mode.
 ${selectedSubprompt}
 
-You MUST acknowledge your current sphere at the beginning of your response with: "I'm activating the ${selectedSphereName} perspective." This should be the first line of your response.
+You MUST acknowledge your current sphere at the beginning of your response with: "I'm activating the ${selectedBranchName} perspective." This should be the first line of your response.
 Always apply the perspective and focus areas from this sphere when responding.` : '## IMPORTANT: No specific sphere is activated. Use the main prompt as your guide.'}
 
 ${ideasContext}
