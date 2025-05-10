@@ -95,7 +95,11 @@ export const subprompts = pgTable("subprompts", {
   user_id: integer("user_id").references(() => users.id),
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
-  usage_count: integer("usage_count").default(0)
+  usage_count: integer("usage_count").default(0),
+  branch: text("branch"),
+  keywords: text("keywords").array(),
+  active: boolean("active").default(true),
+  description: text("description")
 });
 
 // Import logs table
@@ -156,9 +160,22 @@ export const insertChatMessageSchema = createInsertSchema(chat_messages).pick({
   role: true
 });
 
+export const insertSubpromptSchema = createInsertSchema(subprompts).pick({
+  title: true,
+  content: true,
+  category: true,
+  user_id: true,
+  usage_count: true,
+  branch: true,
+  keywords: true,
+  active: true,
+  description: true
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
+export type InsertSubprompt = z.infer<typeof insertSubpromptSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Idea = typeof ideas.$inferSelect;

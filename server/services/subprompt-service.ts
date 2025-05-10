@@ -15,16 +15,16 @@ const FALLBACK_SUBPROMPTS: {
   description: string;
   keywords: string[];
   content: string;
-  sphere: string;
+  branch: string;
   active: boolean;
 }[] = [
   {
     id: 1,
-    name: "Governance Sphere",
+    name: "Governance Branch",
     description: "Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain.",
     keywords: ["decentralized governance", "decision-making", "community participation", "resource allocation", "digital identity", "reputation", "dao", "voting", "consensus"],
-    content: "You are now providing assistance in the Governance Sphere domain. Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain. Focus on the following aspects: decentralized governance, decision-making, community participation, resource allocation, digital identity, reputation, dao, voting, consensus.",
-    sphere: "Governance",
+    content: "You are now providing assistance in the Governance Branch domain. Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain. Focus on the following aspects: decentralized governance, decision-making, community participation, resource allocation, digital identity, reputation, dao, voting, consensus.",
+    branch: "Governance",
     active: true
   },
   {
@@ -33,7 +33,7 @@ const FALLBACK_SUBPROMPTS: {
     description: "Used for tasks related to developing innovative financial solutions that are more open, transparent, global, and inclusive.",
     keywords: ["defi", "crypto-economics", "alternative currencies", "impact investing", "funding", "blockchain", "tokenization", "circular economy"],
     content: "You are now providing assistance in the Finance Sphere domain. Used for tasks related to developing innovative financial solutions that are more open, transparent, global, and inclusive. Focus on the following aspects: defi, crypto-economics, alternative currencies, impact investing, funding, blockchain, tokenization, circular economy.",
-    sphere: "Finance",
+    branch: "Finance",
     active: true
   },
   {

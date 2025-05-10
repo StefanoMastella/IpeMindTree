@@ -120,8 +120,7 @@ ${baseMainPrompt}
 ${selectedSubprompt ? `## IMPORTANT: You are currently operating in the ${selectedBranchName} mode.
 ${selectedSubprompt}
 
-You MUST acknowledge your current sphere at the beginning of your response with: "I'm activating the ${selectedBranchName} perspective." This should be the first line of your response.
-Always apply the perspective and focus areas from this sphere when responding.` : '## IMPORTANT: No specific sphere is activated. Use the main prompt as your guide.'}
+You do not need to mention the selected branch again in your response. If the question is not related to any specific branch, you can ignore the selected branch and respond based on the general context, even outside the IMT knowledge base. But try to keep the response aligned with the IMT values and the general context of the IMT ecosystem.` : '## IMPORTANT: No specific branch is activated. Use the main prompt as your guide.'}
 
 ${ideasContext}
 
@@ -175,7 +174,41 @@ Prioritize the ideias, Obsidian context, and previous conversation history when 
       return "I couldn't generate a proper response. Please try again with a different question.";
     } catch (error) {
       console.error("Error calling Gemini API:", error);
-      return "Sorry, I couldn't process your question at the moment. Please try again later.";
+      
+      // Análise contextual do erro para fornecer sugestões mais úteis
+      let errorMessage = "Desculpe, não consegui processar sua pergunta no momento.";
+      
+      // Classificar o tipo de erro
+      if (error instanceof Error) {
+        if (error.message.includes("status: 429")) {
+          errorMessage = "O serviço de IA está temporariamente sobrecarregado. Sugestões:\n" +
+            "1. Aguarde alguns segundos e tente novamente\n" +
+            "2. Faça perguntas mais curtas e específicas\n" +
+            "3. Tente abordar seu tema de uma maneira diferente";
+        } else if (error.message.includes("status: 404")) {
+          errorMessage = "O modelo de IA solicitado não está disponível neste momento. Sugestões:\n" +
+            "1. Tente novamente mais tarde\n" +
+            "2. Entre em contato com o administrador para verificar a configuração do modelo";
+        } else if (error.message.includes("status: 400")) {
+          errorMessage = "Sua pergunta pode ser muito complexa ou conter elementos que o sistema não consegue processar. Sugestões:\n" +
+            "1. Simplifique sua pergunta\n" +
+            "2. Divida em perguntas menores\n" +
+            "3. Evite referências muito específicas que o sistema possa não conhecer";
+        } else if (error.message.includes("ECONNREFUSED") || error.message.includes("ETIMEDOUT")) {
+          errorMessage = "Não foi possível conectar ao serviço de IA. Sugestões:\n" +
+            "1. Verifique sua conexão com a internet\n" +
+            "2. Tente novamente em alguns minutos\n" +
+            "3. Se o problema persistir, o serviço pode estar temporariamente indisponível";
+        }
+      }
+      
+      // Dados do contexto atual para sugerir tópicos que funcionam
+      const fallbackSuggestion = "\n\nEnquanto isso, você pode perguntar sobre:\n" +
+        "- Ideias registradas na plataforma Ipê Mind Tree\n" +
+        "- Como as diferentes Branches (Governança, Finanças, Educação) funcionam\n" +
+        "- Sugestões para conectar ideias existentes";
+        
+      return `${errorMessage}${fallbackSuggestion}`;
     }
   }
 
