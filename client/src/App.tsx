@@ -12,7 +12,7 @@ import AuthPage from "@/pages/auth-page";
 import Chat from "@/pages/chat";
 import Explore from "@/pages/explore";
 import IdeaDetail from "@/pages/idea-detail";
-import ObsidianPage from "@/pages/obsidian-page";
+import ObsidianPage from "@/pages/obsidian";
 import SubpromptAdmin from "@/pages/subprompt-admin";
 import DatabaseViewer from "@/pages/database-viewer";
 import { IdeaDetailProvider } from "./lib/types";

@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { 
   Brain, 
   MessageSquareText, 
-  Braces, 
+  Network, 
   LogIn, 
   LogOut, 
   Settings, 
@@ -59,7 +59,7 @@ export default function Header() {
             Explore
           </Link>
           <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium flex items-center`}>
-            <Braces className="h-4 w-4 mr-1" />
+            <Network className="h-4 w-4 mr-1" />
             Obsidian
           </Link>
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium`}>
@@ -146,7 +146,7 @@ export default function Header() {
             Explore
           </Link>
           <Link href="/obsidian" className={`${location === "/obsidian" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2 flex items-center`}>
-            <Braces className="h-4 w-4 mr-1" />
+            <Network className="h-4 w-4 mr-1" />
             Obsidian
           </Link>
           <Link href="/about" className={`${location === "/about" ? "text-primary" : "text-foreground hover:text-primary transition-colors"} font-medium py-2`}>
