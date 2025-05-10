@@ -413,8 +413,7 @@ export class ObsidianImporter {
         .map(link => ({
           source_id: pathToIdMap.get(link.source_id)!,
           target_id: pathToIdMap.get(link.target_id)!,
-          type: link.type,
-          metadata: {}
+          strength: 1
         }));
       
       const createdLinks = await storage.bulkCreateObsidianLinks(dbLinks);

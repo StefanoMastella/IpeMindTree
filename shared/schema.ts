@@ -62,9 +62,7 @@ export const obsidian_nodes = pgTable("obsidian_nodes", {
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
   tags: text("tags").array(),
-  metadata: jsonb("metadata"),
-  source_type: text("source_type"),   // 'obsidian', 'canvas', 'text', etc.
-  is_imported: boolean("is_imported").default(true)
+  metadata: jsonb("metadata")
 });
 
 // Obsidian links table
@@ -73,9 +71,7 @@ export const obsidian_links = pgTable("obsidian_links", {
   source_id: integer("source_id").references(() => obsidian_nodes.id).notNull(),
   target_id: integer("target_id").references(() => obsidian_nodes.id).notNull(),
   created_at: timestamp("created_at").defaultNow(),
-  strength: integer("strength"),
-  type: text("type"),    // 'wiki-link', 'canvas-link', etc.
-  metadata: jsonb("metadata")
+  strength: integer("strength")
 });
 
 // Resources table
@@ -183,18 +179,14 @@ export const insertObsidianNodeSchema = createInsertSchema(obsidian_nodes).pick(
   path: true,
   user_id: true,
   tags: true,
-  metadata: true,
-  source_type: true,
-  is_imported: true
+  metadata: true
 });
 
 // Schema para inserção de links do Obsidian
 export const insertObsidianLinkSchema = createInsertSchema(obsidian_links).pick({
   source_id: true,
   target_id: true,
-  strength: true,
-  type: true,
-  metadata: true
+  strength: true
 });
 
 // Schema para inserção de logs de importação
