@@ -67,17 +67,38 @@ export class ObsidianImporter {
       if (entry.isDirectory()) {
         // Processa subdiretórios recursivamente
         await this.readDirectory(fullPath, files, basePath);
-      } else if (entry.name.endsWith('.md')) {
-        // Processa arquivos markdown
+      } else {
+        // Detecção do tipo de arquivo 
+        const ext = path.extname(entry.name).toLowerCase();
+        let fileType: 'markdown' | 'canvas' | 'canvas2document' | 'text' = 'text';
+        
+        if (ext === '.md') {
+          fileType = 'markdown';
+        } else if (ext === '.canvas') {
+          fileType = 'canvas';
+        } else if (ext === '.txt') {
+          fileType = 'text';
+        } else {
+          // Pula outros tipos de arquivo
+          continue;
+        }
+        
+        // Lê o conteúdo do arquivo
         const content = fs.readFileSync(fullPath, 'utf8');
         const stats = fs.statSync(fullPath);
         const relativePath = fullPath.replace(basePath, '');
+        
+        // Se for markdown, verifica se é um Canvas2Document
+        if (fileType === 'markdown' && content.includes('# Canvas') && content.includes('# _')) {
+          fileType = 'canvas2document';
+        }
         
         files.push({
           name: entry.name,
           content,
           path: relativePath,
-          lastModified: stats.mtime
+          lastModified: stats.mtime,
+          type: fileType
         });
       }
     }
@@ -88,70 +109,191 @@ export class ObsidianImporter {
    * @param files Lista de arquivos com conteúdo e metadados
    */
   processUploadedFiles(files: {name: string, content: string}[]): MarkdownFile[] {
-    return files.map(file => ({
-      name: file.name,
-      content: file.content,
-      path: `/${file.name}`,
-      lastModified: new Date()
-    }));
+    return files.map(file => {
+      // Determina o tipo de arquivo com base na extensão
+      const extension = path.extname(file.name).toLowerCase();
+      let fileType: 'markdown' | 'canvas' | 'canvas2document' | 'text' = 'text';
+      
+      if (extension === '.md') {
+        // Verifica se é um arquivo Canvas2Document 
+        if (file.content.includes('# Canvas') && file.content.includes('# _')) {
+          fileType = 'canvas2document';
+        } else {
+          fileType = 'markdown';
+        }
+      } else if (extension === '.canvas') {
+        fileType = 'canvas';
+      }
+      
+      return {
+        name: file.name,
+        content: file.content,
+        path: `/${file.name}`,
+        lastModified: new Date(),
+        type: fileType
+      };
+    });
   }
   
   /**
-   * Analisa os arquivos markdown para extrair nós e links
-   * @param files Lista de arquivos markdown
+   * Analisa os arquivos do Obsidian para extrair nós e links
+   * @param files Lista de arquivos (markdown, canvas, etc)
    */
-  parseObsidianData(files: MarkdownFile[]): { nodes: InsertObsidianNode[], links: ObsidianLink[] } {
-    const nodes: InsertObsidianNode[] = [];
+  parseObsidianData(files: MarkdownFile[]): { nodes: any[], links: ObsidianLink[] } {
+    const nodes: any[] = [];
     const linksMap = new Map<string, ObsidianLink[]>();
     const fileMap = new Map<string, MarkdownFile>();
     
     // Primeiro passo: criar nós para cada arquivo
     files.forEach(file => {
-      // Extrai tags do conteúdo
-      const tags = this.extractTags(file.content);
-      
-      // Cria o nó Obsidian
-      const node: InsertObsidianNode = {
-        title: this.getTitle(file),
-        content: file.content,
-        path: file.path,
-        tags: tags,
-        sourceType: 'obsidian',
-        isImported: true,
-        metadata: { 
-          lastModified: file.lastModified.toISOString()
+      // Processa diferentemente com base no tipo de arquivo
+      if (file.type === 'canvas') {
+        try {
+          // Analisa arquivo .canvas usando o parser especializado
+          const parsedCanvas = canvasParser.parseCanvasFile(file.content, file.path);
+          
+          // Adiciona todos os nós encontrados
+          if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
+            parsedCanvas.nodes.forEach(canvasNode => {
+              const node = {
+                title: canvasNode.title || `Nó Canvas: ${file.path}`,
+                content: canvasNode.content || '',
+                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                tags: canvasNode.tags || [],
+                source_type: 'canvas',
+                is_imported: true,
+                metadata: { 
+                  lastModified: file.lastModified.toISOString(),
+                  canvasData: canvasNode.metadata || {}
+                }
+              };
+              nodes.push(node);
+            });
+          }
+        } catch (error) {
+          console.error(`Erro ao processar arquivo canvas ${file.path}:`, error);
         }
-      };
+      } else if (file.type === 'canvas2document') {
+        try {
+          // Analisa arquivo markdown gerado pelo Canvas2Document
+          const parsedCanvas = canvasParser.parseCanvas2DocumentFile(file.content, file.path);
+          
+          // Adiciona todos os nós encontrados
+          if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
+            parsedCanvas.nodes.forEach(canvasNode => {
+              const node = {
+                title: canvasNode.title || `Nó Canvas2Doc: ${file.path}`,
+                content: canvasNode.content || '',
+                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                tags: canvasNode.tags || [],
+                source_type: 'canvas2document',
+                is_imported: true,
+                metadata: { 
+                  lastModified: file.lastModified.toISOString(),
+                  canvasData: canvasNode.metadata || {}
+                }
+              };
+              nodes.push(node);
+            });
+          }
+        } catch (error) {
+          console.error(`Erro ao processar arquivo canvas2document ${file.path}:`, error);
+        }
+      } else {
+        // Processa arquivo markdown ou texto normalmente
+        // Extrai tags do conteúdo
+        const tags = this.extractTags(file.content);
+        
+        // Cria o nó Obsidian
+        const node = {
+          title: this.getTitle(file),
+          content: file.content,
+          path: file.path,
+          tags: tags,
+          source_type: file.type === 'markdown' ? 'obsidian' : 'text',
+          is_imported: true,
+          metadata: { 
+            lastModified: file.lastModified.toISOString()
+          }
+        };
+        
+        nodes.push(node);
+      }
       
-      nodes.push(node);
       fileMap.set(file.path, file);
     });
     
     // Segundo passo: extrair links entre os arquivos
     files.forEach(file => {
-      const links = this.extractLinks(file.content);
-      
-      links.forEach(targetPath => {
-        // Normaliza o caminho do link
-        let normalizedPath = targetPath;
-        if (!normalizedPath.startsWith('/')) {
-          normalizedPath = '/' + normalizedPath;
+      // Processa diferentemente com base no tipo de arquivo
+      if (file.type === 'canvas') {
+        try {
+          // Para arquivos Canvas, usamos os links já definidos no arquivo
+          const parsedCanvas = canvasParser.parseCanvasFile(file.content, file.path);
+          if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            parsedCanvas.links.forEach(canvasLink => {
+              const link: ObsidianLink = {
+                sourceId: `${file.path}#${canvasLink.fromNode}`,
+                targetId: `${file.path}#${canvasLink.toNode}`,
+                type: 'canvas-link'
+              };
+              
+              // Adiciona o link ao mapa
+              const sourceLinks = linksMap.get(link.sourceId) || [];
+              sourceLinks.push(link);
+              linksMap.set(link.sourceId, sourceLinks);
+            });
+          }
+        } catch (error) {
+          console.error(`Erro ao processar links canvas ${file.path}:`, error);
         }
+      } else if (file.type === 'canvas2document') {
+        try {
+          // Para arquivos Canvas2Document, extraímos links do markdown
+          const parsedCanvas = canvasParser.parseCanvas2DocumentFile(file.content, file.path);
+          if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            parsedCanvas.links.forEach(canvasLink => {
+              const link: ObsidianLink = {
+                sourceId: `${file.path}#${canvasLink.sourceId}`,
+                targetId: `${file.path}#${canvasLink.targetId}`,
+                type: 'canvas2document-link'
+              };
+              
+              // Adiciona o link ao mapa
+              const sourceLinks = linksMap.get(link.sourceId) || [];
+              sourceLinks.push(link);
+              linksMap.set(link.sourceId, sourceLinks);
+            });
+          }
+        } catch (error) {
+          console.error(`Erro ao processar links canvas2document ${file.path}:`, error);
+        }
+      } else {
+        // Para arquivos Markdown e texto, extraímos links wiki
+        const links = this.extractLinks(file.content);
         
-        // Verifica se o arquivo alvo existe
-        if (fileMap.has(normalizedPath)) {
-          const link: ObsidianLink = {
-            sourceId: file.path,
-            targetId: normalizedPath,
-            type: 'wiki-link'
-          };
+        links.forEach(targetPath => {
+          // Normaliza o caminho do link
+          let normalizedPath = targetPath;
+          if (!normalizedPath.startsWith('/')) {
+            normalizedPath = '/' + normalizedPath;
+          }
           
-          // Adiciona o link ao mapa
-          const sourceLinks = linksMap.get(file.path) || [];
-          sourceLinks.push(link);
-          linksMap.set(file.path, sourceLinks);
-        }
-      });
+          // Verifica se o arquivo alvo existe
+          if (fileMap.has(normalizedPath)) {
+            const link: ObsidianLink = {
+              sourceId: file.path,
+              targetId: normalizedPath,
+              type: 'wiki-link'
+            };
+            
+            // Adiciona o link ao mapa
+            const sourceLinks = linksMap.get(file.path) || [];
+            sourceLinks.push(link);
+            linksMap.set(file.path, sourceLinks);
+          }
+        });
+      }
     });
     
     // Converte o mapa de links para array
