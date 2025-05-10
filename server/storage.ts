@@ -225,9 +225,9 @@ export class DatabaseStorage implements IStorage {
           node.title,
           node.content,
           node.path,
-          node.type || 'markdown',
+          node.source_type || 'markdown',
           node.tags || [],
-          node.imported_by || null,
+          node.user_id || null,
           JSON.stringify(node.metadata || {})
         );
       }
@@ -315,20 +315,28 @@ export class DatabaseStorage implements IStorage {
   
   async createImportLog(log: any): Promise<ImportLog> {
     try {
+      // Preparamos os detalhes como um texto formatado incluindo contagens
+      let details = log.details || '';
+      if (log.nodesCount !== undefined || log.linksCount !== undefined) {
+        details += `\nNós importados: ${log.nodesCount || 0}`;
+        details += `\nLinks importados: ${log.linksCount || 0}`;
+      }
+      
+      // Se houver um erro, incluímos na mensagem
+      if (log.error) {
+        details += `\nErro: ${log.error}`;
+      }
+
       const result = await pool.query(`
         INSERT INTO import_logs (
-          import_source, nodes_count, links_count, 
-          imported_by, success, message, metadata
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+          source, success, details, user_id
+        ) VALUES ($1, $2, $3, $4)
         RETURNING *
       `, [
         log.importSource || 'unknown',
-        log.nodesCount || 0,
-        log.linksCount || 0,
-        log.importedBy || null,
         log.success !== undefined ? log.success : true,
-        log.message || '',
-        JSON.stringify(log.metadata || {})
+        details,
+        log.importedBy || null
       ]);
       
       return result.rows[0];
