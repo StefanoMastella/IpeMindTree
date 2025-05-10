@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import ObsidianUploader from '@/components/obsidian/obsidian-uploader';
 import ObsidianNetwork from '@/components/obsidian/obsidian-network';
+import ImportLogs from '@/components/obsidian/import-logs';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Network, Upload, FileText } from 'lucide-react';
 
 export default function ObsidianPage() {
   const [activeTab, setActiveTab] = useState('network');
@@ -14,9 +16,19 @@ export default function ObsidianPage() {
       </p>
 
       <Tabs defaultValue="network" className="w-full" onValueChange={setActiveTab}>
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="network">Network Visualization</TabsTrigger>
-          <TabsTrigger value="import">Import Data</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3">
+          <TabsTrigger value="network" className="flex items-center gap-2">
+            <Network className="h-4 w-4" />
+            <span>Visualização</span>
+          </TabsTrigger>
+          <TabsTrigger value="import" className="flex items-center gap-2">
+            <Upload className="h-4 w-4" />
+            <span>Importar</span>
+          </TabsTrigger>
+          <TabsTrigger value="logs" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            <span>Logs</span>
+          </TabsTrigger>
         </TabsList>
 
         <TabsContent value="network" className="mt-6">
@@ -27,6 +39,10 @@ export default function ObsidianPage() {
           <div className="max-w-3xl mx-auto">
             <ObsidianUploader />
           </div>
+        </TabsContent>
+        
+        <TabsContent value="logs" className="mt-6">
+          <ImportLogs />
         </TabsContent>
       </Tabs>
     </div>

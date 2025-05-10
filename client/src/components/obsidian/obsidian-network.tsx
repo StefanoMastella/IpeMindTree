@@ -1,60 +1,107 @@
-import { useEffect, useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, ZoomIn, ZoomOut, RotateCw } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Badge } from '@/components/ui/badge';
+import ForceGraph2D from 'react-force-graph-2d';
 
-interface Node {
+interface NetworkNode {
   id: number;
   title: string;
-  group: string;
   tags?: string[];
+  group: string;
 }
 
-interface Link {
+interface NetworkLink {
   source: number;
   target: number;
   value: number;
 }
 
-interface GraphData {
-  nodes: Node[];
-  links: Link[];
+interface NetworkData {
+  nodes: NetworkNode[];
+  links: NetworkLink[];
 }
 
 export default function ObsidianNetwork() {
-  const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
-  
-  // Busca os dados da rede do Obsidian
-  const { data, isLoading, error } = useQuery<GraphData>({
-    queryKey: ['/api/obsidian/network'],
-    queryFn: async () => {
-      const response = await fetch('/api/obsidian/network');
-      if (!response.ok) {
-        throw new Error('Failed to load Obsidian network data');
-      }
-      return response.json();
-    }
+  const graphRef = useRef<any>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filteredData, setFilteredData] = useState<NetworkData | null>(null);
+  const [highlightNodes, setHighlightNodes] = useState<Set<number>>(new Set());
+  const [selectedNode, setSelectedNode] = useState<NetworkNode | null>(null);
+
+  // Fetch network data
+  const { data, isLoading, error } = useQuery({
+    queryKey: ['/api/obsidian/network']
   });
-  
-  // Update graph dimensions when window is resized
+
+  // Filter data based on search term
   useEffect(() => {
-    const handleResize = () => {
-      const container = document.getElementById('graph-container');
-      if (container) {
-        setDimensions({
-          width: container.clientWidth,
-          height: Math.max(500, window.innerHeight * 0.6)
-        });
-      }
-    };
+    if (!data) return;
     
-    handleResize();
-    window.addEventListener('resize', handleResize);
+    if (!searchTerm.trim()) {
+      setFilteredData(data);
+      setHighlightNodes(new Set());
+      return;
+    }
+
+    const term = searchTerm.toLowerCase();
+    const matchingNodeIds = new Set<number>();
     
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
+    // Find matching nodes
+    const matchingNodes = data.nodes.filter(node => {
+      const matches = 
+        node.title.toLowerCase().includes(term) || 
+        (node.tags && node.tags.some(tag => tag.toLowerCase().includes(term)));
+      
+      if (matches) matchingNodeIds.add(node.id);
+      return matches;
+    });
+    
+    // Find links that connect to matching nodes
+    const relevantLinks = data.links.filter(link => 
+      matchingNodeIds.has(link.source as number) || matchingNodeIds.has(link.target as number)
+    );
+    
+    // Add nodes that are connected to matching nodes
+    const connectedNodeIds = new Set<number>([...matchingNodeIds]);
+    relevantLinks.forEach(link => {
+      connectedNodeIds.add(link.source as number);
+      connectedNodeIds.add(link.target as number);
+    });
+    
+    const connectedNodes = data.nodes.filter(node => connectedNodeIds.has(node.id));
+    
+    setFilteredData({
+      nodes: connectedNodes,
+      links: relevantLinks
+    });
+    
+    setHighlightNodes(matchingNodeIds);
+  }, [data, searchTerm]);
+
+  // Reset zoom to fit all nodes
+  const handleResetZoom = () => {
+    if (graphRef.current) {
+      graphRef.current.zoomToFit(400);
+    }
+  };
+
+  // Zoom in
+  const handleZoomIn = () => {
+    if (graphRef.current) {
+      graphRef.current.zoom(graphRef.current.zoom() * 1.5);
+    }
+  };
+  
+  // Zoom out
+  const handleZoomOut = () => {
+    if (graphRef.current) {
+      graphRef.current.zoom(graphRef.current.zoom() / 1.5);
+    }
+  };
 
   if (isLoading) {
     return (
@@ -103,104 +150,153 @@ export default function ObsidianNetwork() {
           {hasData ? ` ${data.nodes.length} nodes and ${data.links.length} connections.` : ''}
         </CardDescription>
       </CardHeader>
-      
-      <CardContent id="graph-container" className="p-6">
+      <CardContent>
         {hasData ? (
-          <div className="space-y-6">
-            <div className="border rounded-md p-4">
-              <h3 className="text-lg font-semibold mb-2">Summary</h3>
-              <p className="text-sm text-muted-foreground">
-                We found <span className="font-medium">{data.nodes.length}</span> nodes and{' '}
-                <span className="font-medium">{data.links.length}</span> connections in your knowledge base.
-              </p>
-              
-              {/* Group listing */}
-              <div className="mt-4">
-                <h4 className="text-sm font-medium mb-2">Concept groups:</h4>
-                <div className="flex flex-wrap gap-2">
-                  {[...new Set(data.nodes.map(node => node.group))].map(group => (
-                    <div 
-                      key={group} 
-                      className="px-3 py-1 rounded-full text-xs flex items-center gap-2"
-                      style={{ backgroundColor: `${getGroupColor(group)}20`, color: getGroupColor(group) }}
-                    >
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: getGroupColor(group) }}></div>
-                      {group || 'no group'}
-                      <span className="text-foreground opacity-70">
-                        ({data.nodes.filter(node => node.group === group).length})
-                      </span>
-                    </div>
-                  ))}
+          <div>
+            <div className="flex flex-col md:flex-row gap-4 mb-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search nodes by title or tag..."
+                  className="pl-8"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleZoomIn} 
+                  title="Zoom in"
+                >
+                  <ZoomIn className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleZoomOut} 
+                  title="Zoom out"
+                >
+                  <ZoomOut className="h-4 w-4" />
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="icon" 
+                  onClick={handleResetZoom} 
+                  title="Reset view"
+                >
+                  <RotateCw className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            
+            {/* Node details panel */}
+            {selectedNode && (
+              <div className="mb-4 p-4 border rounded-md bg-muted/30">
+                <h3 className="font-semibold text-lg mb-2">{selectedNode.title}</h3>
+                {selectedNode.tags && selectedNode.tags.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mt-2">
+                    {selectedNode.tags.map((tag, idx) => (
+                      <Badge key={idx} variant="secondary">{tag}</Badge>
+                    ))}
+                  </div>
+                )}
+                <div className="flex justify-end mt-2">
+                  <Button 
+                    size="sm" 
+                    variant="outline" 
+                    onClick={() => setSelectedNode(null)}
+                  >
+                    Close
+                  </Button>
                 </div>
               </div>
+            )}
+            
+            {/* Graph visualization */}
+            <div className="h-[600px] border rounded-md overflow-hidden bg-background">
+              {filteredData && (
+                <ForceGraph2D
+                  ref={graphRef}
+                  graphData={filteredData}
+                  nodeId="id"
+                  nodeLabel="title"
+                  nodeColor={(node: any) => {
+                    const n = node as NetworkNode;
+                    if (highlightNodes.size > 0) {
+                      return highlightNodes.has(n.id) ? '#ff6b6b' : getGroupColor(n.group);
+                    }
+                    return getGroupColor(n.group);
+                  }}
+                  nodeCanvasObject={(node: any, ctx, globalScale) => {
+                    const n = node as NetworkNode & { x: number, y: number };
+                    const fontSize = 12 / globalScale;
+                    const label = n.title;
+                    const isHighlighted = highlightNodes.has(n.id);
+                    
+                    // Node circle
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, isHighlighted ? 6 : 4, 0, 2 * Math.PI, false);
+                    ctx.fillStyle = isHighlighted ? '#ff6b6b' : getGroupColor(n.group);
+                    ctx.fill();
+                    
+                    // Only render labels for highlighted nodes or when zoomed in
+                    if (isHighlighted || globalScale > 0.8) {
+                      ctx.font = `${fontSize}px Sans-Serif`;
+                      ctx.textAlign = 'center';
+                      ctx.textBaseline = 'middle';
+                      ctx.fillStyle = 'white';
+                      
+                      // Background for text
+                      const textWidth = ctx.measureText(label).width;
+                      ctx.fillStyle = 'rgba(0,0,0,0.6)';
+                      ctx.fillRect(
+                        n.x - textWidth / 2 - 2,
+                        n.y + 6,
+                        textWidth + 4,
+                        fontSize + 2
+                      );
+                      
+                      // Text
+                      ctx.fillStyle = 'white';
+                      ctx.fillText(label, n.x, n.y + 6 + fontSize / 2);
+                    }
+                  }}
+                  linkWidth={1}
+                  linkColor={() => '#999999'}
+                  onNodeClick={(node: any) => {
+                    setSelectedNode(node as NetworkNode);
+                  }}
+                  cooldownTicks={100}
+                  onEngineStop={() => handleResetZoom()}
+                />
+              )}
             </div>
             
-            {/* Main nodes list */}
-            <div className="border rounded-md p-4">
-              <h3 className="text-lg font-semibold mb-2">Main Nodes</h3>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {data.nodes
-                  .sort((a, b) => {
-                    // Sort by number of connections (nodes with more links are more important)
-                    const aConnections = data.links.filter(
-                      link => link.source === a.id || link.target === a.id
-                    ).length;
-                    const bConnections = data.links.filter(
-                      link => link.source === b.id || link.target === b.id
-                    ).length;
-                    return bConnections - aConnections;
-                  })
-                  .slice(0, 9) // Get only the top 9 nodes
-                  .map(node => {
-                    // Calculate number of connections
-                    const connections = data.links.filter(
-                      link => link.source === node.id || link.target === node.id
-                    ).length;
-                    
-                    return (
-                      <div 
-                        key={node.id}
-                        className="border rounded-md p-3 hover:bg-muted/50 transition-colors"
-                      >
-                        <div className="flex items-center gap-2">
-                          <div 
-                            className="w-3 h-3 rounded-full"
-                            style={{ backgroundColor: getGroupColor(node.group) }}
-                          ></div>
-                          <h4 className="font-medium text-sm truncate">{node.title}</h4>
-                        </div>
-                        
-                        <div className="mt-2 flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground">{connections} connections</span>
-                          
-                          {node.tags && node.tags.length > 0 && (
-                            <div className="flex-1 flex flex-wrap gap-1">
-                              {node.tags.slice(0, 3).map(tag => (
-                                <span 
-                                  key={tag} 
-                                  className="px-1.5 py-0.5 bg-muted rounded text-[10px] text-muted-foreground"
-                                >
-                                  {tag}
-                                </span>
-                              ))}
-                              {node.tags.length > 3 && (
-                                <span className="text-[10px] text-muted-foreground">
-                                  +{node.tags.length - 3}
-                                </span>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
+            {/* Legend */}
+            <div className="flex flex-wrap gap-3 mt-4 text-sm">
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('uncategorized')}}></div>
+                <span>Uncategorized</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('project')}}></div>
+                <span>Project</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('idea')}}></div>
+                <span>Idea</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('note')}}></div>
+                <span>Note</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('concept')}}></div>
+                <span>Concept</span>
               </div>
             </div>
-            
-            <p className="text-xs text-center text-muted-foreground">
-              Note: An interactive graph visualization will be available soon. Currently, 
-              we are presenting a summary of the data imported from Obsidian.
-            </p>
           </div>
         ) : (
           <div className="flex flex-col items-center justify-center h-96">
