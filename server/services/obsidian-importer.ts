@@ -408,11 +408,11 @@ export class ObsidianImporter {
       // Converte os links (path para ID) e importa para o banco de dados
       const dbLinks: any[] = links
         .filter(link => 
-          pathToIdMap.has(link.sourceId) && 
-          pathToIdMap.has(link.targetId))
+          pathToIdMap.has(link.source_id) && 
+          pathToIdMap.has(link.target_id))
         .map(link => ({
-          source_id: pathToIdMap.get(link.sourceId)!,
-          target_id: pathToIdMap.get(link.targetId)!,
+          source_id: pathToIdMap.get(link.source_id)!,
+          target_id: pathToIdMap.get(link.target_id)!,
           type: link.type,
           metadata: {}
         }));
