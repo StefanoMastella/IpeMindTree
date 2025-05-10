@@ -62,7 +62,9 @@ export const obsidian_nodes = pgTable("obsidian_nodes", {
   created_at: timestamp("created_at").defaultNow(),
   updated_at: timestamp("updated_at").defaultNow(),
   tags: text("tags").array(),
-  metadata: jsonb("metadata")
+  metadata: jsonb("metadata"),
+  source_type: text("source_type"),   // 'obsidian', 'canvas', 'text', etc.
+  is_imported: boolean("is_imported").default(true)
 });
 
 // Obsidian links table
@@ -71,7 +73,9 @@ export const obsidian_links = pgTable("obsidian_links", {
   source_id: integer("source_id").references(() => obsidian_nodes.id).notNull(),
   target_id: integer("target_id").references(() => obsidian_nodes.id).notNull(),
   created_at: timestamp("created_at").defaultNow(),
-  strength: integer("strength")
+  strength: integer("strength"),
+  type: text("type"),    // 'wiki-link', 'canvas-link', etc.
+  metadata: jsonb("metadata")
 });
 
 // Resources table
@@ -172,10 +176,42 @@ export const insertSubpromptSchema = createInsertSchema(subprompts).pick({
   description: true
 });
 
+// Schema para inserção de nós do Obsidian
+export const insertObsidianNodeSchema = createInsertSchema(obsidian_nodes).pick({
+  title: true,
+  content: true,
+  path: true,
+  user_id: true,
+  tags: true,
+  metadata: true,
+  source_type: true,
+  is_imported: true
+});
+
+// Schema para inserção de links do Obsidian
+export const insertObsidianLinkSchema = createInsertSchema(obsidian_links).pick({
+  source_id: true,
+  target_id: true,
+  strength: true,
+  type: true,
+  metadata: true
+});
+
+// Schema para inserção de logs de importação
+export const insertImportLogSchema = createInsertSchema(import_logs).pick({
+  source: true,
+  success: true,
+  details: true,
+  user_id: true
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type InsertChatSession = z.infer<typeof insertChatSessionSchema>;
 export type InsertChatMessage = z.infer<typeof insertChatMessageSchema>;
 export type InsertSubprompt = z.infer<typeof insertSubpromptSchema>;
+export type InsertObsidianNode = z.infer<typeof insertObsidianNodeSchema>;
+export type InsertObsidianLink = z.infer<typeof insertObsidianLinkSchema>;
+export type InsertImportLog = z.infer<typeof insertImportLogSchema>;
 
 export type User = typeof users.$inferSelect;
 export type Idea = typeof ideas.$inferSelect;
