@@ -1,8 +1,17 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { InsertObsidianNode, InsertObsidianLink, InsertImportLog } from '@shared/schema';
+import { insertObsidianNodeSchema, insertObsidianLinkSchema, insertImportLogSchema } from '@shared/schema';
 import { storage } from '../storage';
 import { canvasParser } from './canvas-parser';
+
+// Define o tipo MarkdownFile para representar arquivos Markdown
+type MarkdownFile = {
+  name: string;
+  content: string;
+  path: string;
+  lastModified: Date;
+  type: 'markdown' | 'canvas' | 'canvas2document' | 'text';
+};
 
 interface ObsidianFile {
   name: string;

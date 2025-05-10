@@ -48,7 +48,7 @@ export class CanvasParser {
    * @param content Conteúdo JSON do arquivo .canvas
    * @param filePath Caminho do arquivo para referência
    */
-  parseCanvasFile(content: string, filePath: string): { nodes: InsertObsidianNode[], links: CanvasEdge[] } {
+  parseCanvasFile(content: string, filePath: string): { nodes: any[], links: CanvasEdge[] } {
     try {
       // Tenta fazer o parse do JSON
       const canvasData = JSON.parse(content) as CanvasFile;
@@ -67,7 +67,7 @@ export class CanvasParser {
       const fileName = filePath.split('/').pop()?.replace('.canvas', '') || 'Untitled Canvas';
       
       // Converte nós do Canvas para nós do Obsidian
-      const nodes: InsertObsidianNode[] = canvasData.nodes.map(canvasNode => {
+      const nodes: any[] = canvasData.nodes.map(canvasNode => {
         // Determina o tipo de nó
         let nodeType = canvasNode.type;
         let nodeContent = '';
@@ -139,10 +139,10 @@ export class CanvasParser {
    * @param content Conteúdo do arquivo markdown gerado pelo Canvas2Document
    * @param filePath Caminho do arquivo para referência
    */
-  parseCanvas2DocumentFile(content: string, filePath: string): { nodes: InsertObsidianNode[], links: { sourceId: string, targetId: string, type: string }[] } {
+  parseCanvas2DocumentFile(content: string, filePath: string): { nodes: any[], links: { sourceId: string, targetId: string, type: string }[] } {
     try {
       // Nós extraídos do arquivo convertido
-      const nodes: InsertObsidianNode[] = [];
+      const nodes: any[] = [];
       
       // Links entre nós
       const links: { sourceId: string, targetId: string, type: string }[] = [];
@@ -221,13 +221,12 @@ export class CanvasParser {
         const currentNodePath = idToPaths.get(currentNodeId) || '';
         
         // Encontra links deste nó para outros nós
-        const nodeContent = content.substring(
-          nodeMatch.index,
-          nodeRegex.lastIndex = nodeMatch.index + 1, // Procura a partir da posição atual
-          content.indexOf('# _', nodeMatch.index + 1) !== -1 
+        const endPosition = content.indexOf('# _', nodeMatch.index + 1) !== -1 
             ? content.indexOf('# _', nodeMatch.index + 1) 
-            : content.length
-        );
+            : content.length;
+        
+        nodeRegex.lastIndex = nodeMatch.index + 1; // Procura a partir da posição atual
+        const nodeContent = content.substring(nodeMatch.index, endPosition);
         
         let linkMatch;
         
