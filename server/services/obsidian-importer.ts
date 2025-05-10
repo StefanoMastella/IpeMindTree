@@ -22,8 +22,8 @@ interface ObsidianFile {
 }
 
 interface ObsidianLink {
-  sourceId: string;
-  targetId: string;
+  source_id: string;
+  target_id: string;
   type: string;
 }
 
@@ -160,7 +160,6 @@ export class ObsidianImporter {
                 content: canvasNode.content || '',
                 path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
                 tags: canvasNode.tags || [],
-                source_type: 'canvas',
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
@@ -186,7 +185,6 @@ export class ObsidianImporter {
                 content: canvasNode.content || '',
                 path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
                 tags: canvasNode.tags || [],
-                source_type: 'canvas2document',
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
@@ -210,7 +208,6 @@ export class ObsidianImporter {
           content: file.content,
           path: file.path,
           tags: tags,
-          source_type: file.type === 'markdown' ? 'obsidian' : 'text',
           is_imported: true,
           metadata: { 
             lastModified: file.lastModified.toISOString()
@@ -233,8 +230,8 @@ export class ObsidianImporter {
           if (parsedCanvas.links && parsedCanvas.links.length > 0) {
             parsedCanvas.links.forEach(canvasLink => {
               const link: ObsidianLink = {
-                sourceId: `${file.path}#${canvasLink.fromNode}`,
-                targetId: `${file.path}#${canvasLink.toNode}`,
+                source_id: `${file.path}#${canvasLink.fromNode}`,
+                target_id: `${file.path}#${canvasLink.toNode}`,
                 type: 'canvas-link'
               };
               
