@@ -198,15 +198,13 @@ export class DatabaseStorage implements IStorage {
             SET 
               title = $1, 
               content = $2, 
-              source_type = $3, 
-              tags = $4,
+              tags = $3,
               updated_at = NOW(),
-              metadata = $5
-            WHERE id = $6
+              metadata = $4
+            WHERE id = $5
           `, [
             node.title,
             node.content,
-            node.source_type || 'markdown',
             node.tags || [],
             JSON.stringify(node.metadata || {}),
             existingNode.id
@@ -217,7 +215,7 @@ export class DatabaseStorage implements IStorage {
         
         // Preparar valores para novo nó
         valueStrings.push(`(
-          $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
+          $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
           $${paramIndex++}, $${paramIndex++}, $${paramIndex++}
         )`);
         
@@ -225,7 +223,6 @@ export class DatabaseStorage implements IStorage {
           node.title,
           node.content,
           node.path,
-          node.source_type || 'markdown',
           node.tags || [],
           node.user_id || null,
           JSON.stringify(node.metadata || {})
@@ -241,7 +238,7 @@ export class DatabaseStorage implements IStorage {
       // Inserir novos nós em massa
       const insertQuery = `
         INSERT INTO obsidian_nodes (
-          title, content, path, source_type, tags, user_id, metadata
+          title, content, path, tags, user_id, metadata
         ) VALUES 
         ${valueStrings.join(', ')}
         RETURNING *
