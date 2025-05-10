@@ -8,8 +8,7 @@ const API_URL = "/api/gemini-proxy";
 // Define a personality prompt for the Ipê Mind Tree assistant
 const getPersonalityPrompt = () => {
   return `You are the Ipê Mind Tree AI assistant, focused on helping users explore and connect ideas within the community. 
-You are knowledgeable, helpful, and thoughtful. 
-Your responses should be concise and relevant to the Ipê Mind Tree ecosystem.`;
+You are knowledgeable, helpful, and thoughtful. `;
 }
 
 // Função para chamada direta à API Gemini 2.5 Flash Preview
@@ -174,7 +173,7 @@ function fallbackSuggestConnections(
 }
 
 // Test function for Gemini 2.5 Flash Preview 04-17
-export async function testGeminiAPI(prompt: string = "Say hello in Portuguese and explain what the Ipê Mind Tree is in 1-2 sentences."): Promise<string> {
+export async function testGeminiAPI(prompt: string = "Say hello in English and explain what the Ipê Mind Tree is in 1-2 sentences."): Promise<string> {
   try {
     // Chamando diretamente a API Gemini 2.5 Flash Preview
     return await callGeminiAPI(prompt);

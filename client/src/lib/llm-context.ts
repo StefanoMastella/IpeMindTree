@@ -29,8 +29,6 @@ Technology: Exploring and developing the underlying technologies that power the 
 Community: Strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support.
 Resources: Curating and sharing valuable resources for IMT members (funding, educational materials, etc.).
 Projects: Showcasing and supporting projects developed within the IMT ecosystem (proposals, team formation, etc.).
-Acoustical Governance: Promoting better sound control and integrating sound healing practices in public and private spaces.
-DracoLogos (Creative Expression): Fostering creative expression and artistic innovation within the IMT community.
 Techno-Optimism: Promoting a positive perspective on the potential of technology to solve global challenges and improve the quality of life.
 Ethics & Values: Ensuring that all activities within the IMT are aligned with ethical principles and community values.
 IMT Values:
@@ -66,7 +64,5 @@ export function getMainPrompt(): string {
 
 // Function to get the full context (main prompt + optional subprompt)
 export function getFullContext(subpromptText?: string): string {
-  return subpromptText 
-    ? `${mainPrompt}\n${subpromptText}`
-    : mainPrompt;
+  return subpromptText ? `${mainPrompt}\n${subpromptText}` : mainPrompt;
 }

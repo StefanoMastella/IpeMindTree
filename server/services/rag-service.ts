@@ -16,7 +16,7 @@ interface GeminiResponse {
 }
 
 // Gemini API URL - using gemini-1.5-flash which is a simpler model
-const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent";
+const API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.0-flash:generateContent";
 
 export class RagService {
   private apiKey: string;
@@ -104,15 +104,13 @@ export class RagService {
       console.log("Selecting relevant subprompt for query...");
       const selectedSubprompt = await subpromptService.selectSubprompt(userQuestion);
       
-      // Get the name of the selected sphere (or empty string if none was selected)
-      const selectedSphereName = selectedSubprompt 
+      // Get the name of the selected branch (or empty string if none was selected)
+      const selectedBranchName = selectedSubprompt 
         ? selectedSubprompt.match(/You are now providing assistance in the (.+?) domain\./)?.[1] || ""
         : "";
         
       // Get the base application context and current ideas context
       const baseMainPrompt = getMainPrompt();
-      // Registrando o prompt principal para debug
-      console.log('Usando prompt principal atualizado:', baseMainPrompt.substring(0, 100) + '...');
       const ideasContext = await this.getIdeasContext();
       
       // Create the complete prompt for the model with more explicit instructions
@@ -123,8 +121,7 @@ ${selectedSubprompt ? `## IMPORTANT: You are currently operating in the ${select
 ${selectedSubprompt}
 
 You MUST acknowledge your current sphere at the beginning of your response with: "I'm activating the ${selectedSphereName} perspective." This should be the first line of your response.
-Always apply the perspective and focus areas from this sphere when responding.
-` : '## IMPORTANT: No specific sphere is activated. Use the main prompt as your guide.'}
+Always apply the perspective and focus areas from this sphere when responding.` : '## IMPORTANT: No specific sphere is activated. Use the main prompt as your guide.'}
 
 ${ideasContext}
 
@@ -137,11 +134,10 @@ ${chatHistory}
 
 User question: ${userQuestion}
 
-Answer concisely and helpfully. If the question involves specific ideas or Obsidian documents, mention them by name/number.
+Answer concisely and helpfully. If the question involves specific ideas or Obsidian documents, mention them by the name.
 Use Obsidian knowledge when relevant to enrich your answers.
 If the question relates to the previous conversation, use that context to provide a more relevant answer.
-If the question is not related to ideas, Obsidian, or Ipê Mind Tree, gently explain that you are
-focused on helping with questions related to ideas and the Ipê Mind Tree project.
+Prioritize the ideias, Obsidian context, and previous conversation history when answering the question. If the question is not related to these, be open to other sources of information. But avoid diverging too much from the main prompt and the selected branch.
 `;
       
       console.log("Calling Gemini API with" + (selectedSubprompt ? " selected subprompt..." : "out subprompt..."));
