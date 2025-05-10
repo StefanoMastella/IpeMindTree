@@ -198,7 +198,7 @@ export class DatabaseStorage implements IStorage {
             SET 
               title = $1, 
               content = $2, 
-              type = $3, 
+              source_type = $3, 
               tags = $4,
               updated_at = NOW(),
               metadata = $5
@@ -206,7 +206,7 @@ export class DatabaseStorage implements IStorage {
           `, [
             node.title,
             node.content,
-            node.type || 'markdown',
+            node.source_type || 'markdown',
             node.tags || [],
             JSON.stringify(node.metadata || {}),
             existingNode.id
@@ -260,7 +260,7 @@ export class DatabaseStorage implements IStorage {
       // Remove links duplicados com base nos source_id e target_id
       const uniqueLinks = new Map();
       for (const link of links) {
-        const key = `${link.sourceId}-${link.targetId}`;
+        const key = `${link.source_id}-${link.target_id}`;
         uniqueLinks.set(key, link);
       }
       
@@ -273,10 +273,10 @@ export class DatabaseStorage implements IStorage {
         const existingResult = await pool.query(`
           SELECT id FROM obsidian_links
           WHERE source_id = $1 AND target_id = $2
-        `, [link.sourceId, link.targetId]);
+        `, [link.source_id, link.target_id]);
         
         if (existingResult.rows.length > 0) {
-          console.log(`Link já existe: ${link.sourceId} -> ${link.targetId}`);
+          console.log(`Link já existe: ${link.source_id} -> ${link.target_id}`);
           continue;
         }
         
@@ -285,8 +285,8 @@ export class DatabaseStorage implements IStorage {
         )`);
         
         valueParams.push(
-          link.sourceId,
-          link.targetId,
+          link.source_id,
+          link.target_id,
           link.type || 'wiki',
           JSON.stringify(link.metadata || {})
         );
