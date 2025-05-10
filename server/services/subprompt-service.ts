@@ -56,25 +56,25 @@ const FALLBACK_SUBPROMPTS: {
   },
   {
     id: 5,
-    name: "Technology Sphere",
+    name: "Technology Branch",
     description: "Used for tasks related to exploring and developing the underlying technologies that power the IMT and the Ipê City ecosystem.",
     keywords: ["blockchain", "ai", "ml", "data science", "cybersecurity", "decentralized infrastructure", "open source", "apis", "development"],
-    content: "You are now providing assistance in the Technology Sphere domain. Used for tasks related to exploring and developing the underlying technologies that power the IMT and the Ipê City ecosystem. Focus on the following aspects: blockchain, ai, ml, data science, cybersecurity, decentralized infrastructure, open source, apis, development.",
-    sphere: "Technology",
+    content: "You are now providing assistance in the Technology Branch domain. Used for tasks related to exploring and developing the underlying technologies that power the IMT and the Ipê City ecosystem. Focus on the following aspects: blockchain, ai, ml, data science, cybersecurity, decentralized infrastructure, open source, apis, development.",
+    branch: "Technology",
     active: true
   },
   {
     id: 6,
-    name: "Community Sphere",
+    name: "Community Branch",
     description: "Used for tasks related to strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support.",
     keywords: ["integration", "events", "communication", "conflict resolution", "diversity", "inclusion", "participation", "engagement", "mentorship"],
-    content: "You are now providing assistance in the Community Sphere domain. Used for tasks related to strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support. Focus on the following aspects: integration, events, communication, conflict resolution, diversity, inclusion, participation, engagement, mentorship.",
-    sphere: "Community",
+    content: "You are now providing assistance in the Community Branch domain. Used for tasks related to strengthening the IMT community, promoting collaboration, knowledge sharing, and mutual support. Focus on the following aspects: integration, events, communication, conflict resolution, diversity, inclusion, participation, engagement, mentorship.",
+    branch: "Community",
     active: true
   },
   {
     id: 7,
-    name: "Resources Sphere",
+    name: "Resources Branch",
     description: "Used for tasks related to curating and sharing valuable resources for members of the IMT.",
     keywords: ["funding", "educational materials", "mentorship programs", "tools", "software", "experts", "opportunities", "grants", "calls for proposals"],
     content: "You are now providing assistance in the Resources Sphere domain. Used for tasks related to curating and sharing valuable resources for members of the IMT. Focus on the following aspects: funding, educational materials, mentorship programs, tools, software, experts, opportunities, grants, calls for proposals.",
