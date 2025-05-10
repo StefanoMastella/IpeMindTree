@@ -20,6 +20,9 @@ export interface IStorage {
   getObsidianNodeByPath(path: string): Promise<ObsidianNode | undefined>;
   getObsidianLinks(nodeId: number): Promise<ObsidianLink[]>;
   getImportLogs(): Promise<ImportLog[]>;
+  bulkCreateObsidianNodes(nodes: any[]): Promise<ObsidianNode[]>;
+  bulkCreateObsidianLinks(links: any[]): Promise<ObsidianLink[]>;
+  createImportLog(log: any): Promise<ImportLog>;
   
   // Chat methods
   createChatSession(session: InsertChatSession): Promise<ChatSession>;
@@ -173,6 +176,165 @@ export class DatabaseStorage implements IStorage {
     } catch (error) {
       console.error("Error fetching import logs:", error);
       return [];
+    }
+  }
+  
+  async bulkCreateObsidianNodes(nodes: any[]): Promise<ObsidianNode[]> {
+    try {
+      // Preparar os valores para inserção em massa
+      const valueStrings = [];
+      const valueParams = [];
+      let paramIndex = 1;
+      
+      for (const node of nodes) {
+        // Verificar existência prévia pelo caminho (path)
+        const existingNode = await this.getObsidianNodeByPath(node.path);
+        if (existingNode) {
+          console.log(`Nó já existe: ${node.path}, atualizando...`);
+          
+          // Atualizar nó existente
+          await pool.query(`
+            UPDATE obsidian_nodes 
+            SET 
+              title = $1, 
+              content = $2, 
+              type = $3, 
+              tags = $4,
+              updated_at = NOW(),
+              metadata = $5
+            WHERE id = $6
+          `, [
+            node.title,
+            node.content,
+            node.type || 'markdown',
+            node.tags || [],
+            JSON.stringify(node.metadata || {}),
+            existingNode.id
+          ]);
+          
+          continue;
+        }
+        
+        // Preparar valores para novo nó
+        valueStrings.push(`(
+          $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, 
+          $${paramIndex++}, $${paramIndex++}, $${paramIndex++}
+        )`);
+        
+        valueParams.push(
+          node.title,
+          node.content,
+          node.path,
+          node.type || 'markdown',
+          node.tags || [],
+          node.imported_by || null,
+          JSON.stringify(node.metadata || {})
+        );
+      }
+      
+      // Se não há novos nós para inserir, retornar os nós existentes
+      if (valueStrings.length === 0) {
+        const allNodes = await this.getAllObsidianNodes();
+        return allNodes;
+      }
+      
+      // Inserir novos nós em massa
+      const insertQuery = `
+        INSERT INTO obsidian_nodes (
+          title, content, path, type, tags, imported_by, metadata
+        ) VALUES 
+        ${valueStrings.join(', ')}
+        RETURNING *
+      `;
+      
+      const result = await pool.query(insertQuery, valueParams);
+      return result.rows;
+    } catch (error) {
+      console.error("Erro ao criar nós do Obsidian:", error);
+      throw new Error("Falha ao criar nós do Obsidian");
+    }
+  }
+  
+  async bulkCreateObsidianLinks(links: any[]): Promise<ObsidianLink[]> {
+    try {
+      // Remove links duplicados com base nos source_id e target_id
+      const uniqueLinks = new Map();
+      for (const link of links) {
+        const key = `${link.sourceId}-${link.targetId}`;
+        uniqueLinks.set(key, link);
+      }
+      
+      const valueStrings = [];
+      const valueParams = [];
+      let paramIndex = 1;
+      
+      for (const link of uniqueLinks.values()) {
+        // Verificar se o link já existe
+        const existingResult = await pool.query(`
+          SELECT id FROM obsidian_links
+          WHERE source_id = $1 AND target_id = $2
+        `, [link.sourceId, link.targetId]);
+        
+        if (existingResult.rows.length > 0) {
+          console.log(`Link já existe: ${link.sourceId} -> ${link.targetId}`);
+          continue;
+        }
+        
+        valueStrings.push(`(
+          $${paramIndex++}, $${paramIndex++}, $${paramIndex++}, $${paramIndex++}
+        )`);
+        
+        valueParams.push(
+          link.sourceId,
+          link.targetId,
+          link.type || 'wiki',
+          JSON.stringify(link.metadata || {})
+        );
+      }
+      
+      // Se não há novos links para inserir
+      if (valueStrings.length === 0) {
+        return [];
+      }
+      
+      const insertQuery = `
+        INSERT INTO obsidian_links (
+          source_id, target_id, type, metadata
+        ) VALUES 
+        ${valueStrings.join(', ')}
+        RETURNING *
+      `;
+      
+      const result = await pool.query(insertQuery, valueParams);
+      return result.rows;
+    } catch (error) {
+      console.error("Erro ao criar links do Obsidian:", error);
+      throw new Error("Falha ao criar links do Obsidian");
+    }
+  }
+  
+  async createImportLog(log: any): Promise<ImportLog> {
+    try {
+      const result = await pool.query(`
+        INSERT INTO import_logs (
+          import_source, nodes_count, links_count, 
+          imported_by, success, message, metadata
+        ) VALUES ($1, $2, $3, $4, $5, $6, $7)
+        RETURNING *
+      `, [
+        log.importSource || 'unknown',
+        log.nodesCount || 0,
+        log.linksCount || 0,
+        log.importedBy || null,
+        log.success !== undefined ? log.success : true,
+        log.message || '',
+        JSON.stringify(log.metadata || {})
+      ]);
+      
+      return result.rows[0];
+    } catch (error) {
+      console.error("Erro ao criar log de importação:", error);
+      throw new Error("Falha ao registrar log de importação");
     }
   }
   
