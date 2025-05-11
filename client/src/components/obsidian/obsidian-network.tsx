@@ -135,7 +135,9 @@ export default function ObsidianNetwork() {
       task: '#dc3545',
       article: '#6610f2',
       person: '#20c997',
-      concept: '#fd7e14'
+      concept: '#fd7e14',
+      finance: '#e83e8c', // Nova categoria finance com cor rosa
+      sphere: '#17a2b8' // Nova categoria sphere com cor turquesa
     };
     
     return colorMap[group] || '#6c757d';
@@ -295,6 +297,14 @@ export default function ObsidianNetwork() {
               <div className="flex items-center">
                 <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('concept')}}></div>
                 <span>Concept</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('finance')}}></div>
+                <span>Finance</span>
+              </div>
+              <div className="flex items-center">
+                <div className="w-3 h-3 rounded-full mr-2" style={{backgroundColor: getGroupColor('sphere')}}></div>
+                <span>Sphere</span>
               </div>
             </div>
           </div>
