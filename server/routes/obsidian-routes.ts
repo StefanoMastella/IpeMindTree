@@ -122,9 +122,12 @@ export function registerObsidianRoutes(app: Express) {
         })
       );
 
+      // Verifica se deve forçar a criação de novos nós
+      const forceNew = req.body.forceNew === 'true' || req.body.forceNew === true;
+      
       // Processa e importa os arquivos
       const username = req.user?.username || 'anonymous';
-      const success = await obsidianService.importFromFiles(fileContents, username);
+      const success = await obsidianService.importFromFiles(fileContents, username, forceNew);
 
       // Limpa os arquivos temporários
       files.forEach(file => {

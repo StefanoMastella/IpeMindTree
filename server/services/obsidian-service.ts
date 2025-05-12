@@ -66,10 +66,18 @@ export class ObsidianService {
    * @param files Lista de arquivos com nome e conteúdo
    * @param username Nome do usuário que está realizando a importação
    */
-  async importFromFiles(files: { name: string, content: string }[], username: string): Promise<boolean> {
+  async importFromFiles(files: { name: string, content: string }[], username: string, forceNew: boolean = false): Promise<boolean> {
     try {
       // Processa os arquivos enviados
       const markdownFiles = obsidianImporter.processUploadedFiles(files);
+      
+      // Se forceNew é verdadeiro, adiciona um timestamp aos paths para garantir unicidade
+      if (forceNew) {
+        const timestamp = Date.now();
+        markdownFiles.forEach(file => {
+          file.path = `${file.path}_${timestamp}`;
+        });
+      }
       
       // Analisa os arquivos para extrair nós e links
       const { nodes, links } = obsidianImporter.parseObsidianData(markdownFiles);
