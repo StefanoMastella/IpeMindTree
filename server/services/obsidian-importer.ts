@@ -145,6 +145,7 @@ export class ObsidianImporter {
     const nodes: any[] = [];
     const linksMap = new Map<string, ObsidianLink[]>();
     const fileMap = new Map<string, MarkdownFile>();
+    const fileNodeMap = new Map<string, any>(); // Mapa para armazenar os nós criados por caminho
     
     // Primeiro passo: criar nós para cada arquivo
     files.forEach(file => {
