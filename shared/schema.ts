@@ -1,4 +1,4 @@
-import { pgTable, text, serial, integer, boolean, timestamp, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, serial, integer, boolean, timestamp, jsonb, doublePrecision } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
@@ -71,7 +71,9 @@ export const obsidian_links = pgTable("obsidian_links", {
   source_id: integer("source_id").references(() => obsidian_nodes.id).notNull(),
   target_id: integer("target_id").references(() => obsidian_nodes.id).notNull(),
   created_at: timestamp("created_at").defaultNow(),
-  strength: integer("strength")
+  strength: doublePrecision("strength").default(1),
+  type: text("type"),
+  metadata: jsonb("metadata")
 });
 
 // Resources table

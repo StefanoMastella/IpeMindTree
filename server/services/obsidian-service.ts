@@ -200,14 +200,20 @@ export class ObsidianService {
         const linkKey1 = `${link.source_id}-${link.target_id}`;
         const linkKey2 = `${link.target_id}-${link.source_id}`;
         
+        console.log(`Processando link: ${link.source_id} -> ${link.target_id} (tipo: ${link.type || 'desconhecido'})`);
+        
         if (!processedLinks.has(linkKey1) && !processedLinks.has(linkKey2)) {
           links.push({
             source: link.source_id,
             target: link.target_id,
-            value: link.strength || 1
+            value: link.strength || 1,
+            type: link.type || 'default'
           });
           
           processedLinks.add(linkKey1);
+          console.log(`Link adicionado: ${link.source_id} -> ${link.target_id}`);
+        } else {
+          console.log(`Link ignorado (duplicado): ${link.source_id} -> ${link.target_id}`);
         }
       });
     }
