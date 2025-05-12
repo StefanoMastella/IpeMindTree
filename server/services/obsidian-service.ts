@@ -306,29 +306,85 @@ export class ObsidianService {
       return "Nenhum dado do Obsidian disponível.";
     }
     
-    // Limita o número de nós para evitar contexto muito grande
-    const MAX_NODES = 20;
-    const topNodes = nodes.slice(0, MAX_NODES);
+    // Organiza os nós por tipo de conteúdo (baseado em tags)
+    const categorizedNodes = new Map<string, ObsidianNode[]>();
+    
+    // Categorias conhecidas para agrupar nós
+    const categories = ['project', 'note', 'concept', 'canvas', 'card', 'file', 'resource'];
+    
+    // Inicializa as categorias
+    categories.forEach(category => categorizedNodes.set(category, []));
+    
+    // Categoriza cada nó (um nó pode aparecer em múltiplas categorias)
+    nodes.forEach(node => {
+      let categorized = false;
+      
+      if (node.tags && node.tags.length > 0) {
+        for (const tag of node.tags) {
+          if (categories.includes(tag)) {
+            categorizedNodes.get(tag)?.push(node);
+            categorized = true;
+          }
+        }
+      }
+      
+      // Se não foi categorizado em nenhuma categoria específica, coloca em 'note'
+      if (!categorized) {
+        categorizedNodes.get('note')?.push(node);
+      }
+    });
     
     let context = `=== CONTEXTO DO OBSIDIAN (${nodes.length} arquivos) ===\n\n`;
     
-    topNodes.forEach((node, index) => {
-      context += `DOCUMENTO ${index + 1}: ${node.title}\n`;
-      context += `Tags: ${node.tags ? node.tags.join(', ') : 'nenhuma'}\n`;
-      
-      // Limita o conteúdo para evitar contexto muito grande
-      const MAX_CONTENT_LENGTH = 500;
-      let content = node.content;
-      if (content.length > MAX_CONTENT_LENGTH) {
-        content = content.substring(0, MAX_CONTENT_LENGTH) + '...';
+    // Adiciona um resumo das categorias
+    context += "## Resumo do conteúdo:\n";
+    categories.forEach(category => {
+      const categoryNodes = categorizedNodes.get(category) || [];
+      if (categoryNodes.length > 0) {
+        context += `- ${category.charAt(0).toUpperCase() + category.slice(1)}: ${categoryNodes.length} documentos\n`;
       }
-      
-      context += `Conteúdo: ${content}\n\n`;
     });
     
-    if (nodes.length > MAX_NODES) {
-      context += `... e mais ${nodes.length - MAX_NODES} documentos não mostrados aqui.\n`;
-    }
+    context += "\n## Documentos mais importantes:\n\n";
+    
+    // Limite de nós por categoria para manter o contexto gerenciável
+    const MAX_NODES_PER_CATEGORY = 5;
+    const MAX_CONTENT_LENGTH = 600;
+    
+    // Adiciona os nós mais importantes de cada categoria
+    categories.forEach(category => {
+      const categoryNodes = categorizedNodes.get(category) || [];
+      
+      if (categoryNodes.length > 0) {
+        context += `### ${category.toUpperCase()}:\n`;
+        
+        const nodesToShow = categoryNodes.slice(0, MAX_NODES_PER_CATEGORY);
+        
+        nodesToShow.forEach((node, index) => {
+          context += `DOCUMENTO ${category}-${index + 1}: ${node.title}\n`;
+          context += `ID: ${node.id}, Path: ${node.path || 'N/A'}\n`;
+          context += `Tags: ${node.tags ? node.tags.join(', ') : 'nenhuma'}\n`;
+          
+          // Limita o conteúdo para evitar contexto muito grande
+          let content = node.content || '';
+          if (content.length > MAX_CONTENT_LENGTH) {
+            content = content.substring(0, MAX_CONTENT_LENGTH) + '...';
+          }
+          
+          // Formata o conteúdo para ser mais claro
+          context += `Conteúdo: ${content.replace(/\n/g, ' ').replace(/\s+/g, ' ')}\n\n`;
+        });
+        
+        if (categoryNodes.length > MAX_NODES_PER_CATEGORY) {
+          context += `... e mais ${categoryNodes.length - MAX_NODES_PER_CATEGORY} documentos ${category} não mostrados aqui.\n\n`;
+        }
+      }
+    });
+    
+    // Adiciona uma nota sobre como usar as referências
+    context += "\n## Como usar as referências:\n";
+    context += "Quando responder ao usuário, você pode referenciar documentos específicos usando seu ID ou título.\n";
+    context += "Exemplo: 'De acordo com o documento PROJECT-1 (Título do documento)...'\n";
     
     return context;
   }

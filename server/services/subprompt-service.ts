@@ -11,21 +11,23 @@ interface SubpromptWithEmbedding extends Subprompt {
 // Subprompts em memória para uso em caso de falha do banco de dados
 const FALLBACK_SUBPROMPTS: {
   id: number;
-  name: string;
+  title: string;
   description: string;
   keywords: string[];
   content: string;
   branch: string;
   active: boolean;
+  category: string;
 }[] = [
   {
     id: 1,
-    name: "Governance Branch",
+    title: "Governance Branch",
     description: "Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain.",
     keywords: ["decentralized governance", "decision-making", "community participation", "resource allocation", "digital identity", "reputation", "dao", "voting", "consensus"],
     content: "You are now providing assistance in the Governance Branch domain. Used for tasks related to exploring and prototyping new governance systems for the city of the future, focusing on AI and blockchain. Focus on the following aspects: decentralized governance, decision-making, community participation, resource allocation, digital identity, reputation, dao, voting, consensus.",
     branch: "Governance",
-    active: true
+    active: true,
+    category: "branch"
   },
   {
     id: 2,
@@ -184,12 +186,34 @@ export class SubpromptService {
    * Carrega os subprompts de fallback (em memória) para o cache
    */
   private loadFallbackSubprompts(): void {
-    this.subpromptCache = FALLBACK_SUBPROMPTS.map(sp => ({
-      ...sp,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      embedding: [] // Os embeddings serão gerados sob demanda
-    }));
+    // Converte os fallback subprompts para o formato correto do banco de dados
+    this.subpromptCache = FALLBACK_SUBPROMPTS.map(sp => {
+      // Converte 'name' para 'title' para todos os subprompts que têm 'name' em vez de 'title'
+      const title = (sp as any).name || sp.title;
+      
+      // Para subprompts que usam 'sphere' em vez de 'branch'
+      const branch = sp.branch || (sp as any).sphere || null;
+      
+      // Cria um objeto que corresponde à estrutura do banco de dados
+      const formattedSubprompt: SubpromptWithEmbedding = {
+        id: sp.id,
+        title: title,
+        content: sp.content,
+        description: sp.description || null,
+        keywords: sp.keywords || null,
+        branch: branch,
+        category: sp.category || null,
+        user_id: null,
+        created_at: new Date(),
+        updated_at: new Date(),
+        usage_count: 0,
+        active: sp.active !== undefined ? sp.active : true,
+        embedding: [] // Os embeddings serão gerados sob demanda
+      };
+      
+      return formattedSubprompt;
+    });
+    
     this.lastCacheUpdate = new Date();
     console.log(`Loaded ${this.subpromptCache.length} fallback subprompts into cache`);
   }
@@ -478,10 +502,15 @@ export class SubpromptService {
     const scores = this.subpromptCache.map(subprompt => {
       let score = 0;
       
-      // Verifica se o nome da esfera existe e aparece na consulta
-      const sphereName = subprompt.sphere ? subprompt.sphere.toLowerCase() : '';
-      if (sphereName && query.includes(sphereName)) {
-        score += 5; // Pontuação alta se o nome da esfera estiver presente
+      // Verifica se o branch ou title existe e aparece na consulta
+      const branchName = subprompt.branch ? subprompt.branch.toLowerCase() : '';
+      if (branchName && query.includes(branchName)) {
+        score += 5; // Pontuação alta se o branch estiver presente
+      }
+      
+      const titleName = subprompt.title ? subprompt.title.toLowerCase() : '';
+      if (titleName && query.includes(titleName)) {
+        score += 5; // Pontuação alta se o título estiver presente
       }
       
       // Verifica palavras da descrição (se existir)
