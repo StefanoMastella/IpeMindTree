@@ -1,0 +1,42 @@
+Instruções de Implementação Técnica: MVP Visualização Rede Integrada IMT
+
+Para: Agente Técnico no Replit
+De: Ogma (Assistente de IA, representando a visão de Stéfano)
+Assunto: Implementação MVP do Sistema de Visualização Gráfica da Rede Integrada do Ipê Mind Tree para Apresentação Esta Semana
+
+Objetivo: Construir um MVP funcional do sistema de visualização gráfica. Este MVP deve exibir uma rede unificada de conhecimento do IMT, extraída de diversas fontes (incluindo Canvas e outras entradas no DB), organizada conceitualmente pelos domínios da Ipê City. A visualização não precisa replicar layouts específicos do Obsidian Canvas. Priorizar a simplicidade e a economia de recursos no Replit para uma apresentação rápida.
+
+Contexto Crucial: A estrutura de dados que você está construindo no backend (nós e arestas no PostgreSQL) será utilizada tanto para esta visualização quanto para alimentar o sistema RAG do chat do IMT. A precisão na extração de dados e a adição de metadados (domínios, categorias) são vitais para a funcionalidade de ambos os sistemas.
+
+Tarefas de Implementação (Ordem Prioritária para MVP):
+
+Backend - Extração e Unificação de Dados (Alta Prioridade):
+
+Aprimorar canvas-parser.ts: Modificar o parser para garantir a extração confiável de todos os nós (texto, arquivo, link, grupo - tratar grupos como nós simples por enquanto) e todas as arestas (links explícitos e implícitos [[wiki-style]]) dos arquivos .canvas. O foco é capturar a conectividade e os nós, não o layout visual ou a hierarquia complexa de grupos neste estágio. Lidar com o "obsidian import format error" para permitir o parsing bem-sucedido.
+Modificar obsidian-service.ts (getNetworkData): Atualizar esta função para puxar dados de todas as tabelas relevantes no PostgreSQL que contêm nós e links (ex: obsidian_nodes, tabelas de ideias soltas, projetos, etc.). Unificar esses dados em uma única estrutura de nodes e links no formato esperado pela API. Implementar um sistema para garantir um id único consistente para cada nó na estrutura unificada retornada pela API, independentemente da tabela de origem.
+Backend - Lógica de Inferência (Alta Prioridade - Essencial para Viz e RAG):
+
+Implementar Inferência de Domínio: Adicionar lógica no obsidian-service.ts para analisar cada nó (título, conteúdo, origem) e inferir a qual(is) domínio(s) conceitual(is) do IMT ele pertence (Governance, Health, Education, Finance, Technology, Community, Resources, Projects, Techno-Optimism, Ethics & Values, Acoustical Governance, DracoLogos). Usar heurísticas simples (ex: correspondência de palavras-chave, origem do dado, links para nós "âncora"). Armazenar o resultado como um array de strings no campo metadata do nó (ex: metadata.domains = ["education", "community"]). Esta informação é crucial para o RAG.
+Implementar Inferência de Categoria: Adicionar lógica no obsidian-service.ts para inferir a categoria principal de cada nó (Project, Idea, Note, Resource, Person, Concept, etc.), especialmente para nós sem tags explícitas. Usar heurísticas simples (ex: tipo de nó original do Canvas, origem do dado, padrões simples de texto no título/conteúdo). Armazenar o resultado como uma string única no campo metadata do nó (ex: metadata.inferred_category = "project"). Esta informação é crucial para a coloração visual e útil para o RAG.
+API - Exposição de Dados (Alta Prioridade):
+
+Modificar Endpoint /api/obsidian/network: Garantir que a resposta JSON para cada nó inclua:
+id (o ID único unificado)
+title
+group (extrair de metadata.inferred_category se existir, fallback para tags[0] ou 'uncategorized') - Usado para coloração.
+domains (extrair de metadata.domains - array de strings) - Usado para organização conceitual.
+Outros metadados relevantes do nó original que possam ser úteis para o RAG ou detalhes ao clicar.
+Frontend - Visualização Básica (Alta Prioridade):
+
+Adaptar Componente React Force Graph: Utilizar os dados fornecidos pela API /api/obsidian/network.
+Coloração: Usar o campo group para aplicar o esquema de cores existente (Project, Idea, etc.).
+Organização por Domínio: Implementar uma representação visual básica dos domínios usando o campo domains. Exemplos simples: colorir a borda do nó com a cor do domínio principal (se houver um esquema de cores para domínios), ou influenciar as forças do layout para tentar agrupar nós com domínios em comum (pode ser complexo, começar com algo simples). Não é necessário renderizar grupos visuais complexos ou replicar o layout do Canvas.
+Interatividade Básica: Manter funcionalidades existentes (zoom, pan, clique para ver detalhes básicos do nó).
+Fora do Escopo para Este MVP (Adiar):
+
+Otimizações avançadas de escalabilidade (carregamento progressivo, clustering dinâmico complexo).
+Diferenciação visual de tipos de conexão (além da linha cinza padrão).
+Replicação fiel do layout visual ou da hierarquia de grupos dos arquivos Canvas do Obsidian.
+Funcionalidades de edição visual do grafo.
+Meta: Ter um aplicativo funcional no Replit até [Data da Apresentação Esta Semana] que mostre a rede integrada, colorida por categoria e com alguma indicação visual dos domínios do IMT.
+

@@ -1,0 +1,19 @@
+Integração de Fontes de Dados:
+
+Como o obsidian-service.ts integra dados de diferentes fontes (nós/links de Canvas, ideias soltas, projetos importados, etc.) em uma única estrutura unificada de nós e arestas para a API /api/obsidian/network? Existe um identificador único consistente para nós de diferentes origens?
+Mapeamento para Domínios do IMT (Clusters Conceituais):
+
+Dado que as tags não são a principal forma de organização, como podemos associar os nós (de qualquer origem) a um ou mais dos domínios conceituais do IMT (Governance, Health, Education, etc.)? É possível implementar lógica no obsidian-service.ts para inferir essa associação com base no conteúdo, origem, ou links para nós "âncora" de cada domínio?
+Uma vez que um nó é associado a um domínio, como a API pode fornecer essa informação para que o frontend (React Force Graph) possa visualmente agrupar ou destacar nós pertencentes ao mesmo domínio (criando clusters conceituais, não necessariamente baseados no layout do Canvas)?
+Categorização e Coloração Unificada:
+
+O esquema de cores atual (Project, Idea, Note, etc.) é útil para tipos de conteúdo. Como o obsidian-service.ts determina esses tipos para nós que não vêm de arquivos .md com tags (ex: ideias soltas, nós de texto de Canvas)? A lógica de inferência baseada em conteúdo ou origem (mencionada antes) pode ser aplicada aqui de forma consistente para todas as fontes?
+Representação de Conexões (Arestas) na Rede Unificada:
+
+Como os diferentes tipos de conexões (links entre arquivos, links dentro de Canvas, possíveis links entre ideias soltas no DB) são unificados e representados como arestas na API? É possível adicionar metadados às arestas (ex: tipo de link, força) para que o frontend possa visualizá-los de forma diferenciada no futuro?
+Escalabilidade e Navegação em Grafos Grandes e Densos:
+
+Considerando que a rede incluirá todas as ideias e conexões, a performance do React Force Graph 2D para visualizar um grafo potencialmente muito grande e denso é uma preocupação. Quais otimizações (além das já mencionadas, como renderização por níveis ou filtragem server-side) são mais críticas para garantir que a navegação por essa rede integrada seja fluida?
+Importação de Canvas (Foco em Dados, Não Layout):
+
+Reiterando a importância dos Canvas como fonte de nós e links: Quais são os desafios técnicos específicos restantes para garantir que o canvasParser extraia confiavelmente todos os nós (incluindo texto e grupos como nós simples, se necessário) e todas as arestas (links internos e externos) de um arquivo Canvas, mesmo que a informação de layout e hierarquia de grupo não seja totalmente preservada na visualização final?

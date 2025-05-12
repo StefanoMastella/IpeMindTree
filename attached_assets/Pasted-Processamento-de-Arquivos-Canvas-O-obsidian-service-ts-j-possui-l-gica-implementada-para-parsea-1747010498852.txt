@@ -1,0 +1,22 @@
+Processamento de Arquivos Canvas:
+
+O obsidian-service.ts já possui lógica implementada para parsear e extrair nós (texto, arquivos, grupos) e arestas ([[links]] e conexões visuais) diretamente dos arquivos .canvas do Obsidian?
+Qual o formato de dados interno ou a estrutura do banco de dados (PostgreSQL) usada para armazenar a informação extraída de um Canvas, incluindo a hierarquia de grupos e as posições relativas dos nós?
+Tratamento do "obsidian import format error" para Canvas:
+
+Qual a natureza técnica específica do "obsidian import format error" ao tentar processar arquivos .canvas? É um problema de parsing do formato JSON/texto do Canvas, ou de mapeamento da estrutura complexa para o modelo de dados interno?
+Quais são os próximos passos técnicos planejados para resolver este erro e garantir a importação bem-sucedida da estrutura completa dos Canvas?
+Representação Visual de Grupos e Clusters (do Canvas):
+
+O React Force Graph 2D suporta a renderização de "group nodes" ou a criação de clusters visuais que correspondam aos grupos definidos dentro de um arquivo Canvas do Obsidian? Se sim, qual a estrutura de dados que a API (/api/obsidian/network) precisaria fornecer para que o frontend renderize esses grupos corretamente?
+É tecnicamente viável usar as posições (x, y) dos nós e grupos definidas no arquivo Canvas para influenciar ou fixar o layout inicial no React Force Graph 2D, em vez de depender exclusivamente do algoritmo de física de força?
+Categorização e Coloração sem Tags:
+
+Dado que as tags não são a principal forma de organização, como o obsidian-service.ts pode determinar a "categoria" ou o "tipo" de um nó extraído de um Canvas para aplicar o esquema de cores atual (Project, Idea, etc.)? É possível inferir a categoria com base no tipo de nó no Canvas (ex: um nó de arquivo .md vs um nó de texto), ou em sua localização dentro de um grupo específico?
+Existe a possibilidade técnica de implementar uma lógica no backend (obsidian-service.ts) que analise o conteúdo textual de um nó para sugerir ou atribuir uma categoria, caso não haja tags?
+Links entre Canvas:
+
+Como os [[links]] que apontam de um arquivo .canvas para outro arquivo .canvas são processados e representados na estrutura de dados da rede? Eles são tratados como arestas normais entre nós, ou há alguma representação especial para conexões entre "mapas"?
+Escalabilidade da Visualização com Estruturas de Canvas:
+
+A renderização de grafos com muitos nós e arestas, especialmente com a complexidade adicional de grupos e possíveis layouts pré-definidos do Canvas, apresenta desafios de performance para o React Force Graph 2D? Quais otimizações técnicas podem ser consideradas?
