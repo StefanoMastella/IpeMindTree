@@ -1,28 +1,17 @@
 // This file handles AI integration for tag generation and connection suggestions
-// Using OpenAI API for realistic tag generation and connection suggestions
+// Using Gemini API (server proxy) for tag generation and connection suggestions
 
-// Shared OpenAI API client setup
+// Shared API client setup
 const apiCall = async (prompt: string, responseFormat = "text") => {
   try {
-    const response = await fetch("https://api.openai.com/v1/chat/completions", {
+    // Chamando a rota proxy do Gemini API
+    const response = await fetch("/api/gemini-proxy", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo", // Using a more affordable model
-        messages: [
-          { 
-            role: "system", 
-            content: "You analyze ideas and provide tags and connections between them." 
-          },
-          { 
-            role: "user", 
-            content: prompt 
-          }
-        ],
-        ...(responseFormat === "json" && { response_format: { type: "json_object" } })
+        prompt: `${responseFormat === "json" ? "Please provide response in JSON format only. " : ""}${prompt}`
       })
     });
 
@@ -32,9 +21,10 @@ const apiCall = async (prompt: string, responseFormat = "text") => {
     }
     
     const data = await response.json();
-    return data.choices[0].message.content;
+    return data.text;
   } catch (error) {
-    console.error("Error calling OpenAI API:", error);
+    console.error("Error calling Gemini API:", error);
+    // Usamos fallback para garantir que funcione mesmo sem API
     return null;
   }
 };

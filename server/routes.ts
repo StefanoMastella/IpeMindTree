@@ -65,23 +65,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session && (req.session as any).userId || null;
       const username = req.user ? req.user.username : "Anonymous";
       
-      // Usar o Drizzle ORM em vez de SQL direto para evitar problemas com ID
-      const [newIdea] = await db.insert(ideas)
-        .values({
-          title,
-          content: description,
-          user_id: userId,
-          created_at: new Date(),
-          updated_at: new Date()
-        })
-        .returning();
+      // Usar SQL direto com SERIAL para garantir IDs únicos
+      const result = await pool.query(
+        "INSERT INTO ideas (title, content, user_id, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *",
+        [title, description, userId]
+      );
       
       res.status(201).json({
-        id: newIdea.id,
-        title: newIdea.title,
-        description: newIdea.content,
+        id: result.rows[0].id,
+        title: result.rows[0].title,
+        description: result.rows[0].content,
         author: username, 
-        createdAt: newIdea.created_at,
+        createdAt: result.rows[0].created_at,
         tags: tags || []
       });
     } catch (error) {
