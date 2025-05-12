@@ -296,6 +296,81 @@ export class ObsidianService {
   }
   
   /**
+   * Busca nós do Obsidian por título e/ou conteúdo
+   * Permite encontrar documentos mesmo quando estão aninhados em outros
+   * @param searchQuery Texto para buscar em títulos e conteúdo
+   * @param limit Limite de resultados (padrão 10)
+   */
+  async searchObsidianNodes(searchQuery: string, limit: number = 10): Promise<ObsidianNode[]> {
+    if (!searchQuery || searchQuery.trim() === '') {
+      return [];
+    }
+    
+    const allNodes = await storage.getAllObsidianNodes();
+    const normalizedQuery = searchQuery.toLowerCase().trim();
+    
+    // Pontuação para cada nó
+    const scoredNodes = allNodes.map(node => {
+      let score = 0;
+      
+      // Pontuação por correspondência exata no título (maior peso)
+      if (node.title.toLowerCase() === normalizedQuery) {
+        score += 100;
+      }
+      // Pontuação por correspondência parcial no título
+      else if (node.title.toLowerCase().includes(normalizedQuery)) {
+        score += 50;
+      }
+      
+      // Pontuação por correspondência no conteúdo
+      if (node.content && typeof node.content === 'string') {
+        // Correspondência exata no conteúdo
+        if (node.content.toLowerCase().includes(normalizedQuery)) {
+          score += 30;
+          
+          // Adiciona pontos extras baseado no número de ocorrências
+          const matches = node.content.toLowerCase().split(normalizedQuery).length - 1;
+          score += matches * 2;
+        }
+        
+        // Correspondência de palavras individuais da consulta
+        const queryWords = normalizedQuery.split(/\s+/).filter(word => word.length > 2);
+        for (const word of queryWords) {
+          if (node.content.toLowerCase().includes(word)) {
+            score += 5;
+          }
+          if (node.title.toLowerCase().includes(word)) {
+            score += 10;
+          }
+        }
+      }
+      
+      // Pontuação por tags relacionadas
+      if (node.tags && Array.isArray(node.tags)) {
+        for (const tag of node.tags) {
+          if (typeof tag === 'string' && tag.toLowerCase().includes(normalizedQuery)) {
+            score += 15;
+          }
+        }
+      }
+      
+      // Pontuação por path (menos relevante, mas ainda importante)
+      if (node.path && typeof node.path === 'string' && node.path.toLowerCase().includes(normalizedQuery)) {
+        score += 10;
+      }
+      
+      return { node, score };
+    });
+    
+    // Filtra resultados que têm score > 0 e ordena por pontuação
+    return scoredNodes
+      .filter(item => item.score > 0)
+      .sort((a, b) => b.score - a.score)
+      .slice(0, limit)
+      .map(item => item.node);
+  }
+  
+  /**
    * Enriquece o contexto do RAG com dados do Obsidian
    * Retorna um texto formatado com os dados mais relevantes do Obsidian
    */
@@ -385,6 +460,7 @@ export class ObsidianService {
     context += "\n## Como usar as referências:\n";
     context += "Quando responder ao usuário, você pode referenciar documentos específicos usando seu ID ou título.\n";
     context += "Exemplo: 'De acordo com o documento PROJECT-1 (Título do documento)...'\n";
+    context += "IMPORTANTE: Para buscar informações específicas como 'Rafa Castaneda', use todo o conteúdo disponível, incluindo documentos aninhados e seções dentro de documentos maiores.\n";
     
     return context;
   }

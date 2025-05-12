@@ -91,6 +91,65 @@ export class RagService {
   }
   
   /**
+   * Performs semantic search on Obsidian nodes to find relevant documents
+   * @param query The user's query
+   * @param limit Maximum number of results to return
+   */
+  async semanticSearchObsidian(query: string, limit: number = 5): Promise<string> {
+    try {
+      // Import obsidianService dynamically to avoid circular dependency
+      const { obsidianService } = await import('./obsidian-service');
+      
+      // Use obsidianService's searchObsidianNodes method
+      const relevantNodes = await obsidianService.searchObsidianNodes(query, limit);
+      
+      if (!relevantNodes || relevantNodes.length === 0) {
+        return "No relevant Obsidian documents found for this query.";
+      }
+      
+      // Format the results as context for the model
+      let searchContext = `## RELEVANT OBSIDIAN DOCUMENTS FOR THIS QUERY:\n\n`;
+      
+      relevantNodes.forEach((node, index) => {
+        searchContext += `DOCUMENT-${index + 1}: ${node.title}\n`;
+        searchContext += `ID: ${node.id}, Path: ${node.path || 'N/A'}\n`;
+        searchContext += `Tags: ${node.tags ? node.tags.join(', ') : 'none'}\n`;
+        
+        // Extract a relevant snippet (up to 300 chars)
+        let content = node.content || '';
+        if (content.length > 300) {
+          // Find a window of text that contains the query terms when possible
+          const normalizedQuery = query.toLowerCase();
+          const queryTerms = normalizedQuery.split(/\s+/).filter(term => term.length > 3);
+          
+          // Try to find a position where any of the query terms appear
+          let startPos = 0;
+          for (const term of queryTerms) {
+            const pos = content.toLowerCase().indexOf(term);
+            if (pos !== -1) {
+              // Start a bit before the term, but not less than 0
+              startPos = Math.max(0, pos - 50);
+              break;
+            }
+          }
+          
+          // Extract a snippet centered around that position
+          content = (startPos > 0 ? '...' : '') + 
+                    content.substring(startPos, startPos + 300) + 
+                    (content.length > startPos + 300 ? '...' : '');
+        }
+        
+        searchContext += `Content: ${content.replace(/\n/g, ' ').replace(/\s+/g, ' ')}\n\n`;
+      });
+      
+      return searchContext;
+    } catch (error) {
+      console.error("Error in semantic search:", error);
+      return "Error performing semantic search on Obsidian documents.";
+    }
+  }
+
+  /**
    * Query the RAG with a user question and conversation history
    * @param userQuestion The current user question
    * @param chatHistory Optional formatted chat history for context
@@ -108,10 +167,14 @@ export class RagService {
       const selectedBranchName = selectedSubprompt 
         ? selectedSubprompt.match(/You are now providing assistance in the (.+?) domain\./)?.[1] || ""
         : "";
-        
+
       // Get the base application context and current ideas context
       const baseMainPrompt = getMainPrompt();
       const ideasContext = await this.getIdeasContext();
+      
+      // Perform semantic search to find the most relevant Obsidian documents
+      console.log("Performing semantic search on Obsidian documents...");
+      const semanticSearchResults = await this.semanticSearchObsidian(userQuestion, 5);
       
       // Create the complete prompt for the model with more explicit instructions
       const fullPrompt = `
@@ -124,6 +187,8 @@ You do not need to mention the selected branch again in your response. If the qu
 
 ${ideasContext}
 
+${semanticSearchResults}
+
 ${this.obsidianContext}
 
 ${chatHistory ? `## Previous conversation history:
@@ -134,13 +199,13 @@ ${chatHistory}
 User question: ${userQuestion}
 
 Answer concisely and helpfully. Important:
-1. If the question relates to any Obsidian documents, mention them by ID and title (e.g., "According to DOCUMENT project-2: Project Title...")
-2. Use the Obsidian knowledge extensively to enrich your answers - this is the most important source of information.
-3. When referring to document content, be specific about which document you're using.
-4. If multiple documents contain relevant information, explicitly mention each one.
-5. If the question relates to the previous conversation, use that context to provide a more relevant answer.
-6. Prioritize the Obsidian context first, then ideas, and finally previous conversation history.
-7. If the question is not related to any of these sources, be open to other information but avoid diverging too much from the main prompt and the selected branch.
+1. For this specific question, focus on the RELEVANT OBSIDIAN DOCUMENTS section above, which contains documents semantically related to the user's query.
+2. If the question relates to any Obsidian documents, mention them by ID and title (e.g., "According to DOCUMENT-2: [Title]...")
+3. Use both the specifically retrieved documents AND the general Obsidian knowledge to enrich your answers.
+4. When referring to people like "Rafa Castaneda" or specific documents like "ÁgorafromCanvas.md", look for this information FIRST in the RELEVANT OBSIDIAN DOCUMENTS section where semantically similar content has been retrieved.
+5. If multiple documents contain relevant information, explicitly mention each one.
+6. If the question relates to the previous conversation, use that context to provide a more relevant answer.
+7. Prioritize the specific semantic search results first, then the general Obsidian context, then ideas, and finally previous conversation history.
 `;
       
       console.log("Calling Gemini API with" + (selectedSubprompt ? " selected subprompt..." : "out subprompt..."));
