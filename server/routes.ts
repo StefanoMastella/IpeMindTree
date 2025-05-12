@@ -65,11 +65,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session && (req.session as any).userId || null;
       const username = req.user ? req.user.username : "Anonymous";
       
-      // Usar SQL direto com SERIAL para garantir IDs únicos
+      // Usar SQL direto deixando o PostgreSQL gerar o ID via sequência
       const result = await pool.query(
         "INSERT INTO ideas (title, content, user_id, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *",
         [title, description, userId]
       );
+      
+      console.log("Ideia criada com sucesso:", result.rows[0]);
       
       res.status(201).json({
         id: result.rows[0].id,
