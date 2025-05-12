@@ -1,13 +1,14 @@
 import type { Express, Request, Response, NextFunction } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { pool } from "./db";
+import { pool, db } from "./db";
 import { setupAuthRoutes } from "./auth";
 import { callGeminiAPI } from "./llm-service";
 import { registerDatabaseRoutes } from "./routes/database-routes";
 import { registerChatRoutes } from "./routes/chat-routes";
 import { registerGeminiProxyRoutes } from "./routes/gemini-proxy-routes";
 import { registerObsidianRoutes } from "./routes/obsidian-routes";
+import { ideas } from "../shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Set up authentication routes
@@ -64,17 +65,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const userId = req.session && (req.session as any).userId || null;
       const username = req.user ? req.user.username : "Anonymous";
       
-      const result = await pool.query(
-        "INSERT INTO ideas (title, content, user_id, created_at, updated_at) VALUES ($1, $2, $3, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) RETURNING *",
-        [title, description, userId]
-      );
+      // Usar o Drizzle ORM em vez de SQL direto para evitar problemas com ID
+      const [newIdea] = await db.insert(ideas)
+        .values({
+          title,
+          content: description,
+          user_id: userId,
+          created_at: new Date(),
+          updated_at: new Date()
+        })
+        .returning();
       
       res.status(201).json({
-        id: result.rows[0].id,
-        title: result.rows[0].title,
-        description: result.rows[0].content,
+        id: newIdea.id,
+        title: newIdea.title,
+        description: newIdea.content,
         author: username, 
-        createdAt: result.rows[0].created_at,
+        createdAt: newIdea.created_at,
         tags: tags || []
       });
     } catch (error) {
