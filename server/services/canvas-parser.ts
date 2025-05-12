@@ -102,48 +102,112 @@ export class CanvasParser {
       const fileName = filePath.split('/').pop()?.replace('.canvas', '') || 'Untitled Canvas';
       
       // Converte nós do Canvas para nós do Obsidian
-      const nodes: any[] = canvasData.nodes.map(canvasNode => {
+      const nodes: any[] = [];
+      const nodePaths = new Map<string, string>(); // Mapeia ID do nó -> caminho do nó
+      
+      // Primeiro, extrair todos os nós
+      for (const canvasNode of canvasData.nodes) {
+        // Skip nós sem ID (não deveriam existir, mas por segurança)
+        if (!canvasNode.id) {
+          console.warn(`Nó sem ID encontrado em ${filePath}, ignorando...`);
+          continue;
+        }
+        
         // Determina o tipo de nó
-        let nodeType = canvasNode.type;
+        const nodeType = canvasNode.type || 'unknown';
         let nodeContent = '';
         let nodeTitle = '';
+        let sourcePath = ''; // Caminho de arquivo de origem para nós de tipo 'file'
+        
         // Array para categorias inferidas
         const inferredCategories: string[] = [];
         
         // Extrai conteúdo com base no tipo
-        if (canvasNode.type === 'text') {
+        if (nodeType === 'text') {
+          // Trata nós de texto
           nodeContent = canvasNode.text || '';
+          
+          // Busca por links wiki no texto
+          const wikiLinks: string[] = [];
+          const wikiLinkRegex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
+          let match;
+          
+          while ((match = wikiLinkRegex.exec(nodeContent)) !== null) {
+            wikiLinks.push(match[1].trim());
+          }
+          
           // Tenta extrair um título do texto (primeira linha ou primeiros caracteres)
-          nodeTitle = this.extractTitleFromText(nodeContent) || `Node ${canvasNode.id.substring(0, 6)}`;
+          nodeTitle = this.extractTitleFromText(nodeContent) || `Text Node ${canvasNode.id.substring(0, 6)}`;
           
           // Inferir categorias com base no texto
           inferredCategories.push(...this.inferCategoriesFromText(nodeContent));
-        } else if (canvasNode.type === 'file') {
-          nodeContent = `Reference to file: ${canvasNode.file}`;
-          nodeTitle = canvasNode.file?.split('/').pop() || `File Node ${canvasNode.id.substring(0, 6)}`;
+          
+          // Adiciona informação de links wiki encontrados nos metadados
+          if (wikiLinks.length > 0) {
+            console.log(`${wikiLinks.length} links wiki encontrados no nó de texto: ${nodeTitle}`);
+          }
+        } 
+        else if (nodeType === 'file') {
+          // Trata nós de arquivo
+          sourcePath = canvasNode.file || '';
+          nodeContent = `Reference to file: ${sourcePath}`;
+          
+          // Tenta extrair o nome do arquivo e a extensão
+          const filePathParts = sourcePath.split('/');
+          const fileName = filePathParts[filePathParts.length - 1] || '';
+          
+          nodeTitle = fileName || `File Node ${canvasNode.id.substring(0, 6)}`;
           
           // Inferir categorias com base no nome do arquivo
-          if (canvasNode.file) {
+          if (fileName) {
             // Se é um arquivo markdown, podemos inferir nota
-            if (canvasNode.file.endsWith('.md')) {
+            if (fileName.endsWith('.md')) {
               inferredCategories.push('note');
             }
+            // Se é um arquivo canvas
+            else if (fileName.endsWith('.canvas')) {
+              inferredCategories.push('project');
+            }
             // Se parece ser um arquivo de mídia
-            else if (/\.(jpe?g|png|gif|svg|mp[34]|wav)$/i.test(canvasNode.file)) {
+            else if (/\.(jpe?g|png|gif|svg|mp[34]|wav)$/i.test(fileName)) {
+              inferredCategories.push('resource');
+            }
+            // Se é um arquivo PDF ou outros documentos
+            else if (/\.(pdf|docx?|xlsx?|pptx?|csv|json)$/i.test(fileName)) {
               inferredCategories.push('resource');
             }
           }
-        } else if (canvasNode.type === 'link') {
-          nodeContent = `URL: ${canvasNode.url}`;
-          nodeTitle = canvasNode.text || canvasNode.url || `Link Node ${canvasNode.id.substring(0, 6)}`;
+        } 
+        else if (nodeType === 'link') {
+          // Trata nós de link (URL)
+          const url = canvasNode.url || '';
+          nodeContent = `URL: ${url}`;
+          nodeTitle = canvasNode.text || url || `Link Node ${canvasNode.id.substring(0, 6)}`;
           inferredCategories.push('reference');
-        } else if (canvasNode.type === 'group') {
+        } 
+        else if (nodeType === 'group') {
+          // Trata nós de grupo
           nodeContent = canvasNode.text || `Group containing multiple items`;
           nodeTitle = canvasNode.text || `Group ${canvasNode.id.substring(0, 6)}`;
           inferredCategories.push('project');
-        } else {
-          nodeContent = `Canvas node of type: ${canvasNode.type}`;
-          nodeTitle = `${canvasNode.type} Node ${canvasNode.id.substring(0, 6)}`;
+          
+          // Se o grupo contém filho, registra isso nos metadados
+          if (canvasNode.children && canvasNode.children.length > 0) {
+            console.log(`Grupo ${nodeTitle} contém ${canvasNode.children.length} nós filhos`);
+          }
+        } 
+        else if (nodeType === 'iframe') {
+          // Trata nós iframe/embed
+          const url = canvasNode.url || '';
+          nodeContent = `Embedded content from: ${url}`;
+          nodeTitle = canvasNode.text || url || `Embed ${canvasNode.id.substring(0, 6)}`;
+          inferredCategories.push('reference');
+        }
+        else {
+          // Tipo desconhecido
+          nodeContent = `Canvas node of type: ${nodeType}`;
+          nodeTitle = `${nodeType} Node ${canvasNode.id.substring(0, 6)}`;
+          console.warn(`Tipo de nó desconhecido: ${nodeType} em ${filePath}`);
         }
         
         // Define tags e categorias para o nó
@@ -158,39 +222,48 @@ export class CanvasParser {
           else if (nodeType === 'file') tags.push('resource');
           else if (nodeType === 'link') tags.push('reference');
           else if (nodeType === 'group') tags.push('project');
+          else if (nodeType === 'iframe') tags.push('reference');
           else tags.push('concept');
         }
         
         // Remove duplicatas de tags
-        const uniqueTags = [...new Set(tags)];
+        const uniqueTags = Array.from(new Set(tags));
         
         // Extrai possíveis domínios IMT do conteúdo
         const domains = this.inferDomainsFromContent(nodeContent, nodeTitle);
         
-        // Cria o nó Obsidian
-        return {
+        // Caminho único para este nó no banco de dados
+        const nodePath = `${filePath}#${canvasNode.id}`;
+        nodePaths.set(canvasNode.id, nodePath);
+        
+        // Cria o nó Obsidian com informações detalhadas
+        const obsidianNode = {
           title: nodeTitle,
           content: nodeContent,
-          path: `${filePath}#${canvasNode.id}`,
+          path: nodePath,
           tags: uniqueTags,
           sourceType: 'canvas',
           isImported: true,
           metadata: {
             canvasId: canvasNode.id,
-            canvasType: canvasNode.type,
+            canvasType: nodeType,
             position: canvasNode.position,
             dimensions: {
               width: canvasNode.width,
               height: canvasNode.height
             },
             color: canvasNode.color,
+            backgroundColor: canvasNode.backgroundColor,
+            fontSize: canvasNode.fontSize,
             parentCanvas: filePath,
-            nodeLabel: canvasNode.text || '',
-            inferred_category: inferredCategories[0] || (nodeType === 'text' ? 'note' : nodeType === 'group' ? 'project' : 'concept'),
-            domains: domains
+            inferred_category: inferredCategories.length > 0 ? inferredCategories[0] : null,
+            domains: domains,
+            sourcePath: sourcePath // Para nós de arquivo, guarda o caminho original
           }
         };
-      });
+        
+        nodes.push(obsidianNode);
+      }
       
       // Adiciona um nó para o próprio canvas
       nodes.unshift({
@@ -209,7 +282,31 @@ export class CanvasParser {
         }
       });
       
-      return { nodes, links: canvasData.edges };
+      // Processa as arestas com informações adicionais
+      const processedLinks = canvasData.edges.map(edge => {
+        // Encontrar os caminhos dos nós de origem e destino
+        const sourceNodePath = nodePaths.get(edge.fromNode);
+        const targetNodePath = nodePaths.get(edge.toNode);
+        
+        if (!sourceNodePath || !targetNodePath) {
+          console.warn(`Link com nós não encontrados: ${edge.id} (${edge.fromNode} -> ${edge.toNode})`);
+        }
+        
+        return {
+          ...edge,
+          // Adicionando metadados úteis para debugging e processamento
+          sourceNodePath,
+          targetNodePath,
+          linkType: edge.label ? 'labeled' : 'unlabeled',
+          linkStyle: edge.style || 'default',
+          linkStrength: edge.width ? (edge.width / 5) : 1 // Normaliza a força do link baseado na largura
+        };
+      });
+      
+      // Log insights sobre os links
+      console.log(`Canvas ${filePath}: ${nodes.length} nós extraídos (incluindo o arquivo), ${processedLinks.length} links processados`);
+      
+      return { nodes, links: processedLinks };
     } catch (error) {
       console.error('Erro ao analisar arquivo Canvas:', error);
       throw new Error(`Falha ao analisar arquivo Canvas: ${error instanceof Error ? error.message : String(error)}`);
@@ -221,108 +318,212 @@ export class CanvasParser {
    * @param content Conteúdo do arquivo markdown gerado pelo Canvas2Document
    * @param filePath Caminho do arquivo para referência
    */
-  parseCanvas2DocumentFile(content: string, filePath: string): { nodes: any[], links: { sourceId: string, targetId: string, type: string }[] } {
+  parseCanvas2DocumentFile(content: string, filePath: string): { nodes: any[], links: { sourceId: string, targetId: string, type: string, label?: string }[] } {
     try {
+      console.log(`Analisando arquivo Canvas2Document: ${filePath}`);
+      
+      // Verifica se o conteúdo é válido
+      if (!content || content.trim() === '') {
+        console.error(`Conteúdo vazio no arquivo Canvas2Document: ${filePath}`);
+        return { nodes: [], links: [] };
+      }
+      
       // Nós extraídos do arquivo convertido
       const nodes: any[] = [];
       
       // Links entre nós
-      const links: { sourceId: string, targetId: string, type: string }[] = [];
+      const links: { sourceId: string, targetId: string, type: string, label?: string }[] = [];
+      
+      // Mapeamento de IDs para caminhos completos
+      const nodePathMap = new Map<string, string>();
       
       // Regex para encontrar nós no formato Canvas2Document
       // Exemplo: # _card Título do Nó
       // node ^id_do_no
-      const nodeRegex = /# _(?:card|Media) ([^\n]+)\n(?:[^\n]+\n)?node \^([a-z0-9]+)/gm;
+      const nodeRegex = /# _(?:card|Media|File|Group|Link|iframe) ([^\n]+)\n(?:[^\n]+\n)?node \^([a-z0-9_-]+)/gm;
+      
+      // Regex para encontrar links explícitos do Obsidian em texto
+      const wikiLinkRegex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
       
       // Regex para encontrar links entre nós
       // Exemplo: > linking to: [[#^id_do_destino|Texto do Link]]
-      const linkRegex = /> linking to: \[\[#\^([a-z0-9]+)\|?([^\]]*)]]/gm;
-      // Regex para encontrar links recebidos (linked from)
-      const linkedFromRegex = /> linked from: \[\[#\^([a-z0-9]+)\|?([^\]]*)]]/gm;
+      const linkRegex = /> linking to: \[\[#\^([a-z0-9_-]+)\|?([^\]]*)]]/gm;
       
-      // Extrai nome do arquivo para o nó raiz
-      const fileName = filePath.split('/').pop()?.replace('_fromCanvas.md', '') || 'Untitled Canvas';
+      // Regex para encontrar links recebidos (linked from)
+      const linkedFromRegex = /> linked from: \[\[#\^([a-z0-9_-]+)\|?([^\]]*)]]/gm;
+      
+      // Extrai nome do arquivo para o nó raiz (removendo sufixos de canvas convertido)
+      const fileName = filePath.split('/').pop()?.replace(/(_fromCanvas\.md|\.md)$/, '') || 'Untitled Canvas';
       
       // Cria nó para o Canvas principal
-      nodes.push({
+      const rootNode = {
         title: fileName,
-        content: content,
+        content: `Canvas convertido para Markdown (${fileName})`,
         path: filePath,
-        tags: ['canvas', 'canvas2document'],
+        tags: ['canvas', 'canvas2document', 'project'],
         sourceType: 'canvas2document',
         isImported: true,
         metadata: {
-          isCanvasRoot: true
+          isCanvasRoot: true,
+          inferred_category: 'project',
+          domains: this.inferDomainsFromContent(fileName, fileName)
         }
-      });
+      };
       
-      // Extrai nós do formato Canvas2Document
-      let nodeMatch;
-      const idToPaths = new Map<string, string>();
+      nodes.push(rootNode);
       
-      while ((nodeMatch = nodeRegex.exec(content)) !== null) {
-        const nodeTitle = nodeMatch[1].trim();
-        const nodeId = nodeMatch[2];
+      // Extrai nós
+      let match;
+      const nodeMap = new Map<string, number>(); // Mapeia id -> index no array de nós
+      
+      while ((match = nodeRegex.exec(content)) !== null) {
+        const title = match[1].trim();
+        const id = match[2];
         
-        // Define o caminho para o nó
-        const nodePath = `${filePath}#^${nodeId}`;
-        idToPaths.set(nodeId, nodePath);
+        // Encontra o conteúdo do nó
+        const startPos = match.index + match[0].length;
+        let endPos = content.indexOf('# _', startPos);
+        if (endPos === -1) endPos = content.length;
         
-        // Extrai conteúdo do nó (texto entre o cabeçalho e o próximo nó)
-        // Encontra a posição de início do conteúdo
-        const contentStartPos = nodeMatch.index + nodeMatch[0].length;
+        // Extrai o conteúdo entre o cabeçalho do nó e o próximo nó
+        let nodeContent = content.substring(startPos, endPos).trim();
         
-        // Encontra a posição do próximo nó ou usa o final do arquivo
-        const nextNodeMatch = nodeRegex.exec(content);
-        nodeRegex.lastIndex = nodeMatch.index + 1; // Reset para não pular nós
+        // Remove marcações específicas do Canvas2Document
+        nodeContent = nodeContent.replace(/> (?:linking to|linked from): \[\[.+\]\]/g, '')
+          .replace(/^node \^[a-z0-9_-]+$/gm, '')
+          .trim();
         
-        const contentEndPos = nextNodeMatch ? nextNodeMatch.index : content.length;
-        let nodeContent = content.substring(contentStartPos, contentEndPos).trim();
+        // Infere tipo de nó com base no cabeçalho
+        let nodeType = 'note';
+        let inferredCategories: string[] = [];
+        
+        // Tenta detectar tipo de nó a partir do formato em markdown
+        const headerMatch = match[0].match(/# _(card|Media|File|Group|Link|iframe)/);
+        if (headerMatch) {
+          const typeInHeader = headerMatch[1].toLowerCase();
+          
+          if (typeInHeader === 'card') {
+            nodeType = 'text';
+            inferredCategories = this.inferCategoriesFromText(nodeContent);
+          } 
+          else if (typeInHeader === 'media' || typeInHeader === 'file') {
+            nodeType = 'file';
+            // Verifica extensão no título
+            if (title.match(/\.(md|txt|rtf)$/i)) {
+              inferredCategories.push('note');
+            } 
+            else if (title.match(/\.(canvas)$/i)) {
+              inferredCategories.push('project');
+            }
+            else if (title.match(/\.(jpe?g|png|gif|svg|mp[34]|wav|pdf)$/i)) {
+              inferredCategories.push('resource');
+            }
+          } 
+          else if (typeInHeader === 'group') {
+            nodeType = 'group';
+            inferredCategories.push('project');
+          } 
+          else if (typeInHeader === 'link' || typeInHeader === 'iframe') {
+            nodeType = typeInHeader;
+            inferredCategories.push('reference');
+          }
+        }
+        
+        // Procura por wiki links [[link]] no conteúdo
+        const wikiLinks: string[] = [];
+        let wikiMatch;
+        
+        while ((wikiMatch = wikiLinkRegex.exec(nodeContent)) !== null) {
+          const linkTarget = wikiMatch[1].trim();
+          wikiLinks.push(linkTarget);
+        }
+        
+        // Se não conseguimos inferir categoria, usamos o tipo como fallback
+        if (inferredCategories.length === 0) {
+          if (nodeType === 'text') inferredCategories.push('note');
+          else if (nodeType === 'file') inferredCategories.push('resource');
+          else if (nodeType === 'group') inferredCategories.push('project');
+          else if (nodeType === 'link' || nodeType === 'iframe') inferredCategories.push('reference');
+          else inferredCategories.push('concept');
+        }
+        
+        // Define tags com base no tipo e categorias
+        const tags = ['canvas', 'canvas2document', `canvas-${nodeType}`, ...inferredCategories];
+        // Remove duplicatas
+        const uniqueTags = Array.from(new Set(tags));
+        
+        // Caminho completo para o nó
+        const nodePath = `${filePath}#^${id}`;
+        nodePathMap.set(id, nodePath);
+        
+        // Extrai domínios do IMT
+        const domains = this.inferDomainsFromContent(nodeContent, title);
         
         // Cria o nó Obsidian
-        nodes.push({
-          title: nodeTitle,
+        const node = {
+          title,
           content: nodeContent,
           path: nodePath,
-          tags: ['canvas2document', 'canvas-node'],
+          tags: uniqueTags,
           sourceType: 'canvas2document',
           isImported: true,
           metadata: {
-            canvasId: nodeId,
-            parentCanvas: filePath
+            canvasId: id,
+            canvasType: nodeType,
+            inferred_category: inferredCategories[0] || 'concept',
+            domains,
+            foundWikiLinks: wikiLinks.length > 0 ? wikiLinks : undefined
           }
-        });
+        };
+        
+        // Adiciona o nó e registra sua posição
+        nodeMap.set(id, nodes.length);
+        nodes.push(node);
+        
+        // Adiciona links wiki encontrados no conteúdo
+        if (wikiLinks.length > 0) {
+          console.log(`${wikiLinks.length} links wiki encontrados no nó: ${title}`);
+          // Esses links serão processados posteriormente pelo obsidian-service
+        }
       }
       
-      // Reset regex lastIndex
-      nodeRegex.lastIndex = 0;
+      // Encontra links entre nós
+      // Reset do regex
+      linkRegex.lastIndex = 0;
       
-      // Processa os links encontrados
-      while ((nodeMatch = nodeRegex.exec(content)) !== null) {
-        const currentNodeId = nodeMatch[2];
-        const currentNodePath = idToPaths.get(currentNodeId) || '';
+      const processedLinks = new Set<string>(); // Evita links duplicados
+      
+      while ((match = linkRegex.exec(content)) !== null) {
+        const targetId = match[1];
+        const linkText = match[2] || '';
         
-        // Encontra links deste nó para outros nós
-        const endPosition = content.indexOf('# _', nodeMatch.index + 1) !== -1 
-            ? content.indexOf('# _', nodeMatch.index + 1) 
-            : content.length;
+        // Encontra o nó de origem
+        let sourceContent = content.substring(0, match.index);
+        const sourceNodeMatch = sourceContent.match(/node \^([a-z0-9_-]+)(?!.*node \^)/s);
         
-        nodeRegex.lastIndex = nodeMatch.index + 1; // Procura a partir da posição atual
-        const nodeContent = content.substring(nodeMatch.index, endPosition);
-        
-        let linkMatch;
-        
-        // Links para outros nós
-        while ((linkMatch = linkRegex.exec(nodeContent)) !== null) {
-          const targetNodeId = linkMatch[1];
-          const targetNodePath = idToPaths.get(targetNodeId) || '';
+        if (sourceNodeMatch) {
+          const sourceId = sourceNodeMatch[1];
+          const sourceNodePath = nodePathMap.get(sourceId);
+          const targetNodePath = nodePathMap.get(targetId);
           
-          if (targetNodePath) {
-            links.push({
-              sourceId: currentNodePath,
-              targetId: targetNodePath,
-              type: 'canvas-link'
-            });
+          if (sourceNodePath && targetNodePath) {
+            // Cria um ID único para o link
+            const linkId = `${sourceId}->${targetId}`;
+            
+            // Verifica se este link já foi processado
+            if (!processedLinks.has(linkId)) {
+              // Adiciona o link
+              links.push({
+                sourceId: sourceNodePath,
+                targetId: targetNodePath,
+                type: 'canvas',
+                label: linkText
+              });
+              
+              processedLinks.add(linkId);
+            }
+          } else {
+            console.warn(`Link com nós não encontrados: ${sourceId} -> ${targetId}`);
           }
         }
         
