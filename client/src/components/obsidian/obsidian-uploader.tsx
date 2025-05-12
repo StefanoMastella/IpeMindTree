@@ -6,12 +6,15 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useQueryClient } from '@tanstack/react-query';
 import { UploadIcon, LinkIcon } from 'lucide-react';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Label } from '@/components/ui/label';
 
 export default function ObsidianUploader() {
   const [files, setFiles] = useState<FileList | null>(null);
   const [url, setUrl] = useState('');
   const [isUploading, setIsUploading] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [forceNew, setForceNew] = useState(true); // Por padrão, força criação de novos nós
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -33,6 +36,9 @@ export default function ObsidianUploader() {
     for (let i = 0; i < files.length; i++) {
       formData.append('files', files[i]);
     }
+    
+    // Adiciona o parâmetro forceNew para controlar se novos nós devem ser criados
+    formData.append('forceNew', forceNew.toString());
     
     try {
       const response = await fetch('/api/obsidian/import', {
@@ -157,6 +163,16 @@ export default function ObsidianUploader() {
                   <p className="text-sm text-muted-foreground">
                     Selecione arquivos .md, .canvas ou .txt do Obsidian
                   </p>
+                </div>
+                <div className="flex items-center space-x-2 pt-2">
+                  <Checkbox 
+                    id="forceNew" 
+                    checked={forceNew}
+                    onCheckedChange={(checked) => setForceNew(checked as boolean)}
+                  />
+                  <Label htmlFor="forceNew" className="cursor-pointer">
+                    Forçar criação como novos nós (evita atualizações)
+                  </Label>
                 </div>
               </div>
               <Button 
