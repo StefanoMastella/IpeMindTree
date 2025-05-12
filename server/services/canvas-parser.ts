@@ -337,20 +337,25 @@ export class CanvasParser {
       // Mapeamento de IDs para caminhos completos
       const nodePathMap = new Map<string, string>();
       
-      // Regex para encontrar nós no formato Canvas2Document
-      // Exemplo: # _card Título do Nó
-      // node ^id_do_no
-      const nodeRegex = /# _(?:card|Media|File|Group|Link|iframe) ([^\n]+)\n(?:[^\n]+\n)?node \^([a-z0-9_-]+)/gm;
+      // Log para debug
+      console.log(`Processando arquivo Canvas2Document: ${filePath}`);
+      
+      // Regex expandida para encontrar nós no formato Canvas2Document com múltiplas variações
+      // Captura tanto padrões simples quanto com cabeçalhos de níveis diferentes
+      // Suporta _noteFile, _card e outros tipos
+      const nodeRegex = /(?:^|\n)(#+)\s+_((?:note(?:File)?|card|Media|File|Group|Link|iframe))\s+([^\n]+)(?:\n(?:[^\n]+\n)?node\s+\^([a-z0-9_-]+))?/gm;
       
       // Regex para encontrar links explícitos do Obsidian em texto
       const wikiLinkRegex = /\[\[(.*?)(?:\|(.*?))?\]\]/g;
       
-      // Regex para encontrar links entre nós
-      // Exemplo: > linking to: [[#^id_do_destino|Texto do Link]]
-      const linkRegex = /> linking to: \[\[#\^([a-z0-9_-]+)\|?([^\]]*)]]/gm;
+      // Regex para encontrar links entre nós - mais flexível com espaços e formatação
+      const linkRegex = />\s*linking\s+to:\s*\[\[(?:#\^)?([a-z0-9_-]+)(?:\|([^\]]*))?\]\]/gim;
       
-      // Regex para encontrar links recebidos (linked from)
-      const linkedFromRegex = /> linked from: \[\[#\^([a-z0-9_-]+)\|?([^\]]*)]]/gm;
+      // Regex para encontrar links recebidos - mais flexível com espaços e formatação
+      const linkedFromRegex = />\s*linked\s+from:\s*\[\[(?:#\^)?([a-z0-9_-]+)(?:\|([^\]]*))?\]\]/gim;
+      
+      // Regex para encontrar transcrições de arquivos (embeds)
+      const embedRegex = /\!\[\[([^\]]+)\]\]/g;
       
       // Extrai nome do arquivo para o nó raiz (removendo sufixos de canvas convertido)
       const fileName = filePath.split('/').pop()?.replace(/(_fromCanvas\.md|\.md)$/, '') || 'Untitled Canvas';
@@ -377,30 +382,41 @@ export class CanvasParser {
       const nodeMap = new Map<string, number>(); // Mapeia id -> index no array de nós
       
       while ((match = nodeRegex.exec(content)) !== null) {
-        const title = match[1].trim();
-        const id = match[2];
+        const headingLevel = match[1]; // # ou ## ou ###
+        const nodeTypeRaw = match[2]; // noteFile, card, etc.
+        const title = match[3].trim();
+        const id = match[4] || `auto_${Math.random().toString(36).substring(2, 10)}`;
+        
+        console.log(`Nó encontrado: tipo=${nodeTypeRaw}, título=${title}, id=${id}`);
         
         // Encontra o conteúdo do nó
         const startPos = match.index + match[0].length;
-        let endPos = content.indexOf('# _', startPos);
-        if (endPos === -1) endPos = content.length;
+        
+        // Busca o próximo cabeçalho de mesmo nível ou maior (# ou ##)
+        // A regex busca um ou mais # no início da linha
+        const nextHeaderRegex = new RegExp(`\\n${headingLevel[0]}{1,${headingLevel.length}} `, 'g');
+        nextHeaderRegex.lastIndex = startPos;
+        const nextHeaderMatch = nextHeaderRegex.exec(content);
+        
+        // Define o final do conteúdo como o próximo cabeçalho ou o final do arquivo
+        let endPos = nextHeaderMatch ? nextHeaderMatch.index : content.length;
         
         // Extrai o conteúdo entre o cabeçalho do nó e o próximo nó
         let nodeContent = content.substring(startPos, endPos).trim();
         
         // Remove marcações específicas do Canvas2Document
-        nodeContent = nodeContent.replace(/> (?:linking to|linked from): \[\[.+\]\]/g, '')
-          .replace(/^node \^[a-z0-9_-]+$/gm, '')
+        nodeContent = nodeContent
+          .replace(/>\s*(?:linking to|linked from):\s*\[\[.+?\]\]/g, '')
+          .replace(/^node\s+\^[a-z0-9_-]+$/gm, '')
+          .replace(/>\s*\[\!tip\]\s*link\s+navigation.+$/gm, '')  // Remove linhas de dica de navegação
           .trim();
         
-        // Infere tipo de nó com base no cabeçalho
+        // Infere tipo de nó com base no tipo declarado no cabeçalho
         let nodeType = 'note';
         let inferredCategories: string[] = [];
         
-        // Tenta detectar tipo de nó a partir do formato em markdown
-        const headerMatch = match[0].match(/# _(card|Media|File|Group|Link|iframe)/);
-        if (headerMatch) {
-          const typeInHeader = headerMatch[1].toLowerCase();
+        // Normaliza o tipo do nó
+        const typeInHeader = nodeTypeRaw.toLowerCase();
           
           if (typeInHeader === 'card') {
             nodeType = 'text';
@@ -427,7 +443,10 @@ export class CanvasParser {
             nodeType = typeInHeader;
             inferredCategories.push('reference');
           }
-        }
+          else if (typeInHeader === 'notefile') {
+            nodeType = 'file';
+            inferredCategories.push('note');
+          }
         
         // Procura por wiki links [[link]] no conteúdo
         const wikiLinks: string[] = [];

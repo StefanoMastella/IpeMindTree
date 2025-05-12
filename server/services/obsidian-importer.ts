@@ -119,13 +119,20 @@ export class ObsidianImporter {
       console.log(`Processando arquivo: ${file.name}, extensão: ${extension}, tamanho: ${file.content.length} caracteres`);
       
       if (extension === '.md') {
-        // Verifica se é um arquivo Canvas2Document 
+        // Detecta diferentes padrões de arquivos Canvas2Document
         const hasCanvas = file.content.includes('# Canvas');
+        const hasNoteFileHeading = file.content.includes('# _noteFile');
+        const hasCardHeading = file.content.includes('# _card');
         const hasUnderscoreHeading = file.content.includes('# _');
+        const hasCanvas2DocumentPlugin = file.content.includes('[Canvas2Document]');
         
-        console.log(`Arquivo .md: ${file.name}, hasCanvas: ${hasCanvas}, hasUnderscoreHeading: ${hasUnderscoreHeading}`);
+        console.log(`Arquivo .md: ${file.name}, hasCanvas: ${hasCanvas}, hasNoteFileHeading: ${hasNoteFileHeading}, hasCardHeading: ${hasCardHeading}, hasUnderscoreHeading: ${hasUnderscoreHeading}, hasCanvas2DocumentPlugin: ${hasCanvas2DocumentPlugin}`);
         
-        if (hasCanvas && hasUnderscoreHeading) {
+        // Verifica se algum dos padrões de Canvas2Document foi encontrado
+        if ((hasCanvas && hasUnderscoreHeading) || 
+            hasNoteFileHeading || 
+            hasCardHeading || 
+            hasCanvas2DocumentPlugin) {
           fileType = 'canvas2document';
           console.log(`Classificado como canvas2document: ${file.name}`);
         } else {
@@ -139,10 +146,17 @@ export class ObsidianImporter {
         console.log(`Classificado como texto: ${file.name}`);
       }
       
+      // Normaliza o nome do arquivo para evitar problemas com caracteres especiais
+      const normalizedFileName = file.name
+        .normalize('NFD') // Normaliza caracteres acentuados
+        .replace(/[\u0300-\u036f]/g, ''); // Remove acentos
+        
+      console.log(`Nome do arquivo normalizado: ${normalizedFileName} (original: ${file.name})`);
+      
       return {
         name: file.name,
         content: file.content,
-        path: `/${file.name}`,
+        path: `/${normalizedFileName}`, // Usa o nome normalizado para o caminho
         lastModified: new Date(),
         type: fileType
       };
