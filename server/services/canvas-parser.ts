@@ -499,7 +499,7 @@ export class CanvasParser {
         
         // Encontra o nó de origem
         let sourceContent = content.substring(0, match.index);
-        const sourceNodeMatch = sourceContent.match(/node \^([a-z0-9_-]+)(?!.*node \^)/s);
+        const sourceNodeMatch = sourceContent.match(/node \^([a-z0-9_-]+)(?!.*node \^)/);
         
         if (sourceNodeMatch) {
           const sourceId = sourceNodeMatch[1];
@@ -526,31 +526,50 @@ export class CanvasParser {
             console.warn(`Link com nós não encontrados: ${sourceId} -> ${targetId}`);
           }
         }
+      }
+      
+      // Faz o mesmo para links received, mas invertendo a direção
+      linkedFromRegex.lastIndex = 0;
+      
+      while ((match = linkedFromRegex.exec(content)) !== null) {
+        const sourceId = match[1]; // A origem do link é o nó que apontou para este
+        const linkText = match[2] || '';
         
-        // Links de outros nós (para bidirecionalidade)
-        while ((linkMatch = linkedFromRegex.exec(nodeContent)) !== null) {
-          const sourceNodeId = linkMatch[1];
-          const sourceNodePath = idToPaths.get(sourceNodeId) || '';
+        // Encontra o nó de destino (que é o atual)
+        let targetContent = content.substring(0, match.index);
+        const targetNodeMatch = targetContent.match(/node \^([a-z0-9_-]+)(?!.*node \^)/);
+        
+        if (targetNodeMatch) {
+          const targetId = targetNodeMatch[1];
           
-          if (sourceNodePath && currentNodePath) {
-            // Adiciona apenas se ainda não estiver mapeado em sentido contrário
-            const alreadyExists = links.some(l => 
-              l.sourceId === sourceNodePath && l.targetId === currentNodePath);
-              
-            if (!alreadyExists) {
+          const sourceNodePath = nodePathMap.get(sourceId);
+          const targetNodePath = nodePathMap.get(targetId);
+          
+          if (sourceNodePath && targetNodePath) {
+            // Cria um ID único para o link
+            const linkId = `${sourceId}->${targetId}`;
+            
+            // Verifica se este link já foi processado
+            if (!processedLinks.has(linkId)) {
+              // Adiciona o link
               links.push({
                 sourceId: sourceNodePath,
-                targetId: currentNodePath,
-                type: 'canvas-link'
+                targetId: targetNodePath,
+                type: 'canvas',
+                label: linkText
               });
+              
+              processedLinks.add(linkId);
             }
           }
         }
       }
       
+      console.log(`Canvas2Document ${filePath}: ${nodes.length} nós extraídos (incluindo o arquivo), ${links.length} links processados`);
+      
       return { nodes, links };
     } catch (error) {
-      console.error('Erro ao analisar arquivo Canvas2Document:', error);
+      console.error(`Erro ao analisar arquivo Canvas2Document ${filePath}:`, error);
       throw new Error(`Falha ao analisar arquivo Canvas2Document: ${error instanceof Error ? error.message : String(error)}`);
     }
   }
@@ -565,16 +584,16 @@ export class CanvasParser {
     
     // Se a primeira linha for um título markdown (# Título), remove os # iniciais
     if (firstLine.startsWith('#')) {
-      return firstLine.replace(/^#+\s*/, '');
+      return firstLine.replace(/^#+\s*/, '').trim();
     }
     
-    // Se a primeira linha for curta, usa-a como título
-    if (firstLine.length > 0 && firstLine.length <= 50) {
-      return firstLine;
+    // Se a primeira linha for muito longa, usa apenas as primeiras 50 caracteres
+    if (firstLine.length > 50) {
+      return firstLine.substring(0, 47) + '...';
     }
     
-    // Caso contrário, cria um título a partir dos primeiros caracteres
-    return text.substring(0, 40).trim() + (text.length > 40 ? '...' : '');
+    // Caso contrário, usa a primeira linha como está
+    return firstLine || 'Sem título';
   }
   
   /**
@@ -586,70 +605,57 @@ export class CanvasParser {
     const categories: string[] = [];
     const lowerText = text.toLowerCase();
     
-    // Procura por padrões específicos que sugerem diferentes categorias
+    // Busca por padrões que indicam tipo de conteúdo
     
-    // Projetos geralmente contêm certas palavras-chave de ação
-    if (
-      /\b(projeto|project|criar|create|desenvolver|develop|implementar|implement|construir|build|plano|plan)\b/i.test(lowerText) ||
-      text.includes('**Project**') || 
-      text.includes('# Project')
-    ) {
-      categories.push('project');
-    }
-    
-    // Ideias geralmente contêm padrões de brainstorming
-    if (
-      /\b(ideia|idea|conceito|concept|pensamento|thought|proposta|proposal)\b/i.test(lowerText) ||
-      /\b(what if|e se|podemos|could we|imagine)\b/i.test(lowerText) ||
-      text.includes('**Idea**') || 
-      text.includes('# Idea')
-    ) {
-      categories.push('idea');
-    }
-    
-    // Notas geralmente são informações ou observações
-    if (
-      /\b(nota|note|observação|observation|lembrete|reminder|anotação)\b/i.test(lowerText) ||
-      text.includes('**Note**') || 
-      text.includes('# Note')
-    ) {
-      categories.push('note');
-    }
-    
-    // Conceitos geralmente são definições ou explicações
-    if (
-      /\b(conceito|concept|definição|definition|teoria|theory|framework|estrutura)\b/i.test(lowerText) ||
-      text.includes('**Concept**') || 
-      text.includes('# Concept')
-    ) {
+    // Notas / Conceitos
+    if (lowerText.includes('conceito') || 
+        lowerText.includes('concept') || 
+        lowerText.includes('definição') || 
+        lowerText.includes('definition')) {
       categories.push('concept');
     }
     
-    // Pessoas geralmente contêm nomes ou referências a pessoas
-    if (
-      /\b(pessoa|person|perfil|profile|biografia|biography)\b/i.test(lowerText) ||
-      text.includes('**Person**') || 
-      text.includes('# Person')
-    ) {
+    // Projetos
+    if (lowerText.includes('projeto') || 
+        lowerText.includes('project') || 
+        lowerText.includes('tarefa') || 
+        lowerText.includes('task') || 
+        lowerText.includes('milestone')) {
+      categories.push('project');
+    }
+    
+    // Pessoas
+    if (lowerText.includes('pessoa') || 
+        lowerText.includes('person') || 
+        lowerText.includes('perfil') || 
+        lowerText.includes('profile') || 
+        lowerText.includes('@')) {
       categories.push('person');
     }
     
-    // Se for um termo especial do IMT, categorize como Sphere
-    if (
-      /\b(sphere|esfera|domínio|domain|área|area)\b/i.test(lowerText) ||
-      text.includes('Sphere') ||
-      text.includes('Esfera')
-    ) {
-      categories.push('sphere');
+    // Lugares
+    if (lowerText.includes('lugar') || 
+        lowerText.includes('place') || 
+        lowerText.includes('local') || 
+        lowerText.includes('location') || 
+        lowerText.includes('endereço') || 
+        lowerText.includes('address')) {
+      categories.push('place');
     }
     
-    // Finanças
-    if (
-      /\b(finance|finanças|finanças|economia|econômico|investimento|investment)\b/i.test(lowerText) ||
-      text.includes('Finance') ||
-      text.includes('Finanças')
-    ) {
-      categories.push('finance');
+    // Eventos
+    if (lowerText.includes('evento') || 
+        lowerText.includes('event') || 
+        lowerText.includes('reunião') || 
+        lowerText.includes('meeting') || 
+        lowerText.includes('data:') || 
+        lowerText.includes('date:')) {
+      categories.push('event');
+    }
+    
+    // Caso não tenha sido possível inferir uma categoria específica, assume como nota
+    if (categories.length === 0) {
+      categories.push('note');
     }
     
     return categories;
@@ -665,43 +671,58 @@ export class CanvasParser {
     const domains: string[] = [];
     const combinedText = `${title} ${content}`.toLowerCase();
     
-    // Mapeamento de palavras-chave para domínios do IMT
-    const domainKeywords: Record<string, string[]> = {
-      'governance': ['govern', 'policy', 'regulation', 'law', 'legal', 'rules', 'compliance'],
-      'health': ['health', 'medical', 'medicine', 'wellness', 'therapy', 'healthcare', 'patient'],
-      'education': ['education', 'learning', 'teaching', 'school', 'university', 'student', 'knowledge'],
-      'finance': ['finance', 'money', 'economic', 'investment', 'currency', 'banking', 'financial'],
-      'technology': ['technology', 'tech', 'digital', 'software', 'hardware', 'engineering', 'innovation'],
-      'community': ['community', 'social', 'society', 'network', 'people', 'collective', 'collaboration'],
-      'resources': ['resource', 'material', 'supply', 'sustainability', 'environment', 'ecological'],
-      'projects': ['project', 'initiative', 'plan', 'development', 'implementation', 'execution'],
-      'ethics': ['ethics', 'moral', 'values', 'principles', 'responsibility', 'integrity']
-    };
-    
-    // Verifica cada domínio
-    Object.entries(domainKeywords).forEach(([domain, keywords]) => {
-      // Se qualquer palavra-chave estiver presente, adiciona o domínio
-      if (keywords.some(keyword => combinedText.includes(keyword))) {
-        domains.push(domain);
-      }
-    });
-    
-    // Verificações especiais para domínios específicos do IMT
-    if (combinedText.includes('acoustical') || combinedText.includes('sound')) {
-      domains.push('acoustical_governance');
+    // Finanças
+    if (combinedText.includes('financ') || 
+        combinedText.includes('dinheiro') || 
+        combinedText.includes('money') || 
+        combinedText.includes('invest') || 
+        combinedText.includes('economia') || 
+        combinedText.includes('econom')) {
+      domains.push('finance');
     }
     
-    if (combinedText.includes('dracologos') || combinedText.includes('draco')) {
-      domains.push('dracologos');
+    // Saúde
+    if (combinedText.includes('saúde') || 
+        combinedText.includes('health') || 
+        combinedText.includes('medic') || 
+        combinedText.includes('bem-estar') || 
+        combinedText.includes('wellbeing') || 
+        combinedText.includes('wellness')) {
+      domains.push('health');
     }
     
-    if (combinedText.includes('optimism') || combinedText.includes('techno-optimism')) {
-      domains.push('techno_optimism');
+    // Tecnologia
+    if (combinedText.includes('tech') || 
+        combinedText.includes('tecnolog') || 
+        combinedText.includes('software') || 
+        combinedText.includes('hardware') || 
+        combinedText.includes('digital') || 
+        combinedText.includes('program')) {
+      domains.push('tech');
+    }
+    
+    // Conhecimento
+    if (combinedText.includes('conhecimento') || 
+        combinedText.includes('knowledge') || 
+        combinedText.includes('aprend') || 
+        combinedText.includes('learn') || 
+        combinedText.includes('estud') || 
+        combinedText.includes('stud')) {
+      domains.push('knowledge');
+    }
+    
+    // Criatividade
+    if (combinedText.includes('criativ') || 
+        combinedText.includes('creativ') || 
+        combinedText.includes('art') || 
+        combinedText.includes('design') || 
+        combinedText.includes('ideia') || 
+        combinedText.includes('idea')) {
+      domains.push('creativity');
     }
     
     return domains;
   }
 }
 
-// Cria uma instância única do serviço
 export const canvasParser = new CanvasParser();
