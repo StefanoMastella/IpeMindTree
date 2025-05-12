@@ -110,15 +110,40 @@ export function registerObsidianRoutes(app: Express) {
       if (!files || files.length === 0) {
         return res.status(400).json({ error: 'Nenhum arquivo enviado' });
       }
+      
+      // Log para debugging
+      console.log('Arquivos recebidos:', files.map(f => ({
+        originalname: f.originalname,
+        mimetype: f.mimetype,
+        size: f.size,
+        path: f.path
+      })));
 
       // Lê os arquivos enviados
       const fileContents = await Promise.all(
         files.map(async (file) => {
-          const content = fs.readFileSync(file.path, 'utf8');
-          return {
-            name: file.originalname,
-            content
-          };
+          try {
+            // Tentativa de leitura com UTF-8
+            const content = fs.readFileSync(file.path, 'utf8');
+            console.log(`Arquivo lido com sucesso: ${file.originalname} (${content.length} caracteres)`);
+            console.log(`Primeiros 100 caracteres: ${content.substring(0, 100)}`);
+            
+            return {
+              name: file.originalname,
+              content
+            };
+          } catch (error) {
+            console.error(`Erro ao ler arquivo ${file.originalname}:`, error);
+            // Tentar leitura como Buffer e depois converter
+            const buffer = fs.readFileSync(file.path);
+            const content = buffer.toString('utf8');
+            console.log(`Arquivo lido como buffer: ${file.originalname} (${content.length} caracteres)`);
+            
+            return {
+              name: file.originalname,
+              content
+            };
+          }
         })
       );
 

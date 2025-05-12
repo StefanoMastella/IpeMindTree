@@ -116,15 +116,27 @@ export class ObsidianImporter {
       const extension = path.extname(file.name).toLowerCase();
       let fileType: 'markdown' | 'canvas' | 'canvas2document' | 'text' = 'text';
       
+      console.log(`Processando arquivo: ${file.name}, extensão: ${extension}, tamanho: ${file.content.length} caracteres`);
+      
       if (extension === '.md') {
         // Verifica se é um arquivo Canvas2Document 
-        if (file.content.includes('# Canvas') && file.content.includes('# _')) {
+        const hasCanvas = file.content.includes('# Canvas');
+        const hasUnderscoreHeading = file.content.includes('# _');
+        
+        console.log(`Arquivo .md: ${file.name}, hasCanvas: ${hasCanvas}, hasUnderscoreHeading: ${hasUnderscoreHeading}`);
+        
+        if (hasCanvas && hasUnderscoreHeading) {
           fileType = 'canvas2document';
+          console.log(`Classificado como canvas2document: ${file.name}`);
         } else {
           fileType = 'markdown';
+          console.log(`Classificado como markdown normal: ${file.name}`);
         }
       } else if (extension === '.canvas') {
         fileType = 'canvas';
+        console.log(`Classificado como canvas: ${file.name}`);
+      } else {
+        console.log(`Classificado como texto: ${file.name}`);
       }
       
       return {
