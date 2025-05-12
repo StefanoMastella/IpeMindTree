@@ -148,7 +148,12 @@ export class ObsidianImporter {
     const fileNodeMap = new Map<string, any>(); // Mapa para armazenar os nós criados por caminho
     
     // Primeiro passo: criar nós para cada arquivo
-    files.forEach(file => {
+    // Variável para gerar IDs incrementais para os nós
+    let nextNodeId = 1;
+    
+    files.forEach((file, index) => {
+      // Armazenar temporariamente os nós criados com um ID simulado para facilitar a criação de links
+      // Quando salvarmos no banco, esses IDs serão substituídos pelos reais
       // Processa diferentemente com base no tipo de arquivo
       if (file.type === 'canvas') {
         try {
@@ -158,18 +163,23 @@ export class ObsidianImporter {
           // Adiciona todos os nós encontrados
           if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
             parsedCanvas.nodes.forEach(canvasNode => {
+              const nodePath = `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`;
               const node = {
                 title: canvasNode.title || `Nó Canvas: ${file.path}`,
                 content: canvasNode.content || '',
-                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                path: nodePath,
                 tags: canvasNode.tags || [],
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
-                }
+                },
+                id: nodeId++
               };
               nodes.push(node);
+              
+              // Armazena o nó no mapa para uso posterior na criação de links
+              fileNodeMap.set(nodePath, node);
             });
           }
         } catch (error) {
@@ -183,18 +193,23 @@ export class ObsidianImporter {
           // Adiciona todos os nós encontrados
           if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
             parsedCanvas.nodes.forEach(canvasNode => {
+              const nodePath = `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`;
               const node = {
                 title: canvasNode.title || `Nó Canvas2Doc: ${file.path}`,
                 content: canvasNode.content || '',
-                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                path: nodePath,
                 tags: canvasNode.tags || [],
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
-                }
+                },
+                id: nodeId++
               };
               nodes.push(node);
+              
+              // Armazena o nó no mapa para uso posterior na criação de links
+              fileNodeMap.set(nodePath, node);
             });
           }
         } catch (error) {
