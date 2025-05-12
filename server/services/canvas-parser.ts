@@ -13,10 +13,11 @@ export interface CanvasFile {
  */
 export interface CanvasNode {
   id: string;
-  type: string; // 'text', 'file', 'link', etc.
+  type: string; // 'text', 'file', 'link', 'group', etc.
   text?: string;
   file?: string;
   url?: string;
+  subpath?: string; // Referência a uma seção específica de um arquivo
   position: {
     x: number;
     y: number;
@@ -24,6 +25,10 @@ export interface CanvasNode {
   width: number;
   height: number;
   color?: string;
+  fontSize?: number;
+  backgroundColor?: string;
+  collapsed?: boolean; // Para nós de grupo
+  children?: string[]; // IDs dos nós filhos para grupos
 }
 
 /**
@@ -37,6 +42,8 @@ export interface CanvasEdge {
   toSide?: string;
   label?: string;
   color?: string;
+  width?: number;
+  style?: string; // 'solid', 'dashed', etc.
 }
 
 /**
@@ -50,18 +57,46 @@ export class CanvasParser {
    */
   parseCanvasFile(content: string, filePath: string): { nodes: any[], links: CanvasEdge[] } {
     try {
-      // Tenta fazer o parse do JSON
-      const canvasData = JSON.parse(content) as CanvasFile;
+      console.log(`Analisando arquivo Canvas: ${filePath}`);
+      
+      // Lida com casos onde o conteúdo pode estar vazio ou mal-formado
+      if (!content || content.trim() === '') {
+        console.error(`Conteúdo vazio no arquivo Canvas: ${filePath}`);
+        return { nodes: [], links: [] };
+      }
+      
+      // Tenta fazer o parse do JSON com tratamento robusto
+      let canvasData: CanvasFile;
+      try {
+        canvasData = JSON.parse(content) as CanvasFile;
+      } catch (parseError) {
+        console.error(`Erro ao analisar JSON do arquivo Canvas ${filePath}:`, parseError);
+        // Tenta remover possíveis caracteres de formatação indesejados
+        const cleanedContent = content
+          .replace(/^\ufeff/, '') // Remove BOM
+          .replace(/\\u[\dA-Fa-f]{4}/g, match => JSON.parse(`"${match}"`)); // Lida com escape de Unicode
+        
+        try {
+          canvasData = JSON.parse(cleanedContent) as CanvasFile;
+          console.log(`Parse JSON recuperado com sucesso após limpeza para: ${filePath}`);
+        } catch (secondError) {
+          console.error(`Falha definitiva ao analisar JSON do arquivo Canvas ${filePath} após tentativa de limpeza:`, secondError);
+          throw new Error(`Formato de arquivo Canvas inválido: ${secondError instanceof Error ? secondError.message : String(secondError)}`);
+        }
+      }
       
       // Valida a estrutura do arquivo
       if (!canvasData.nodes || !Array.isArray(canvasData.nodes)) {
-        throw new Error('Formato de Canvas inválido: nodes não encontrado ou não é um array');
+        console.error(`Formato inválido: 'nodes' não encontrado ou não é um array em ${filePath}`);
+        canvasData.nodes = [];
       }
       
       if (!canvasData.edges || !Array.isArray(canvasData.edges)) {
-        console.warn('Canvas sem edges/links');
+        console.log(`Canvas sem edges/links definidos em ${filePath}`);
         canvasData.edges = [];
       }
+      
+      console.log(`Canvas ${filePath} contém ${canvasData.nodes.length} nós e ${canvasData.edges.length} conexões`)
       
       // Extrai o nome do arquivo da path (sem extensão)
       const fileName = filePath.split('/').pop()?.replace('.canvas', '') || 'Untitled Canvas';
