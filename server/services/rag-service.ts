@@ -133,10 +133,14 @@ ${chatHistory}
 
 User question: ${userQuestion}
 
-Answer concisely and helpfully. If the question involves specific ideas or Obsidian documents, mention them by the name.
-Use Obsidian knowledge when relevant to enrich your answers.
-If the question relates to the previous conversation, use that context to provide a more relevant answer.
-Prioritize the ideias, Obsidian context, and previous conversation history when answering the question. If the question is not related to these, be open to other sources of information. But avoid diverging too much from the main prompt and the selected branch.
+Answer concisely and helpfully. Important:
+1. If the question relates to any Obsidian documents, mention them by ID and title (e.g., "According to DOCUMENT project-2: Project Title...")
+2. Use the Obsidian knowledge extensively to enrich your answers - this is the most important source of information.
+3. When referring to document content, be specific about which document you're using.
+4. If multiple documents contain relevant information, explicitly mention each one.
+5. If the question relates to the previous conversation, use that context to provide a more relevant answer.
+6. Prioritize the Obsidian context first, then ideas, and finally previous conversation history.
+7. If the question is not related to any of these sources, be open to other information but avoid diverging too much from the main prompt and the selected branch.
 `;
       
       console.log("Calling Gemini API with" + (selectedSubprompt ? " selected subprompt..." : "out subprompt..."));
