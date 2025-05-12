@@ -8,6 +8,51 @@ import { ObsidianNode, ObsidianLink, ImportLog } from '@shared/schema';
  */
 export class ObsidianService {
   /**
+   * Infere possíveis domínios do IMT com base no nó
+   * @param node Nó do Obsidian
+   * @returns Array de domínios inferidos
+   */
+  private inferDomainsFromNode(node: ObsidianNode): string[] {
+    const domains: string[] = [];
+    const combinedText = `${node.title} ${node.content || ''}`.toLowerCase();
+    
+    // Mapeamento de palavras-chave para domínios do IMT
+    const domainKeywords: Record<string, string[]> = {
+      'governance': ['govern', 'policy', 'regulation', 'law', 'legal', 'rules', 'compliance'],
+      'health': ['health', 'medical', 'medicine', 'wellness', 'therapy', 'healthcare', 'patient'],
+      'education': ['education', 'learning', 'teaching', 'school', 'university', 'student', 'knowledge'],
+      'finance': ['finance', 'money', 'economic', 'investment', 'currency', 'banking', 'financial'],
+      'technology': ['technology', 'tech', 'digital', 'software', 'hardware', 'engineering', 'innovation'],
+      'community': ['community', 'social', 'society', 'network', 'people', 'collective', 'collaboration'],
+      'resources': ['resource', 'material', 'supply', 'sustainability', 'environment', 'ecological'],
+      'projects': ['project', 'initiative', 'plan', 'development', 'implementation', 'execution'],
+      'ethics': ['ethics', 'moral', 'values', 'principles', 'responsibility', 'integrity']
+    };
+    
+    // Verifica cada domínio
+    Object.entries(domainKeywords).forEach(([domain, keywords]) => {
+      // Se qualquer palavra-chave estiver presente, adiciona o domínio
+      if (keywords.some(keyword => combinedText.includes(keyword))) {
+        domains.push(domain);
+      }
+    });
+    
+    // Verificações especiais para domínios específicos do IMT
+    if (combinedText.includes('acoustical') || combinedText.includes('sound')) {
+      domains.push('acoustical_governance');
+    }
+    
+    if (combinedText.includes('dracologos') || combinedText.includes('draco')) {
+      domains.push('dracologos');
+    }
+    
+    if (combinedText.includes('optimism') || combinedText.includes('techno-optimism')) {
+      domains.push('techno_optimism');
+    }
+    
+    return domains;
+  }
+  /**
    * Importa arquivos do Obsidian a partir de uma URL de download
    * @param downloadUrl URL para download dos arquivos
    * @param username Nome do usuário que está realizando a importação
@@ -75,37 +120,99 @@ export class ObsidianService {
   async getNetworkData(): Promise<{nodes: any[], links: any[]}> {
     const obsidianNodes = await storage.getAllObsidianNodes();
     
+    console.log(`Formatando ${obsidianNodes.length} nós para visualização de rede`);
+    
     // Formata os nós para visualização
-    const nodes = obsidianNodes.map(node => ({
-      id: node.id,
-      title: node.title,
-      tags: node.tags,
-      group: node.tags && node.tags.length > 0 ? node.tags[0] : 'uncategorized'
-    }));
+    const nodes = obsidianNodes.map(node => {
+      // Determinar o grupo (categoria) para coloração do nó
+      let group = 'uncategorized';
+      
+      // Primeiro tenta usar a categoria inferida armazenada nos metadados
+      if (node.metadata && typeof node.metadata === 'object') {
+        const metadata = node.metadata as any;
+        if (metadata.inferred_category) {
+          group = metadata.inferred_category;
+        }
+      }
+      
+      // Se não tiver categoria inferida, usa a primeira tag
+      if (group === 'uncategorized' && node.tags && node.tags.length > 0) {
+        // Verifica se alguma tag corresponde a categorias conhecidas
+        const validCategories = [
+          'project', 'idea', 'note', 'concept', 'person', 
+          'resource', 'finance', 'sphere', 'task', 'article'
+        ];
+        
+        // Procura pela primeira tag que seja uma categoria válida
+        const categoryTag = node.tags.find(tag => validCategories.includes(tag));
+        if (categoryTag) {
+          group = categoryTag;
+        } else {
+          // Se não encontrou categoria válida, usa a primeira tag
+          group = node.tags[0];
+        }
+      }
+      
+      // Tenta inferir domínios com base no título e conteúdo
+      let domains: string[] = [];
+      if (node.metadata && typeof node.metadata === 'object') {
+        const metadata = node.metadata as any;
+        if (metadata.domains && Array.isArray(metadata.domains)) {
+          domains = metadata.domains;
+        }
+      }
+      
+      // Se não tiver domínios inferidos, tenta inferir agora
+      if (domains.length === 0) {
+        domains = this.inferDomainsFromNode(node);
+      }
+      
+      return {
+        id: node.id,
+        title: node.title,
+        tags: node.tags,
+        group: group,
+        domains: domains
+      };
+    });
     
     // Coleta todos os links
     const links: any[] = [];
     const processedLinks = new Set<string>();
+    let processedCount = 0;
+    
+    console.log(`Buscando links para ${obsidianNodes.length} nós`);
     
     for (const node of obsidianNodes) {
       const nodeLinks = await storage.getObsidianLinks(node.id);
+      processedCount++;
+      
+      if (processedCount % 10 === 0) {
+        console.log(`Processados links de ${processedCount}/${obsidianNodes.length} nós`);
+      }
+      
+      if (nodeLinks.length > 0) {
+        console.log(`Nó ${node.id} (${node.title}) tem ${nodeLinks.length} links`);
+      }
       
       nodeLinks.forEach(link => {
         // Evita duplicação de links bidirecionais
-        const linkKey1 = `${link.sourceId}-${link.targetId}`;
-        const linkKey2 = `${link.targetId}-${link.sourceId}`;
+        const linkKey1 = `${link.source_id}-${link.target_id}`;
+        const linkKey2 = `${link.target_id}-${link.source_id}`;
         
         if (!processedLinks.has(linkKey1) && !processedLinks.has(linkKey2)) {
           links.push({
-            source: link.sourceId,
-            target: link.targetId,
-            value: 1
+            source: link.source_id,
+            target: link.target_id,
+            value: link.strength || 1
           });
           
           processedLinks.add(linkKey1);
         }
       });
     }
+    
+    console.log(`Retornando grafo com ${nodes.length} nós e ${links.length} links`);
     
     return { nodes, links };
   }

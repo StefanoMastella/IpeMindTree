@@ -72,29 +72,72 @@ export class CanvasParser {
         let nodeType = canvasNode.type;
         let nodeContent = '';
         let nodeTitle = '';
+        // Array para categorias inferidas
+        const inferredCategories: string[] = [];
         
         // Extrai conteúdo com base no tipo
         if (canvasNode.type === 'text') {
           nodeContent = canvasNode.text || '';
           // Tenta extrair um título do texto (primeira linha ou primeiros caracteres)
           nodeTitle = this.extractTitleFromText(nodeContent) || `Node ${canvasNode.id.substring(0, 6)}`;
+          
+          // Inferir categorias com base no texto
+          inferredCategories.push(...this.inferCategoriesFromText(nodeContent));
         } else if (canvasNode.type === 'file') {
           nodeContent = `Reference to file: ${canvasNode.file}`;
           nodeTitle = canvasNode.file?.split('/').pop() || `File Node ${canvasNode.id.substring(0, 6)}`;
+          
+          // Inferir categorias com base no nome do arquivo
+          if (canvasNode.file) {
+            // Se é um arquivo markdown, podemos inferir nota
+            if (canvasNode.file.endsWith('.md')) {
+              inferredCategories.push('note');
+            }
+            // Se parece ser um arquivo de mídia
+            else if (/\.(jpe?g|png|gif|svg|mp[34]|wav)$/i.test(canvasNode.file)) {
+              inferredCategories.push('resource');
+            }
+          }
         } else if (canvasNode.type === 'link') {
           nodeContent = `URL: ${canvasNode.url}`;
           nodeTitle = canvasNode.text || canvasNode.url || `Link Node ${canvasNode.id.substring(0, 6)}`;
+          inferredCategories.push('reference');
+        } else if (canvasNode.type === 'group') {
+          nodeContent = canvasNode.text || `Group containing multiple items`;
+          nodeTitle = canvasNode.text || `Group ${canvasNode.id.substring(0, 6)}`;
+          inferredCategories.push('project');
         } else {
           nodeContent = `Canvas node of type: ${canvasNode.type}`;
           nodeTitle = `${canvasNode.type} Node ${canvasNode.id.substring(0, 6)}`;
         }
+        
+        // Define tags e categorias para o nó
+        const tags = ['canvas', `canvas-${nodeType}`];
+        
+        // Adiciona categoria inferida se houver
+        if (inferredCategories.length > 0) {
+          tags.push(...inferredCategories);
+        } else {
+          // Se não conseguimos inferir categoria, usamos o tipo de nó como fallback
+          if (nodeType === 'text') tags.push('note');
+          else if (nodeType === 'file') tags.push('resource');
+          else if (nodeType === 'link') tags.push('reference');
+          else if (nodeType === 'group') tags.push('project');
+          else tags.push('concept');
+        }
+        
+        // Remove duplicatas de tags
+        const uniqueTags = [...new Set(tags)];
+        
+        // Extrai possíveis domínios IMT do conteúdo
+        const domains = this.inferDomainsFromContent(nodeContent, nodeTitle);
         
         // Cria o nó Obsidian
         return {
           title: nodeTitle,
           content: nodeContent,
           path: `${filePath}#${canvasNode.id}`,
-          tags: ['canvas', `canvas-${nodeType}`],
+          tags: uniqueTags,
           sourceType: 'canvas',
           isImported: true,
           metadata: {
@@ -107,7 +150,9 @@ export class CanvasParser {
             },
             color: canvasNode.color,
             parentCanvas: filePath,
-            nodeLabel: canvasNode.text || ''
+            nodeLabel: canvasNode.text || '',
+            inferred_category: inferredCategories[0] || (nodeType === 'text' ? 'note' : nodeType === 'group' ? 'project' : 'concept'),
+            domains: domains
           }
         };
       });
@@ -117,13 +162,15 @@ export class CanvasParser {
         title: fileName,
         content: `Canvas file with ${canvasData.nodes.length} nodes and ${canvasData.edges.length} connections.`,
         path: filePath,
-        tags: ['canvas', 'canvas-file'],
+        tags: ['canvas', 'canvas-file', 'project'],
         sourceType: 'canvas',
         isImported: true,
         metadata: {
           isCanvasRoot: true,
           nodesCount: canvasData.nodes.length,
-          edgesCount: canvasData.edges.length
+          edgesCount: canvasData.edges.length,
+          inferred_category: 'project',
+          domains: this.inferDomainsFromContent(fileName, fileName)
         }
       });
       
@@ -292,6 +339,131 @@ export class CanvasParser {
     
     // Caso contrário, cria um título a partir dos primeiros caracteres
     return text.substring(0, 40).trim() + (text.length > 40 ? '...' : '');
+  }
+  
+  /**
+   * Infere categorias com base no texto do nó
+   * @param text Texto do nó
+   * @returns Array de categorias inferidas
+   */
+  private inferCategoriesFromText(text: string): string[] {
+    const categories: string[] = [];
+    const lowerText = text.toLowerCase();
+    
+    // Procura por padrões específicos que sugerem diferentes categorias
+    
+    // Projetos geralmente contêm certas palavras-chave de ação
+    if (
+      /\b(projeto|project|criar|create|desenvolver|develop|implementar|implement|construir|build|plano|plan)\b/i.test(lowerText) ||
+      text.includes('**Project**') || 
+      text.includes('# Project')
+    ) {
+      categories.push('project');
+    }
+    
+    // Ideias geralmente contêm padrões de brainstorming
+    if (
+      /\b(ideia|idea|conceito|concept|pensamento|thought|proposta|proposal)\b/i.test(lowerText) ||
+      /\b(what if|e se|podemos|could we|imagine)\b/i.test(lowerText) ||
+      text.includes('**Idea**') || 
+      text.includes('# Idea')
+    ) {
+      categories.push('idea');
+    }
+    
+    // Notas geralmente são informações ou observações
+    if (
+      /\b(nota|note|observação|observation|lembrete|reminder|anotação)\b/i.test(lowerText) ||
+      text.includes('**Note**') || 
+      text.includes('# Note')
+    ) {
+      categories.push('note');
+    }
+    
+    // Conceitos geralmente são definições ou explicações
+    if (
+      /\b(conceito|concept|definição|definition|teoria|theory|framework|estrutura)\b/i.test(lowerText) ||
+      text.includes('**Concept**') || 
+      text.includes('# Concept')
+    ) {
+      categories.push('concept');
+    }
+    
+    // Pessoas geralmente contêm nomes ou referências a pessoas
+    if (
+      /\b(pessoa|person|perfil|profile|biografia|biography)\b/i.test(lowerText) ||
+      text.includes('**Person**') || 
+      text.includes('# Person')
+    ) {
+      categories.push('person');
+    }
+    
+    // Se for um termo especial do IMT, categorize como Sphere
+    if (
+      /\b(sphere|esfera|domínio|domain|área|area)\b/i.test(lowerText) ||
+      text.includes('Sphere') ||
+      text.includes('Esfera')
+    ) {
+      categories.push('sphere');
+    }
+    
+    // Finanças
+    if (
+      /\b(finance|finanças|finanças|economia|econômico|investimento|investment)\b/i.test(lowerText) ||
+      text.includes('Finance') ||
+      text.includes('Finanças')
+    ) {
+      categories.push('finance');
+    }
+    
+    return categories;
+  }
+  
+  /**
+   * Infere possíveis domínios do IMT com base no conteúdo
+   * @param content Conteúdo do nó
+   * @param title Título do nó
+   * @returns Array de domínios inferidos
+   */
+  private inferDomainsFromContent(content: string, title: string): string[] {
+    const domains: string[] = [];
+    const combinedText = `${title} ${content}`.toLowerCase();
+    
+    // Mapeamento de palavras-chave para domínios do IMT
+    const domainKeywords: Record<string, string[]> = {
+      'governance': ['govern', 'policy', 'regulation', 'law', 'legal', 'rules', 'compliance'],
+      'health': ['health', 'medical', 'medicine', 'wellness', 'therapy', 'healthcare', 'patient'],
+      'education': ['education', 'learning', 'teaching', 'school', 'university', 'student', 'knowledge'],
+      'finance': ['finance', 'money', 'economic', 'investment', 'currency', 'banking', 'financial'],
+      'technology': ['technology', 'tech', 'digital', 'software', 'hardware', 'engineering', 'innovation'],
+      'community': ['community', 'social', 'society', 'network', 'people', 'collective', 'collaboration'],
+      'resources': ['resource', 'material', 'supply', 'sustainability', 'environment', 'ecological'],
+      'projects': ['project', 'initiative', 'plan', 'development', 'implementation', 'execution'],
+      'ethics': ['ethics', 'moral', 'values', 'principles', 'responsibility', 'integrity']
+    };
+    
+    // Verifica cada domínio
+    Object.entries(domainKeywords).forEach(([domain, keywords]) => {
+      // Se qualquer palavra-chave estiver presente, adiciona o domínio
+      if (keywords.some(keyword => combinedText.includes(keyword))) {
+        domains.push(domain);
+      }
+    });
+    
+    // Verificações especiais para domínios específicos do IMT
+    if (combinedText.includes('acoustical') || combinedText.includes('sound')) {
+      domains.push('acoustical_governance');
+    }
+    
+    if (combinedText.includes('dracologos') || combinedText.includes('draco')) {
+      domains.push('dracologos');
+    }
+    
+    if (combinedText.includes('optimism') || combinedText.includes('techno-optimism')) {
+      domains.push('techno_optimism');
+    }
+    
+    return domains;
   }
 }
 

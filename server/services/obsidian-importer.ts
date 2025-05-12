@@ -227,18 +227,72 @@ export class ObsidianImporter {
         try {
           // Para arquivos Canvas, usamos os links já definidos no arquivo
           const parsedCanvas = canvasParser.parseCanvasFile(file.content, file.path);
+          
+          // Processa as arestas do Canvas (links visuais)
           if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            console.log(`Processando ${parsedCanvas.links.length} links do Canvas ${file.path}`);
+            
             parsedCanvas.links.forEach(canvasLink => {
+              const sourceId = `${file.path}#${canvasLink.fromNode}`;
+              const targetId = `${file.path}#${canvasLink.toNode}`;
+              
+              // Cria o link
               const link: ObsidianLink = {
-                source_id: `${file.path}#${canvasLink.fromNode}`,
-                target_id: `${file.path}#${canvasLink.toNode}`,
+                source_id: sourceId,
+                target_id: targetId,
                 strength: 2
               };
               
               // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(link.source_id) || [];
+              const sourceLinks = linksMap.get(sourceId) || [];
               sourceLinks.push(link);
-              linksMap.set(link.source_id, sourceLinks);
+              linksMap.set(sourceId, sourceLinks);
+              
+              // Adiciona o mesmo link de volta para o arquivo Canvas raiz
+              // para garantir que o grafo esteja conectado
+              const rootLink: ObsidianLink = {
+                source_id: file.path,
+                target_id: sourceId,
+                strength: 1
+              };
+              
+              const rootLinks = linksMap.get(file.path) || [];
+              rootLinks.push(rootLink);
+              linksMap.set(file.path, rootLinks);
+            });
+          } else {
+            console.log(`Canvas ${file.path} não tem links visuais, buscando links em texto`);
+            
+            // Se não houver links visuais, tenta extrair links dos textos dos nós
+            const canvasNodes = parsedCanvas.nodes || [];
+            canvasNodes.forEach(canvasNode => {
+              if (canvasNode.content) {
+                // Extrai links wiki do conteúdo do nó
+                const textLinks = this.extractLinks(canvasNode.content);
+                const nodeSourceId = canvasNode.path;
+                
+                textLinks.forEach(targetPath => {
+                  // Normaliza o caminho do link
+                  let normalizedPath = targetPath;
+                  if (!normalizedPath.startsWith('/')) {
+                    normalizedPath = '/' + normalizedPath;
+                  }
+                  
+                  // Verifica se o arquivo alvo existe ou é outro nó do canvas
+                  if (fileMap.has(normalizedPath) || normalizedPath.startsWith(file.path + '#')) {
+                    const link: ObsidianLink = {
+                      source_id: nodeSourceId,
+                      target_id: normalizedPath,
+                      strength: 1
+                    };
+                    
+                    // Adiciona o link ao mapa
+                    const sourceLinks = linksMap.get(nodeSourceId) || [];
+                    sourceLinks.push(link);
+                    linksMap.set(nodeSourceId, sourceLinks);
+                  }
+                });
+              }
             });
           }
         } catch (error) {
@@ -249,10 +303,12 @@ export class ObsidianImporter {
           // Para arquivos Canvas2Document, extraímos links do markdown
           const parsedCanvas = canvasParser.parseCanvas2DocumentFile(file.content, file.path);
           if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            console.log(`Processando ${parsedCanvas.links.length} links do Canvas2Document ${file.path}`);
+            
             parsedCanvas.links.forEach(canvasLink => {
               const link: ObsidianLink = {
-                source_id: `${file.path}#${canvasLink.sourceId}`,
-                target_id: `${file.path}#${canvasLink.targetId}`,
+                source_id: canvasLink.sourceId,
+                target_id: canvasLink.targetId,
                 strength: 2
               };
               
@@ -260,6 +316,17 @@ export class ObsidianImporter {
               const sourceLinks = linksMap.get(link.source_id) || [];
               sourceLinks.push(link);
               linksMap.set(link.source_id, sourceLinks);
+              
+              // Adiciona o mesmo link de volta para o arquivo Canvas2Document raiz
+              const rootLink: ObsidianLink = {
+                source_id: file.path,
+                target_id: link.source_id,
+                strength: 1
+              };
+              
+              const rootLinks = linksMap.get(file.path) || [];
+              rootLinks.push(rootLink);
+              linksMap.set(file.path, rootLinks);
             });
           }
         } catch (error) {
@@ -268,6 +335,10 @@ export class ObsidianImporter {
       } else {
         // Para arquivos Markdown e texto, extraímos links wiki
         const links = this.extractLinks(file.content);
+        
+        if (links.length > 0) {
+          console.log(`Processando ${links.length} links wiki do arquivo ${file.path}`);
+        }
         
         links.forEach(targetPath => {
           // Normaliza o caminho do link
