@@ -426,15 +426,15 @@ export class SubpromptService {
         // Procura por palavras-chave na consulta
         const keywordMatch = this.findSubpromptByKeywords(userQuery.toLowerCase());
         if (keywordMatch) {
-          console.log(`Selected fallback subprompt via keywords: ${keywordMatch.name}`);
+          console.log(`Selected fallback subprompt via keywords: ${keywordMatch.title}`);
           return keywordMatch.content;
         }
         
         // Se não encontrou por palavras-chave, tenta buscar o melhor subprompt genérico
-        // com base na similaridade de texto entre o nome da esfera e a consulta
+        // com base na similaridade de texto entre o título/branch e a consulta
         const bestMatch = this.findBestFallbackMatch(userQuery);
         if (bestMatch) {
-          console.log(`Selected best fallback match: ${bestMatch.name}`);
+          console.log(`Selected best fallback match: ${bestMatch.title}`);
           return bestMatch.content;
         }
         
@@ -473,7 +473,7 @@ export class SubpromptService {
       // Se não houver uma correspondência significativa, procura por palavras-chave
       const keywordMatch = this.findSubpromptByKeywords(userQuery.toLowerCase());
       if (keywordMatch) {
-        console.log(`Selected subprompt via keywords: ${keywordMatch.name}`);
+        console.log(`Selected subprompt via keywords: ${keywordMatch.title}`);
         return keywordMatch.content;
       }
       
@@ -583,16 +583,17 @@ export class SubpromptService {
         const [existingSubprompt] = await db
           .select()
           .from(subprompts)
-          .where(eq(subprompts.name, section.name));
+          .where(eq(subprompts.title, section.name));
 
         if (!existingSubprompt) {
           // Cria o novo subprompt
           await this.createSubprompt({
-            name: section.name,
+            title: section.name,
             description: section.description,
             keywords: section.keywords,
             content: section.content || "This is a default content for " + section.name,
-            sphere: section.name.replace(" Sphere", ""),
+            branch: section.name.replace(" Sphere", ""),
+            category: section.name.includes("Sphere") ? "sphere" : "branch",
             active: true
           });
           createdCount++;
