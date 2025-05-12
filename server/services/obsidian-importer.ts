@@ -153,12 +153,17 @@ export class ObsidianImporter {
         
       console.log(`Nome do arquivo normalizado: ${normalizedFileName} (original: ${file.name})`);
       
+      // Armazena tanto o nome original quanto o normalizado
       return {
         name: file.name,
         content: file.content,
-        path: `/${normalizedFileName}`, // Usa o nome normalizado para o caminho
+        // Mantém o caminho original para preservar referência exata
+        path: `/${file.name}`, 
+        // Armazena também o caminho normalizado nos metadados para busca flexível
+        normalizedPath: `/${normalizedFileName}`,
         lastModified: new Date(),
-        type: fileType
+        type: fileType,
+        metadata: { normalizedPath: `/${normalizedFileName}` }
       };
     });
   }
