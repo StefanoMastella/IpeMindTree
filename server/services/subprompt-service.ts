@@ -478,17 +478,19 @@ export class SubpromptService {
     const scores = this.subpromptCache.map(subprompt => {
       let score = 0;
       
-      // Verifica se o nome da esfera aparece na consulta
-      const sphereName = subprompt.sphere.toLowerCase();
-      if (query.includes(sphereName)) {
+      // Verifica se o nome da esfera existe e aparece na consulta
+      const sphereName = subprompt.sphere ? subprompt.sphere.toLowerCase() : '';
+      if (sphereName && query.includes(sphereName)) {
         score += 5; // Pontuação alta se o nome da esfera estiver presente
       }
       
-      // Verifica palavras da descrição
-      const descWords = subprompt.description.toLowerCase().split(/\W+/).filter(w => w.length > 3);
-      for (const word of descWords) {
-        if (query.includes(word)) {
-          score += 1;
+      // Verifica palavras da descrição (se existir)
+      if (subprompt.description) {
+        const descWords = subprompt.description.toLowerCase().split(/\W+/).filter(w => w.length > 3);
+        for (const word of descWords) {
+          if (query.includes(word)) {
+            score += 1;
+          }
         }
       }
       
