@@ -145,15 +145,15 @@ export class ObsidianImporter {
     const nodes: any[] = [];
     const linksMap = new Map<string, ObsidianLink[]>();
     const fileMap = new Map<string, MarkdownFile>();
-    const fileNodeMap = new Map<string, any>(); // Mapa para armazenar os nós criados por caminho
     
-    // Primeiro passo: criar nós para cada arquivo
+    // Mapa para armazenar os nós criados por caminho
+    const fileNodeMap = new Map<string, any>();
+    
     // Variável para gerar IDs incrementais para os nós
     let nextNodeId = 1;
     
-    files.forEach((file, index) => {
-      // Armazenar temporariamente os nós criados com um ID simulado para facilitar a criação de links
-      // Quando salvarmos no banco, esses IDs serão substituídos pelos reais
+    // Primeiro passo: criar nós para cada arquivo
+    files.forEach(file => {
       // Processa diferentemente com base no tipo de arquivo
       if (file.type === 'canvas') {
         try {
@@ -174,7 +174,7 @@ export class ObsidianImporter {
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
                 },
-                id: nodeId++
+                id: nextNodeId++
               };
               nodes.push(node);
               
@@ -204,7 +204,7 @@ export class ObsidianImporter {
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
                 },
-                id: nodeId++
+                id: nextNodeId++
               };
               nodes.push(node);
               
@@ -229,10 +229,14 @@ export class ObsidianImporter {
           is_imported: true,
           metadata: { 
             lastModified: file.lastModified.toISOString()
-          }
+          },
+          id: nextNodeId++
         };
         
         nodes.push(node);
+        
+        // Armazena o nó no mapa para uso posterior na criação de links
+        fileNodeMap.set(file.path, node);
       }
       
       fileMap.set(file.path, file);
@@ -243,17 +247,24 @@ export class ObsidianImporter {
     
     // Armazena o ID do nó para cada caminho de arquivo
     files.forEach(file => {
-      pathToIdMap.set(file.path, fileNodeMap.get(file.path)?.id || 0);
+      const node = fileNodeMap.get(file.path);
+      if (node) {
+        pathToIdMap.set(file.path, node.id);
+      }
     });
+    
+    // Converter o mapa de links para um array
+    const links: ObsidianLink[] = [];
     
     // Agora processamos os links com os IDs dos nós em vez de caminhos
     files.forEach(file => {
-      const sourceNodeId = pathToIdMap.get(file.path) || 0;
+      const sourceNode = fileNodeMap.get(file.path);
       
-      // Pula arquivos que não têm ID de nó correspondente
-      if (sourceNodeId === 0) {
+      if (!sourceNode) {
         return;
       }
+      
+      const sourceNodeId = sourceNode.id;
       
       // Processa diferentemente com base no tipo de arquivo
       if (file.type === 'canvas') {
@@ -272,36 +283,34 @@ export class ObsidianImporter {
             if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
               parsedCanvas.nodes.forEach(node => {
                 const nodePath = node.path || `${file.path}#${node.id}`;
-                const nodeId = fileNodeMap.get(nodePath)?.id || 0;
-                if (nodeId > 0) {
-                  canvasNodeIdMap.set(node.id, nodeId);
+                const mappedNode = fileNodeMap.get(nodePath);
+                
+                if (mappedNode) {
+                  canvasNodeIdMap.set(node.id, mappedNode.id);
                 }
               });
             }
             
             // Agora processe os links usando os IDs dos nós
             parsedCanvas.links.forEach(canvasLink => {
-              const sourceNodeId = canvasNodeIdMap.get(canvasLink.fromNode) || 0;
-              const targetNodeId = canvasNodeIdMap.get(canvasLink.toNode) || 0;
+              const sourceId = canvasNodeIdMap.get(canvasLink.fromNode);
+              const targetId = canvasNodeIdMap.get(canvasLink.toNode);
               
               // Pula links onde o nó fonte ou alvo não foi encontrado
-              if (sourceNodeId === 0 || targetNodeId === 0) {
+              if (!sourceId || !targetId) {
                 console.log(`Link ignorado: nó não encontrado (${canvasLink.fromNode} -> ${canvasLink.toNode})`);
                 return;
               }
               
               // Cria o link usando IDs de nós
               const link: ObsidianLink = {
-                source_id: sourceNodeId,
-                target_id: targetNodeId,
+                source_id: sourceId,
+                target_id: targetId,
                 strength: 2,
                 type: 'canvas'
               };
               
-              // Adiciona o link ao mapa usando o ID do nó fonte como chave
-              const sourceLinks = linksMap.get(sourceNodeId) || [];
-              sourceLinks.push(link);
-              linksMap.set(sourceNodeId, sourceLinks);
+              links.push(link);
             });
           } else {
             console.log(`Canvas ${file.path} não tem links visuais, buscando links em texto`);
@@ -314,12 +323,13 @@ export class ObsidianImporter {
                 // Extrai links wiki do conteúdo do nó
                 const textLinks = this.extractLinks(canvasNode.content);
                 const nodePath = canvasNode.path || `${file.path}#${canvasNode.id}`;
-                const sourceNodeId = fileNodeMap.get(nodePath)?.id || 0;
+                const sourceNode = fileNodeMap.get(nodePath);
                 
-                // Pula nós que não têm ID correspondente
-                if (sourceNodeId === 0) {
+                if (!sourceNode) {
                   return;
                 }
+                
+                const sourceNodeId = sourceNode.id;
                 
                 textLinks.forEach(targetPath => {
                   // Normaliza o caminho do link
@@ -329,10 +339,10 @@ export class ObsidianImporter {
                   }
                   
                   // Busca o ID do nó alvo pelo caminho
-                  const targetNodeId = pathToIdMap.get(normalizedPath) || 0;
+                  const targetNodeId = pathToIdMap.get(normalizedPath);
                   
                   // Pula links para nós que não existem
-                  if (targetNodeId === 0) {
+                  if (!targetNodeId) {
                     return;
                   }
                   
@@ -344,10 +354,7 @@ export class ObsidianImporter {
                     type: 'text'
                   };
                   
-                  // Adiciona o link ao mapa
-                  const sourceLinks = linksMap.get(sourceNodeId) || [];
-                  sourceLinks.push(link);
-                  linksMap.set(sourceNodeId, sourceLinks);
+                  links.push(link);
                 });
               }
             });
@@ -368,35 +375,33 @@ export class ObsidianImporter {
             // Para cada nó do Canvas2Document, encontre seu ID no DB
             if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
               parsedCanvas.nodes.forEach(node => {
-                const nodeId = fileNodeMap.get(node.id)?.id || 0;
-                if (nodeId > 0) {
-                  canvasNodeIdMap.set(node.id, nodeId);
+                const nodePath = `${file.path}#${node.id}`;
+                const mappedNode = fileNodeMap.get(nodePath);
+                if (mappedNode) {
+                  canvasNodeIdMap.set(node.id, mappedNode.id);
                 }
               });
             }
             
             // Processar links usando IDs
             parsedCanvas.links.forEach(canvasLink => {
-              const sourceNodeId = canvasNodeIdMap.get(canvasLink.sourceId) || 0;
-              const targetNodeId = canvasNodeIdMap.get(canvasLink.targetId) || 0;
+              const sourceId = canvasNodeIdMap.get(canvasLink.sourceId);
+              const targetId = canvasNodeIdMap.get(canvasLink.targetId);
               
               // Pula links onde o nó fonte ou alvo não foi encontrado
-              if (sourceNodeId === 0 || targetNodeId === 0) {
+              if (!sourceId || !targetId) {
                 return;
               }
               
               // Cria o link usando IDs de nós
               const link: ObsidianLink = {
-                source_id: sourceNodeId,
-                target_id: targetNodeId,
+                source_id: sourceId,
+                target_id: targetId,
                 strength: 2,
                 type: 'canvas2document'
               };
               
-              // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(sourceNodeId) || [];
-              sourceLinks.push(link);
-              linksMap.set(sourceNodeId, sourceLinks);
+              links.push(link);
             });
           }
         } catch (error) {
@@ -404,13 +409,13 @@ export class ObsidianImporter {
         }
       } else {
         // Para arquivos Markdown e texto, extraímos links wiki
-        const links = this.extractLinks(file.content);
+        const wikiLinks = this.extractLinks(file.content);
         
-        if (links.length > 0) {
-          console.log(`Processando ${links.length} links wiki do arquivo ${file.path}`);
+        if (wikiLinks.length > 0) {
+          console.log(`Processando ${wikiLinks.length} links wiki do arquivo ${file.path}`);
         }
         
-        links.forEach(targetPath => {
+        wikiLinks.forEach(targetPath => {
           // Normaliza o caminho do link
           let normalizedPath = targetPath;
           if (!normalizedPath.startsWith('/')) {
@@ -418,10 +423,10 @@ export class ObsidianImporter {
           }
           
           // Busca o ID do nó alvo pelo caminho
-          const targetNodeId = pathToIdMap.get(normalizedPath) || 0;
+          const targetNodeId = pathToIdMap.get(normalizedPath);
           
           // Pula links para nós que não existem
-          if (targetNodeId === 0) {
+          if (!targetNodeId) {
             return;
           }
           
@@ -433,18 +438,9 @@ export class ObsidianImporter {
             type: 'wiki'
           };
           
-          // Adiciona o link ao mapa
-          const sourceLinks = linksMap.get(sourceNodeId) || [];
-          sourceLinks.push(link);
-          linksMap.set(sourceNodeId, sourceLinks);
+          links.push(link);
         });
       }
-    });
-    
-    // Converte o mapa de links para array
-    const links: ObsidianLink[] = [];
-    linksMap.forEach(fileLinks => {
-      links.push(...fileLinks);
     });
     
     return { nodes, links };
@@ -455,14 +451,14 @@ export class ObsidianImporter {
    * @param file Arquivo markdown
    */
   private getTitle(file: MarkdownFile): string {
-    // Tenta extrair o título do conteúdo (primeira linha h1)
-    const h1Match = file.content.match(/^# (.+)$/m);
-    if (h1Match && h1Match[1]) {
-      return h1Match[1].trim();
+    // Tenta extrair o título do H1 no topo do arquivo
+    const h1Match = file.content.match(/^#\s+(.+)$/m);
+    if (h1Match) {
+      return h1Match[1];
     }
     
-    // Se não encontrar, usa o nome do arquivo sem extensão
-    return file.name.replace(/\.md$/, '');
+    // Se não encontrar um H1, use o nome do arquivo sem a extensão
+    return path.basename(file.name, path.extname(file.name));
   }
   
   /**
@@ -472,27 +468,14 @@ export class ObsidianImporter {
   private extractTags(content: string): string[] {
     const tags = new Set<string>();
     
-    // Regex para encontrar tags no formato #tag
-    const tagMatches = content.match(/#([a-zA-Z0-9_\-]+)/g);
+    // Padrão para tags no Obsidian (#tag)
+    const tagMatches = content.match(/#([a-zA-Z0-9_\-/]+)/g);
     if (tagMatches) {
       tagMatches.forEach(tag => {
-        // Remove o # e adiciona a tag
-        tags.add(tag.substring(1));
+        // Remove o # do início
+        const cleanTag = tag.substring(1);
+        tags.add(cleanTag);
       });
-    }
-    
-    // Regex para encontrar tags no formato YAML Front Matter
-    const yamlMatch = content.match(/^---\s*$(.*?)^---\s*$/ms);
-    if (yamlMatch && yamlMatch[1]) {
-      const yamlContent = yamlMatch[1];
-      const tagsMatch = yamlContent.match(/tags:\s*\[(.*?)\]/);
-      
-      if (tagsMatch && tagsMatch[1]) {
-        const yamlTags = tagsMatch[1].split(',').map(t => t.trim().replace(/['"]/g, ''));
-        yamlTags.forEach(tag => {
-          if (tag) tags.add(tag);
-        });
-      }
     }
     
     return Array.from(tags);
@@ -505,22 +488,17 @@ export class ObsidianImporter {
   private extractLinks(content: string): string[] {
     const links = new Set<string>();
     
-    // Regex para encontrar links no formato [[link]]
-    const wikiLinkMatches = content.match(/\[\[([^\]]+)\]\]/g);
-    if (wikiLinkMatches) {
-      wikiLinkMatches.forEach(match => {
-        // Extrai o nome do link
-        const linkName = match.substring(2, match.length - 2);
-        // Remove qualquer parte após o | (formato [[link|texto]])
-        const cleanLink = linkName.split('|')[0].trim();
-        
-        // Adiciona extensão .md se não existir
-        let normalizedLink = cleanLink;
-        if (!normalizedLink.endsWith('.md')) {
-          normalizedLink += '.md';
+    // Padrão para links wiki: [[caminho/para/arquivo]] ou [[caminho/para/arquivo|Texto alternativo]]
+    // Usando regex sem a flag "d" para compatibilidade com versões mais antigas do JavaScript
+    const wikiMatches = content.match(/\[\[([^\]|]+)(?:\|[^\]]+)?\]\]/g);
+    
+    if (wikiMatches) {
+      wikiMatches.forEach(match => {
+        // Extrai apenas o caminho do link (sem o texto alternativo)
+        const linkMatch = match.match(/\[\[([^\]|]+)/);
+        if (linkMatch && linkMatch[1]) {
+          links.add(linkMatch[1]);
         }
-        
-        links.add(normalizedLink);
       });
     }
     
@@ -536,68 +514,62 @@ export class ObsidianImporter {
    */
   async saveToDatabase(
     nodes: any[], 
-    links: any[], 
-    importSource: string,
-    importedBy: string
+    links: ObsidianLink[],
+    importSource: string = 'upload',
+    importedBy: string = 'system'
   ): Promise<boolean> {
     try {
-      console.log(`Iniciando importação de ${nodes.length} nós e ${links.length} links do Obsidian`);
+      console.log(`Salvando ${nodes.length} nós e ${links.length} links no banco de dados`);
       
-      // Importa os nós para o banco de dados
-      const createdNodes = await storage.bulkCreateObsidianNodes(nodes);
-      console.log(`${createdNodes.length} nós importados com sucesso`);
-      
-      // Cria um mapa de path para ID para converter os links
-      const pathToIdMap = new Map<string, number>();
-      createdNodes.forEach(node => {
-        pathToIdMap.set(node.path, node.id);
+      // Validar nós antes de inserir
+      const validNodes = nodes.map(node => {
+        // Garante que propriedades requeridas existam
+        return {
+          ...node,
+          title: node.title || 'Sem título',
+          content: node.content || '',
+          path: node.path || '',
+          tags: node.tags || [],
+          metadata: node.metadata || {}
+        };
       });
       
-      // Converte os links (path para ID) e importa para o banco de dados
-      const dbLinks: any[] = links
-        .filter(link => 
-          pathToIdMap.has(link.source_id) && 
-          pathToIdMap.has(link.target_id))
-        .map(link => ({
-          source_id: pathToIdMap.get(link.source_id)!,
-          target_id: pathToIdMap.get(link.target_id)!,
-          strength: 1
-        }));
+      // Salva os nós no banco de dados e obtém a lista com os IDs
+      const savedNodes = await storage.bulkCreateObsidianNodes(validNodes);
       
-      const createdLinks = await storage.bulkCreateObsidianLinks(dbLinks);
-      console.log(`${createdLinks.length} links importados com sucesso`);
+      console.log(`Salvos ${savedNodes.length} nós no banco de dados`);
       
-      // Registra o log de importação
-      await storage.createImportLog({
+      // Cria um mapa de caminhos para IDs dos nós salvos
+      const nodePaths = new Map<string, number>();
+      savedNodes.forEach(node => {
+        if (node.path) {
+          nodePaths.set(node.path, node.id);
+        }
+      });
+      
+      // Adiciona os links usando os IDs dos nós salvos
+      if (links.length > 0) {
+        const savedLinks = await storage.bulkCreateObsidianLinks(links);
+        console.log(`Salvos ${savedLinks.length} links no banco de dados`);
+      }
+      
+      // Registra o log da importação
+      const importLog = {
         source: importSource,
-        details: {
-          nodesCount: createdNodes.length,
-          linksCount: createdLinks.length
-        },
-        success: true,
-        type: 'obsidian',
-        user_id: importedBy
-      });
+        imported_by: importedBy,
+        metadata: {
+          nodes_count: savedNodes.length,
+          links_count: links.length,
+          timestamp: new Date().toISOString()
+        }
+      };
+      
+      await storage.createImportLog(importLog);
       
       return true;
-    } catch (error: any) {
-      console.error('Erro durante a importação do Obsidian:', error);
-      
-      // Registra o log de erro
-      await storage.createImportLog({
-        source: importSource,
-        details: {
-          nodesCount: 0,
-          linksCount: 0,
-          error: error.message || 'Erro desconhecido durante importação',
-          stack: error.stack
-        },
-        success: false,
-        type: 'obsidian',
-        user_id: importedBy
-      });
-      
-      return false;
+    } catch (error) {
+      console.error('Erro ao salvar dados no banco:', error);
+      throw error;
     }
   }
   
@@ -607,8 +579,7 @@ export class ObsidianImporter {
    * @param username Nome do usuário que está realizando a importação
    */
   async processZipFile(zipFilePath: string, username: string): Promise<boolean> {
-    // Este método seria implementado para extrair arquivos de um ZIP e processá-los.
-    // Por simplicidade, isso ficará como uma funcionalidade futura.
+    // Implementação futura
     return false;
   }
   
@@ -618,44 +589,9 @@ export class ObsidianImporter {
    * @param username Nome do usuário que está realizando a importação
    */
   async importFromDownloadUrl(downloadUrl: string, username: string): Promise<boolean> {
-    try {
-      console.log(`Iniciando importação a partir da URL: ${downloadUrl}`);
-      
-      // Esta é uma implementação simplificada que apenas simula a importação
-      // No futuro, implementaremos o download e extração reais dos arquivos
-      console.log(`URL de download fornecida: ${downloadUrl}`);
-      console.log(`Usuário que iniciou a importação: ${username}`);
-      
-      // Registra o log de importação (apenas para testes)
-      await storage.createImportLog({
-        importSource: 'url_download',
-        nodesCount: 0,
-        linksCount: 0,
-        success: false,
-        error: 'Funcionalidade ainda não implementada completamente',
-        metadata: { url: downloadUrl },
-        importedBy: username
-      });
-      
-      return true; // Retorna true para indicar que o processo foi iniciado com sucesso
-    } catch (error: any) {
-      console.error('Erro durante a importação via URL:', error);
-      
-      // Registra o log de erro
-      await storage.createImportLog({
-        importSource: 'url_download',
-        nodesCount: 0,
-        linksCount: 0,
-        success: false,
-        error: error.message || 'Erro desconhecido durante importação',
-        metadata: { url: downloadUrl, stack: error.stack },
-        importedBy: username
-      });
-      
-      return false;
-    }
+    // Implementação futura
+    return false;
   }
 }
 
-// Cria uma instância única do serviço
 export const obsidianImporter = new ObsidianImporter();

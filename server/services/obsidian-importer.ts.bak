@@ -22,9 +22,11 @@ interface ObsidianFile {
 }
 
 interface ObsidianLink {
-  source_id: string;
-  target_id: string;
-  type: string;
+  source_id: number;
+  target_id: number;
+  strength?: number;
+  type?: string;
+  metadata?: any;
 }
 
 /**
@@ -143,9 +145,15 @@ export class ObsidianImporter {
     const nodes: any[] = [];
     const linksMap = new Map<string, ObsidianLink[]>();
     const fileMap = new Map<string, MarkdownFile>();
+    const fileNodeMap = new Map<string, any>(); // Mapa para armazenar os nós criados por caminho
     
     // Primeiro passo: criar nós para cada arquivo
-    files.forEach(file => {
+    // Variável para gerar IDs incrementais para os nós
+    let nextNodeId = 1;
+    
+    files.forEach((file, index) => {
+      // Armazenar temporariamente os nós criados com um ID simulado para facilitar a criação de links
+      // Quando salvarmos no banco, esses IDs serão substituídos pelos reais
       // Processa diferentemente com base no tipo de arquivo
       if (file.type === 'canvas') {
         try {
@@ -155,18 +163,23 @@ export class ObsidianImporter {
           // Adiciona todos os nós encontrados
           if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
             parsedCanvas.nodes.forEach(canvasNode => {
+              const nodePath = `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`;
               const node = {
                 title: canvasNode.title || `Nó Canvas: ${file.path}`,
                 content: canvasNode.content || '',
-                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                path: nodePath,
                 tags: canvasNode.tags || [],
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
-                }
+                },
+                id: nodeId++
               };
               nodes.push(node);
+              
+              // Armazena o nó no mapa para uso posterior na criação de links
+              fileNodeMap.set(nodePath, node);
             });
           }
         } catch (error) {
@@ -180,18 +193,23 @@ export class ObsidianImporter {
           // Adiciona todos os nós encontrados
           if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
             parsedCanvas.nodes.forEach(canvasNode => {
+              const nodePath = `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`;
               const node = {
                 title: canvasNode.title || `Nó Canvas2Doc: ${file.path}`,
                 content: canvasNode.content || '',
-                path: `${file.path}#${canvasNode.id || Math.random().toString(36).substring(2, 9)}`,
+                path: nodePath,
                 tags: canvasNode.tags || [],
                 is_imported: true,
                 metadata: { 
                   lastModified: file.lastModified.toISOString(),
                   canvasData: canvasNode.metadata || {}
-                }
+                },
+                id: nodeId++
               };
               nodes.push(node);
+              
+              // Armazena o nó no mapa para uso posterior na criação de links
+              fileNodeMap.set(nodePath, node);
             });
           }
         } catch (error) {
@@ -221,24 +239,117 @@ export class ObsidianImporter {
     });
     
     // Segundo passo: extrair links entre os arquivos
+    const pathToIdMap = new Map<string, number>();
+    
+    // Armazena o ID do nó para cada caminho de arquivo
     files.forEach(file => {
+      pathToIdMap.set(file.path, fileNodeMap.get(file.path)?.id || 0);
+    });
+    
+    // Agora processamos os links com os IDs dos nós em vez de caminhos
+    files.forEach(file => {
+      const sourceNodeId = pathToIdMap.get(file.path) || 0;
+      
+      // Pula arquivos que não têm ID de nó correspondente
+      if (sourceNodeId === 0) {
+        return;
+      }
+      
       // Processa diferentemente com base no tipo de arquivo
       if (file.type === 'canvas') {
         try {
           // Para arquivos Canvas, usamos os links já definidos no arquivo
           const parsedCanvas = canvasParser.parseCanvasFile(file.content, file.path);
+          
+          // Processa as arestas do Canvas (links visuais)
           if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            console.log(`Processando ${parsedCanvas.links.length} links do Canvas ${file.path}`);
+            
+            // Construa um mapa de IDs de nós dentro do canvas
+            const canvasNodeIdMap = new Map<string, number>();
+            
+            // Para cada nó do Canvas, encontre seu ID no DB
+            if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
+              parsedCanvas.nodes.forEach(node => {
+                const nodePath = node.path || `${file.path}#${node.id}`;
+                const nodeId = fileNodeMap.get(nodePath)?.id || 0;
+                if (nodeId > 0) {
+                  canvasNodeIdMap.set(node.id, nodeId);
+                }
+              });
+            }
+            
+            // Agora processe os links usando os IDs dos nós
             parsedCanvas.links.forEach(canvasLink => {
+              const sourceNodeId = canvasNodeIdMap.get(canvasLink.fromNode) || 0;
+              const targetNodeId = canvasNodeIdMap.get(canvasLink.toNode) || 0;
+              
+              // Pula links onde o nó fonte ou alvo não foi encontrado
+              if (sourceNodeId === 0 || targetNodeId === 0) {
+                console.log(`Link ignorado: nó não encontrado (${canvasLink.fromNode} -> ${canvasLink.toNode})`);
+                return;
+              }
+              
+              // Cria o link usando IDs de nós
               const link: ObsidianLink = {
-                source_id: `${file.path}#${canvasLink.fromNode}`,
-                target_id: `${file.path}#${canvasLink.toNode}`,
-                type: 'canvas-link'
+                source_id: sourceNodeId,
+                target_id: targetNodeId,
+                strength: 2,
+                type: 'canvas'
               };
               
-              // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(link.sourceId) || [];
+              // Adiciona o link ao mapa usando o ID do nó fonte como chave
+              const sourceLinks = linksMap.get(sourceNodeId) || [];
               sourceLinks.push(link);
-              linksMap.set(link.sourceId, sourceLinks);
+              linksMap.set(sourceNodeId, sourceLinks);
+            });
+          } else {
+            console.log(`Canvas ${file.path} não tem links visuais, buscando links em texto`);
+            
+            // Se não houver links visuais, tenta extrair links dos textos dos nós
+            const canvasNodes = parsedCanvas.nodes || [];
+            
+            canvasNodes.forEach(canvasNode => {
+              if (canvasNode.content) {
+                // Extrai links wiki do conteúdo do nó
+                const textLinks = this.extractLinks(canvasNode.content);
+                const nodePath = canvasNode.path || `${file.path}#${canvasNode.id}`;
+                const sourceNodeId = fileNodeMap.get(nodePath)?.id || 0;
+                
+                // Pula nós que não têm ID correspondente
+                if (sourceNodeId === 0) {
+                  return;
+                }
+                
+                textLinks.forEach(targetPath => {
+                  // Normaliza o caminho do link
+                  let normalizedPath = targetPath;
+                  if (!normalizedPath.startsWith('/')) {
+                    normalizedPath = '/' + normalizedPath;
+                  }
+                  
+                  // Busca o ID do nó alvo pelo caminho
+                  const targetNodeId = pathToIdMap.get(normalizedPath) || 0;
+                  
+                  // Pula links para nós que não existem
+                  if (targetNodeId === 0) {
+                    return;
+                  }
+                  
+                  // Cria o link usando IDs de nós
+                  const link: ObsidianLink = {
+                    source_id: sourceNodeId,
+                    target_id: targetNodeId,
+                    strength: 1,
+                    type: 'text'
+                  };
+                  
+                  // Adiciona o link ao mapa
+                  const sourceLinks = linksMap.get(sourceNodeId) || [];
+                  sourceLinks.push(link);
+                  linksMap.set(sourceNodeId, sourceLinks);
+                });
+              }
             });
           }
         } catch (error) {
@@ -249,17 +360,43 @@ export class ObsidianImporter {
           // Para arquivos Canvas2Document, extraímos links do markdown
           const parsedCanvas = canvasParser.parseCanvas2DocumentFile(file.content, file.path);
           if (parsedCanvas.links && parsedCanvas.links.length > 0) {
+            console.log(`Processando ${parsedCanvas.links.length} links do Canvas2Document ${file.path}`);
+            
+            // Construa um mapa de IDs de nós dentro do canvas2document
+            const canvasNodeIdMap = new Map<string, number>();
+            
+            // Para cada nó do Canvas2Document, encontre seu ID no DB
+            if (parsedCanvas.nodes && parsedCanvas.nodes.length > 0) {
+              parsedCanvas.nodes.forEach(node => {
+                const nodeId = fileNodeMap.get(node.id)?.id || 0;
+                if (nodeId > 0) {
+                  canvasNodeIdMap.set(node.id, nodeId);
+                }
+              });
+            }
+            
+            // Processar links usando IDs
             parsedCanvas.links.forEach(canvasLink => {
+              const sourceNodeId = canvasNodeIdMap.get(canvasLink.sourceId) || 0;
+              const targetNodeId = canvasNodeIdMap.get(canvasLink.targetId) || 0;
+              
+              // Pula links onde o nó fonte ou alvo não foi encontrado
+              if (sourceNodeId === 0 || targetNodeId === 0) {
+                return;
+              }
+              
+              // Cria o link usando IDs de nós
               const link: ObsidianLink = {
-                source_id: `${file.path}#${canvasLink.sourceId}`,
-                target_id: `${file.path}#${canvasLink.targetId}`,
-                type: 'canvas2document-link'
+                source_id: sourceNodeId,
+                target_id: targetNodeId,
+                strength: 2,
+                type: 'canvas2document'
               };
               
               // Adiciona o link ao mapa
-              const sourceLinks = linksMap.get(link.sourceId) || [];
+              const sourceLinks = linksMap.get(sourceNodeId) || [];
               sourceLinks.push(link);
-              linksMap.set(link.sourceId, sourceLinks);
+              linksMap.set(sourceNodeId, sourceLinks);
             });
           }
         } catch (error) {
@@ -269,6 +406,10 @@ export class ObsidianImporter {
         // Para arquivos Markdown e texto, extraímos links wiki
         const links = this.extractLinks(file.content);
         
+        if (links.length > 0) {
+          console.log(`Processando ${links.length} links wiki do arquivo ${file.path}`);
+        }
+        
         links.forEach(targetPath => {
           // Normaliza o caminho do link
           let normalizedPath = targetPath;
@@ -276,19 +417,26 @@ export class ObsidianImporter {
             normalizedPath = '/' + normalizedPath;
           }
           
-          // Verifica se o arquivo alvo existe
-          if (fileMap.has(normalizedPath)) {
-            const link: ObsidianLink = {
-              source_id: file.path,
-              target_id: normalizedPath,
-              type: 'wiki-link'
-            };
-            
-            // Adiciona o link ao mapa
-            const sourceLinks = linksMap.get(file.path) || [];
-            sourceLinks.push(link);
-            linksMap.set(file.path, sourceLinks);
+          // Busca o ID do nó alvo pelo caminho
+          const targetNodeId = pathToIdMap.get(normalizedPath) || 0;
+          
+          // Pula links para nós que não existem
+          if (targetNodeId === 0) {
+            return;
           }
+          
+          // Cria o link usando IDs de nós
+          const link: ObsidianLink = {
+            source_id: sourceNodeId,
+            target_id: targetNodeId,
+            strength: 1,
+            type: 'wiki'
+          };
+          
+          // Adiciona o link ao mapa
+          const sourceLinks = linksMap.get(sourceNodeId) || [];
+          sourceLinks.push(link);
+          linksMap.set(sourceNodeId, sourceLinks);
         });
       }
     });
@@ -413,8 +561,7 @@ export class ObsidianImporter {
         .map(link => ({
           source_id: pathToIdMap.get(link.source_id)!,
           target_id: pathToIdMap.get(link.target_id)!,
-          type: link.type,
-          metadata: {}
+          strength: 1
         }));
       
       const createdLinks = await storage.bulkCreateObsidianLinks(dbLinks);
