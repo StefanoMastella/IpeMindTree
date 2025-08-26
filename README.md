@@ -1,185 +1,185 @@
 # 🌳 Ipê Mind Tree (IMT)
 
-> **Plataforma de Alinhamento Cognitivo para a Comunidade Ipê Village**
+> **Cognitive Alignment Platform for the Ipê Village Community**
 
-O Ipê Mind Tree é uma plataforma inovadora desenvolvida para facilitar o alinhamento cognitivo entre membros da comunidade Ipê Village, promovendo a sincronização de conhecimentos, ideias e processos de pensamento através de uma rede integrada de informações.
+Ipê Mind Tree is an innovative platform developed to facilitate cognitive alignment among members of the Ipê Village community, promoting the synchronization of knowledge, ideas, and thought processes through an integrated information network.
 
-## 🎯 Filosofia e Propósito
+## 🎯 Philosophy and Purpose
 
-### Alinhamento Cognitivo
-A filosofia central do IMT baseia-se no conceito de **alinhamento cognitivo** - a capacidade de sincronizar e harmonizar diferentes perspectivas, conhecimentos e processos de pensamento dentro de uma comunidade. O sistema atua como uma "árvore de mentes" onde:
+### Cognitive Alignment
+IMT's core philosophy is based on the concept of **cognitive alignment** - the ability to synchronize and harmonize different perspectives, knowledge, and thought processes within a community. The system acts as a "tree of minds" where:
 
-- **Raízes**: Representam os conhecimentos fundamentais compartilhados
-- **Tronco**: Simboliza a estrutura comum de pensamento da comunidade
-- **Galhos**: Manifestam as diferentes especialidades e áreas de expertise
-- **Folhas**: Expressam as ideias individuais que se nutrem da sabedoria coletiva
+- **Roots**: Represent shared fundamental knowledge
+- **Trunk**: Symbolizes the community's common thought structure
+- **Branches**: Manifest different specialties and areas of expertise
+- **Leaves**: Express individual ideas that are nourished by collective wisdom
 
 ### Ipê Village
-O Ipê Village é uma comunidade focada em inovação, colaboração e crescimento mútuo. O IMT serve como a infraestrutura tecnológica que permite:
+Ipê Village is a community focused on innovation, collaboration, and mutual growth. IMT serves as the technological infrastructure that enables:
 
-- Compartilhamento eficiente de conhecimento
-- Visualização de conexões entre ideias e conceitos
-- Facilitação de processos colaborativos
-- Preservação e evolução da memória coletiva
+- Efficient knowledge sharing
+- Visualization of connections between ideas and concepts
+- Facilitation of collaborative processes
+- Preservation and evolution of collective memory
 
-## 🏗️ Arquitetura Técnica
+## 🏗️ Technical Architecture
 
-### Stack Tecnológico
+### Technology Stack
 
 **Frontend:**
-- React 18 com TypeScript
-- Vite para build e desenvolvimento
-- Tailwind CSS para estilização
-- Shadcn/UI + Radix UI para componentes
-- React Query para gerenciamento de estado
-- Wouter para roteamento
+- React 18 with TypeScript
+- Vite for build and development
+- Tailwind CSS for styling
+- Shadcn/UI + Radix UI for components
+- React Query for state management
+- Wouter for routing
 
 **Backend:**
-- Node.js com Express
-- TypeScript para type safety
-- PostgreSQL como banco de dados
-- Drizzle ORM para queries
-- WebSocket para comunicação real-time
+- Node.js with Express
+- TypeScript for type safety
+- PostgreSQL as database
+- Drizzle ORM for queries
+- WebSocket for real-time communication
 
-**Integrações de IA:**
-- Google Gemini API para processamento de linguagem natural
-- OpenAI API (opcional) para funcionalidades avançadas
-- Sistema de RAG (Retrieval-Augmented Generation)
+**AI Integrations:**
+- Google Gemini API for natural language processing
+- OpenAI API (optional) for advanced features
+- RAG (Retrieval-Augmented Generation) system
 
-**Infraestrutura:**
-- Railway para deploy e hosting
-- PostgreSQL gerenciado
-- SSL automático
-- CI/CD integrado
+**Infrastructure:**
+- Railway for deployment and hosting
+- Managed PostgreSQL
+- Automatic SSL
+- Integrated CI/CD
 
-### Funcionalidades Principais
+### Main Features
 
-#### 1. Visualização de Rede de Conhecimento
-- Grafo interativo de conceitos e ideias
-- Mapeamento de conexões semânticas
-- Navegação intuitiva pela base de conhecimento
+#### 1. Knowledge Network Visualization
+- Interactive graph of concepts and ideas
+- Semantic connection mapping
+- Intuitive knowledge base navigation
 
-#### 2. Importação Multi-formato
-- **Obsidian Canvas**: Importação de mapas mentais
-- **Notion**: Sincronização de bases de conhecimento
-- **Google Drive**: Integração com documentos
-- **Telegram Bot**: Interface conversacional
+#### 2. Multi-format Import
+- **Obsidian Canvas**: Mind map import
+- **Notion**: Knowledge base synchronization
+- **Google Drive**: Document integration
+- **Telegram Bot**: Conversational interface
 
-#### 3. Sistema de Chat Inteligente
-- Conversas contextualizadas com IA
-- Busca semântica na base de conhecimento
-- Sugestões automáticas de conexões
+#### 3. Intelligent Chat System
+- Contextualized AI conversations
+- Semantic search in knowledge base
+- Automatic connection suggestions
 
-#### 4. Gestão de Subprompts
-- Sistema modular de prompts especializados
-- Reutilização de padrões de pensamento
-- Personalização por domínio de conhecimento
+#### 4. Subprompt Management
+- Modular specialized prompt system
+- Reuse of thought patterns
+- Customization by knowledge domain
 
-## 🚀 Como Executar
+## 🚀 How to Run
 
-### Pré-requisitos
+### Prerequisites
 - Node.js 18+ 
 - PostgreSQL 14+
-- Chave da API Google Gemini
+- Google Gemini API key
 
-### Instalação Local
+### Local Installation
 
-1. **Clone o repositório:**
+1. **Clone the repository:**
 ```bash
 git clone https://github.com/StefanoMastella/IpeMindTree.git
 cd IpeMindTree
 ```
 
-2. **Instale as dependências:**
+2. **Install dependencies:**
 ```bash
 npm install
 ```
 
-3. **Configure as variáveis de ambiente:**
+3. **Configure environment variables:**
 ```bash
 cp .env.example .env
-# Edite o .env com suas configurações
+# Edit .env with your configurations
 ```
 
-4. **Configure o banco de dados:**
+4. **Configure the database:**
 ```bash
-# Para PostgreSQL local
+# For local PostgreSQL
 npm run setup:db
 
-# Ou execute o SQL diretamente
-psql -d sua_database -f create_tables.sql
+# Or run SQL directly
+psql -d your_database -f create_tables.sql
 ```
 
-5. **Verifique a configuração:**
+5. **Verify configuration:**
 ```bash
 npm run check:env
 ```
 
-6. **Execute em desenvolvimento:**
+6. **Run in development:**
 ```bash
 npm run dev
 ```
 
-### Deploy em Produção
+### Production Deployment
 
-1. **Prepare para deploy:**
+1. **Prepare for deployment:**
 ```bash
 npm run deploy:prepare
 ```
 
-2. **Siga o guia de deploy:**
-- Consulte `DEPLOY_GUIDE.md` para instruções detalhadas
-- Ou `GUIA_EXECUCAO_FINAL.md` para um guia prático
+2. **Follow deployment guide:**
+- Check `DEPLOY_GUIDE.md` for detailed instructions
+- Or `GUIA_EXECUCAO_FINAL.md` for a practical guide
 
-## 📁 Estrutura do Projeto
+## 📁 Project Structure
 
 ```
 IpeMindTree/
-├── client/                 # Frontend React
+├── client/                 # React Frontend
 │   └── src/
-│       ├── components/     # Componentes reutilizáveis
-│       ├── pages/         # Páginas da aplicação
-│       └── lib/           # Utilitários e configurações
-├── server/                # Backend Node.js
-│   ├── routes/           # Rotas da API
-│   ├── services/         # Lógica de negócio
-│   └── tools/            # Ferramentas auxiliares
-├── shared/               # Código compartilhado
-├── docs/                 # Documentação
-└── scripts/              # Scripts de automação
+│       ├── components/     # Reusable components
+│       ├── pages/         # Application pages
+│       └── lib/           # Utilities and configurations
+├── server/                # Node.js Backend
+│   ├── routes/           # API routes
+│   ├── services/         # Business logic
+│   └── tools/            # Helper tools
+├── shared/               # Shared code
+├── docs/                 # Documentation
+└── scripts/              # Automation scripts
 ```
 
-## 🛠️ Scripts Disponíveis
+## 🛠️ Available Scripts
 
 ```bash
-# Desenvolvimento
-npm run dev              # Inicia servidor de desenvolvimento
-npm run build            # Build para produção
-npm run start            # Executa versão de produção
+# Development
+npm run dev              # Start development server
+npm run build            # Build for production
+npm run start            # Run production version
 
-# Banco de dados
-npm run setup:db         # Configura banco automaticamente
-npm run db:push          # Sincroniza schema com Drizzle
+# Database
+npm run setup:db         # Configure database automatically
+npm run db:push          # Sync schema with Drizzle
 
-# Verificações
-npm run check:env        # Verifica configuração do ambiente
-npm run check            # Verificação de tipos TypeScript
-npm run deploy:prepare   # Prepara para deploy
+# Verification
+npm run check:env        # Check environment configuration
+npm run check            # TypeScript type checking
+npm run deploy:prepare   # Prepare for deployment
 ```
 
-## 🔧 Configuração
+## 🔧 Configuration
 
-### Variáveis de Ambiente Obrigatórias
+### Required Environment Variables
 ```env
 DATABASE_URL=postgresql://user:password@host:port/database
-GEMINI_API_KEY=sua_chave_gemini
+GEMINI_API_KEY=your_gemini_key
 NODE_ENV=development|production
 ```
 
-### Variáveis Opcionais
+### Optional Variables
 ```env
-OPENAI_API_KEY=sua_chave_openai
-TELEGRAM_BOT_TOKEN=token_do_bot
+OPENAI_API_KEY=your_openai_key
+TELEGRAM_BOT_TOKEN=your_bot_token
 ENABLE_TELEGRAM_BOT=true
 ```
 
