@@ -101,14 +101,15 @@ export default function Home() {
           Use these buttons to interact!
         </div>
         <div className="flex flex-col gap-3">
-          <Link href="/chat">
-            <Button
-              className="bg-secondary hover:bg-secondary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors border-2 border-primary/40"
-              aria-label="Chat with AI"
-            >
+          <Button
+            asChild
+            className="bg-secondary hover:bg-secondary-dark text-white w-14 h-14 rounded-full shadow-lg flex items-center justify-center transition-colors border-2 border-primary/40"
+            aria-label="Chat with AI"
+          >
+            <Link href="/chat">
               <MessageSquareText className="h-6 w-6" />
-            </Button>
-          </Link>
+            </Link>
+          </Button>
           
           <Button
             id="create-idea-btn"

@@ -37,7 +37,7 @@ async function setupDatabase() {
     console.log('✅ Conectado ao banco PostgreSQL');
     
     // Ler e executar o script SQL
-    const sqlScript = readFileSync(join(__dirname, 'create_tables.sql'), 'utf8');
+    const sqlScript = readFileSync(join(__dirname, '..', 'create_tables.sql'), 'utf8');
     
     console.log('📝 Executando script de criação das tabelas...');
     await client.query(sqlScript);

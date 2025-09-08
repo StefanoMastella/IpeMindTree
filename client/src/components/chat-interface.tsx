@@ -165,7 +165,7 @@ export default function ChatInterface() {
       
       const payload = currentSessionId
         ? { content: message }
-        : { message: message, session_id: currentSessionId };
+        : { message: message };
       
       const response = await fetch(endpoint, {
         method: 'POST',

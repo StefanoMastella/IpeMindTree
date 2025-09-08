@@ -1,5 +1,19 @@
 // Import ideas from CSV data to the database
-import { pool } from './server/db.js';
+import dotenv from "dotenv";
+dotenv.config();
+
+import { Pool, neonConfig } from '@neondatabase/serverless';
+import ws from "ws";
+
+neonConfig.webSocketConstructor = ws;
+
+if (!process.env.DATABASE_URL) {
+  throw new Error(
+    "DATABASE_URL must be set. Did you forget to provision a database?",
+  );
+}
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 
 async function importIdeas() {
   const ideas = [

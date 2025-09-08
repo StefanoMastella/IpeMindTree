@@ -71,3 +71,34 @@ Data: 26 de agosto de 2025
 - Otimizações de performance
 
 *Este checkpoint marca a conclusão da preparação técnica para produção da Fase 1.*
+
+---
+
+# Checkpoint: Configuração do Banco de Dados PostgreSQL na Nuvem
+
+Data: 27 de agosto de 2025
+
+## Estado atual
+- ✅ Banco de dados PostgreSQL configurado na Neon
+- ✅ Arquivo `.env` atualizado com a URL de conexão do Neon
+- ✅ Script de configuração do banco de dados executado com sucesso
+- ✅ Tabelas criadas no banco de dados Neon (comments, ideas, users, etc.)
+- ✅ Servidor conectado ao banco de dados na nuvem
+- ✅ Endpoint `/api/ideas` retornando 200 (array vazio, pronto para receber dados)
+
+## Arquivos modificados
+- `.env`: Atualizado com a URL de conexão do Neon PostgreSQL
+- `scripts/setup-database.js`: Corrigido o caminho para o arquivo `create_tables.sql`
+
+## Problemas resolvidos
+- Corrigido o caminho do arquivo `create_tables.sql` no script de configuração
+- Resolvido o problema de acesso à variável de ambiente DATABASE_URL
+- Servidor reiniciado para aplicar a nova configuração do banco de dados
+
+## Próximos passos
+- Investigar o problema do chat da IMT
+- Importar dados existentes para o banco de dados na nuvem
+- Testar funcionalidades que dependem do banco de dados
+- Documentar as soluções implementadas
+
+*Este checkpoint marca a conclusão da configuração do banco de dados PostgreSQL na nuvem usando Neon.*

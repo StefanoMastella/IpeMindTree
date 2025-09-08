@@ -9,14 +9,14 @@ export default function Footer() {
             <p className="text-sm text-secondary">© {new Date().getFullYear()} Ipê Mind Totem. All rights reserved.</p>
           </div>
           <div className="flex space-x-6">
-            <Link href="/privacy">
-              <a className="text-secondary hover:text-primary text-sm">Privacy Policy</a>
+            <Link href="/privacy" className="text-secondary hover:text-primary text-sm">
+              Privacy Policy
             </Link>
-            <Link href="/terms">
-              <a className="text-secondary hover:text-primary text-sm">Terms of Service</a>
+            <Link href="/terms" className="text-secondary hover:text-primary text-sm">
+              Terms of Service
             </Link>
-            <Link href="/contact">
-              <a className="text-secondary hover:text-primary text-sm">Contact Us</a>
+            <Link href="/contact" className="text-secondary hover:text-primary text-sm">
+              Contact Us
             </Link>
           </div>
         </div>

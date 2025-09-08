@@ -85,18 +85,18 @@ export default function Header() {
                   <DropdownMenuContent align="end">
                     <DropdownMenuLabel>Administration</DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <Link href="/admin/subprompts" className="no-underline">
-                      <DropdownMenuItem className="cursor-pointer">
+                    <DropdownMenuItem className="cursor-pointer" asChild>
+                      <Link href="/admin/subprompts" className="no-underline flex items-center">
                         <Settings className="h-4 w-4 mr-2" />
                         Subprompts
-                      </DropdownMenuItem>
-                    </Link>
-                    <Link href="/admin/database" className="no-underline">
-                      <DropdownMenuItem className="cursor-pointer">
+                      </Link>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer" asChild>
+                      <Link href="/admin/database" className="no-underline flex items-center">
                         <Database className="h-4 w-4 mr-2" />
                         Database
-                      </DropdownMenuItem>
-                    </Link>
+                      </Link>
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
               )}
@@ -111,12 +111,12 @@ export default function Header() {
               </Button>
             </div>
           ) : (
-            <Link href="/auth" className="no-underline">
-              <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
+            <Button asChild className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors">
+              <Link href="/auth" className="no-underline">
                 <LogIn className="h-4 w-4 mr-1" />
                 <span>Login</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
         </nav>
         
@@ -178,12 +178,12 @@ export default function Header() {
               </Button>
             </>
           ) : (
-            <Link href="/auth" className="no-underline w-full">
-              <Button className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
+            <Button asChild className="flex items-center space-x-1 bg-primary text-white px-4 py-2 rounded-full hover:bg-primary-dark transition-colors w-full justify-center">
+              <Link href="/auth" className="no-underline">
                 <LogIn className="h-4 w-4 mr-1" />
                 <span>Login</span>
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           )}
         </nav>
       </div>

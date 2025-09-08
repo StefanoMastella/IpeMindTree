@@ -1,6 +1,12 @@
 // This file handles AI integration for tag generation and connection suggestions
 // Using Gemini API (server proxy) for tag generation and connection suggestions
 
+// Helper function to clean JSON response from markdown code blocks
+function cleanJsonResponse(text: string): string {
+  // Remove markdown code blocks (```json ... ``` or ``` ... ```)
+  return text.replace(/```(?:json)?\s*([\s\S]*?)```/g, '$1').trim();
+}
+
 // Shared API client setup
 const apiCall = async (prompt: string, responseFormat = "text") => {
   try {
@@ -46,7 +52,8 @@ export async function generateTags(title: string, description: string): Promise<
     const result = await apiCall(prompt, "json");
     
     if (result) {
-      const parsedResult = JSON.parse(result);
+      const cleanedResult = cleanJsonResponse(result);
+      const parsedResult = JSON.parse(cleanedResult);
       return parsedResult.tags.slice(0, 5); // Limit to 5 tags max
     }
   } catch (error) {
@@ -120,7 +127,8 @@ export async function suggestConnections(
     const result = await apiCall(prompt, "json");
     
     if (result) {
-      const parsedResult = JSON.parse(result);
+      const cleanedResult = cleanJsonResponse(result);
+      const parsedResult = JSON.parse(cleanedResult);
       return parsedResult.connections.slice(0, 3); // Limit to 3 connections
     }
   } catch (error) {

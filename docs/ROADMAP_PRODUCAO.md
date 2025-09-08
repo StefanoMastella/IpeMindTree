@@ -2,10 +2,11 @@
 
 ## Status Atual ✅
 
-**Data**: 26 de Agosto de 2025  
-**Status**: Projeto funcionando localmente em desenvolvimento  
+**Data**: 27 de Agosto de 2025  
+**Status**: Projeto funcionando localmente com banco de dados na nuvem  
 **URL Local**: http://localhost:3000  
 **Servidor**: Rodando na porta 3000 com Node.js v24.6.0
+**Banco de Dados**: PostgreSQL na nuvem (Neon)
 
 ### O que já foi feito:
 - ✅ Análise arquitetural completa (ver `ARQUITETURA_ANALISE.md`)
@@ -15,6 +16,9 @@
 - ✅ Interface React carregando corretamente
 - ✅ Configuração básica do ambiente (.env)
 - ✅ Dotenv configurado para carregar variáveis de ambiente
+- ✅ Banco de dados PostgreSQL configurado na nuvem (Neon)
+- ✅ Tabelas do banco de dados criadas com sucesso
+- ✅ Servidor conectado ao banco de dados na nuvem
 
 ---
 
@@ -23,18 +27,19 @@
 ### Fase 1: Configuração de Infraestrutura (Prioridade Alta)
 
 #### 1.1 Banco de Dados PostgreSQL
-- [ ] **Configurar PostgreSQL em produção**
-  - Opções recomendadas: Neon, Supabase, Railway, ou AWS RDS
-  - Substituir a DATABASE_URL temporária no `.env`
-  - Executar o script `create_tables.sql` no banco de produção
-  - Testar conexão e migrations com Drizzle ORM
+- [x] **Configurar PostgreSQL em produção**
+  - ✅ Escolhido Neon como provedor de PostgreSQL na nuvem
+  - ✅ Substituída a DATABASE_URL no `.env` com a URL de conexão do Neon
+  - ✅ Executado o script `create_tables.sql` no banco de produção
+  - ✅ Testada conexão com sucesso (endpoint `/api/ideas` retornando 200)
+  - [ ] Importar dados existentes para o banco de dados na nuvem
 
 #### 1.2 Variáveis de Ambiente
-- [ ] **Configurar chaves de API reais**
-  - `GEMINI_API_KEY`: Obter chave do Google AI Studio
-  - `OPENAI_API_KEY`: Configurar chave da OpenAI
-  - `DATABASE_URL`: URL do PostgreSQL de produção
-  - Configurar variáveis no ambiente de deploy
+- [x] **Configurar chaves de API reais**
+  - ✅ `GEMINI_API_KEY`: Configurada chave do Google AI Studio
+  - [ ] `OPENAI_API_KEY`: Pendente configuração da chave da OpenAI
+  - ✅ `DATABASE_URL`: Configurada URL do PostgreSQL de produção (Neon)
+  - [ ] Configurar variáveis no ambiente de deploy
 
 #### 1.3 Deploy da Aplicação
 - [ ] **Escolher plataforma de deploy**
@@ -192,6 +197,32 @@ npm run db:push
 
 ---
 
-**Próximo passo recomendado**: Configurar banco PostgreSQL de produção e fazer o primeiro deploy.
+**Próximo passo recomendado**: Investigar o problema do chat da IMT e importar dados existentes para o banco de dados.
 
-**Status**: ✅ Pronto para migração para produção
+## Tarefas Imediatas (Prioridade Alta)
+
+### 1. Investigação e Correção do Chat
+- [ ] **Investigar o problema do chat da IMT**
+  - Verificar logs de erro no console
+  - Testar conexão com APIs de IA
+  - Identificar possíveis problemas de autenticação
+  - Corrigir problemas encontrados
+
+### 2. Migração de Dados
+- [ ] **Importar dados existentes para o banco de dados na nuvem**
+  - Criar script de exportação de dados locais
+  - Criar script de importação para o banco Neon
+  - Verificar integridade dos dados após importação
+  - Testar funcionalidades com os dados importados
+
+### 3. Testes e Documentação
+- [ ] **Testar funcionalidades que dependem do banco de dados**
+  - Verificar criação e edição de ideias
+  - Testar sistema de comentários
+  - Validar autenticação de usuários
+- [ ] **Documentar as soluções implementadas**
+  - Atualizar documentação técnica
+  - Criar guia de troubleshooting
+  - Documentar processo de backup e restauração
+
+**Status**: ✅ Banco de dados configurado, próximas etapas definidas
